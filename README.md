@@ -25,8 +25,8 @@
 
 ### 主要依赖
 
-- **状态管理**: Zustand 4.x
-- **UI 组件库**: [Taroify 1.x](https://taroify.github.io/taroify.com/introduce/)
+- **状态管理**: React Context API
+- **UI 组件库**: [Taroify 0.6.4+](https://taroify.github.io/taroify.com/introduce/)
 - **工具链**: pnpm 8.x + SWC
 
 ## 环境要求
@@ -75,9 +75,12 @@ sample-helper-mini-program/
 │   └── prod.ts
 ├── src/
 │   ├── pages/           # 小程序页面
+│   ├── components/      # 公共组件
+│   ├── stores/          # 状态管理
+│   ├── services/        # API 服务
 │   ├── app.config.ts    # 全局配置
 │   ├── app.less         # 全局样式
-│   └── app.ts           # 应用入口
+│   └── app.tsx          # 应用入口
 ├── types/               # 类型声明
 ├── .env.*               # 多环境变量配置
 ├── vite.config.ts       # Vite 主配置
@@ -93,27 +96,65 @@ sample-helper-mini-program/
 
 ```typescript
 import { Button } from "@taroify/core"
+import "@taroify/core/button/style" // 导入对应组件样式
 ```
 
 ### 状态管理
 
-1. 使用 Zustand 创建 Store
-2. Store 文件存放于 `src/stores`
+1. 使用 React Context API 进行状态管理
+2. 状态文件存放于 `src/stores`
 3. 示例：
 
 ```typescript
-// stores/useCounterStore.ts
-import create from 'zustand'
+// stores/userStore.tsx
+import React, { createContext, useContext, useState, ReactNode } from 'react';
+import Taro from '@tarojs/taro';
 
-interface CounterState {
-  count: number
-  increment: () => void
+// 定义状态类型
+interface UserState {
+  userInfo: any;
+  isLoggedIn: boolean;
+  setUserInfo: (info: any) => void;
+  logout: () => void;
 }
 
-export const useCounterStore = create<CounterState>(set => ({
-  count: 0,
-  increment: () => set(state => ({ count: state.count + 1 }))
-}))
+// 创建上下文
+const UserContext = createContext<UserState | null>(null);
+
+// Provider 组件
+export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [userInfo, setUserInfoState] = useState(null);
+  const isLoggedIn = !!userInfo;
+  
+  const setUserInfo = (info: any) => {
+    setUserInfoState(info);
+    if (info) {
+      Taro.setStorageSync('user_info', JSON.stringify(info));
+    }
+  };
+  
+  const logout = () => {
+    setUserInfoState(null);
+    Taro.removeStorageSync('user_info');
+  };
+  
+  return (
+    <UserContext.Provider value={{
+      userInfo, isLoggedIn, setUserInfo, logout
+    }}>
+      {children}
+    </UserContext.Provider>
+  );
+};
+
+// 自定义 Hook
+export const useUser = () => {
+  const context = useContext(UserContext);
+  if (!context) {
+    throw new Error('useUser 必须在 UserProvider 内部使用');
+  }
+  return context;
+};
 ```
 
 ### 样式规范
