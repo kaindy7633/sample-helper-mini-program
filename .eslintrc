@@ -3,7 +3,7 @@
   "rules": {
     "react/jsx-uses-react": "off",
     "react/react-in-jsx-scope": "off",
-    "quotes": ["error", "single"],
-    "jsx-quotes": ["error", "prefer-single"]
+    "quotes": ["error", "double"],
+    "jsx-quotes": ["error", "prefer-double"]
   }
 }
