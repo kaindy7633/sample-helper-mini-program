@@ -1,7 +1,11 @@
 import { PropsWithChildren } from "react";
 import { useLaunch } from "@tarojs/taro";
-import { UserProvider, AppProvider, getUserState, getAppState } from "./stores";
+// 引入taroify组件库样式
+import "@taroify/core/index.scss";
 
+// 相对导入
+import { UserProvider, AppProvider, getUserState, getAppState } from "./stores";
+// 导入tailwind样式
 import "./app.less";
 
 function App({ children }: PropsWithChildren<any>) {

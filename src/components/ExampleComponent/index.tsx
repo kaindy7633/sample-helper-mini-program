@@ -9,6 +9,7 @@ import "@taroify/core/button/style";
 import "@taroify/core/toast/style";
 import "@taroify/core/cell/style";
 import "@taroify/core/switch/style";
+import "@taroify/icons/style";
 
 import { useApp } from "../../stores";
 
@@ -42,11 +43,7 @@ const ExampleComponent: React.FC<ExampleComponentProps> = ({
     <View className={styles.container}>
       <Cell.Group inset title={title}>
         <Cell title="示例按钮">
-          <Button
-            color="primary"
-            onClick={() => showToast("按钮点击成功")}
-            className="mr-2"
-          >
+          <Button color="primary" onClick={() => showToast("按钮点击成功")}>
             主要按钮
           </Button>
         </Cell>
@@ -60,15 +57,13 @@ const ExampleComponent: React.FC<ExampleComponentProps> = ({
         </Cell>
       </Cell.Group>
 
-      {/* 使用 TailwindCSS 样式 */}
-      <View className="mt-4 p-4 bg-white rounded-lg shadow">
-        <View className="text-lg font-bold text-primary mb-2">
-          TailwindCSS 示例
+      {/* 使用 Less 模块化样式 */}
+      <View className={styles.exampleBox}>
+        <View className={styles.title}>Less样式示例</View>
+        <View className={styles.description}>
+          这是使用 Less 模块化样式的示例文本
         </View>
-        <View className="text-sm text-text-secondary">
-          这是使用 TailwindCSS 样式的示例文本
-        </View>
-        <Button color="success" size="small" className="mt-2">
+        <Button color="success" size="small" className={styles.button}>
           成功按钮
         </Button>
       </View>

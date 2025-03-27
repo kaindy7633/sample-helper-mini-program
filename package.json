@@ -79,7 +79,6 @@
     "sass": "^1.44.0",
     "sass-migrator": "^2.3.1",
     "stylelint": "^16.4.0",
-    "tailwindcss": "^4.0.17",
     "terser": "^5.30.4",
     "typescript": "^5.4.5",
     "vite": "^4.2.0"

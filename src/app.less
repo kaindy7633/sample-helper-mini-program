@@ -1,11 +1,18 @@
-/* Tailwind CSS */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* 基础样式 */
+:root {
+  --primary-color: #3f7efd;
+  --primary-light-color: #ecf5ff;
+  --primary-dark-color: #0056b3;
+  --secondary-color: #646566;
+  --text-primary-color: #323233;
+  --text-secondary-color: #646566;
+  --text-tertiary-color: #999999;
+  --background-color: #f7f8fa;
+}
 
 /* 全局样式 */
 page {
   font-size: 14px;
-  background-color: #f7f8fa;
-  color: #323233;
+  background-color: var(--background-color);
+  color: var(--text-primary-color);
 }
