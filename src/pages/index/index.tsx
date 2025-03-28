@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import React from "react";
 import { View, Text, ScrollView } from "@tarojs/components";
-import CustomTabbar from "../../components/Tabbar";
 import "./index.less";
 
 /**
@@ -8,9 +7,6 @@ import "./index.less";
  * @returns {JSX.Element} 主页
  */
 const Index: React.FC = () => {
-  // 当前激活的tabbar
-  const [activeTab, setActiveTab] = useState<string>("index");
-
   // 模拟天气数据
   const weatherData = {
     temperature: "12.3°C",
@@ -166,9 +162,6 @@ const Index: React.FC = () => {
         {/* 底部空白占位，防止内容被底部导航遮挡 */}
         <View className="bottom-spacer"></View>
       </ScrollView>
-
-      {/* 底部导航 */}
-      <CustomTabbar active={activeTab} onChange={setActiveTab} />
     </View>
   );
 };
