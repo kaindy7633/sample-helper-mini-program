@@ -2,11 +2,12 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: 100vh;
+  min-height: 100vh;
   background-color: #f7f8fa;
 }
 
-.header {
+/* 头部样式 */
+.study-header {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -17,21 +18,159 @@
   z-index: 10;
 }
 
-.title {
-  font-size: 18px;
+.study-title {
+  font-size: 36px;
   font-weight: bold;
   color: #333;
 }
 
-.content {
-  flex: 1;
+/* 通用部分样式 */
+.section {
+  margin: 20px 0;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 12px;
+}
+
+.section-title {
+  font-size: 32px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.section-title-container {
+  display: flex;
+  align-items: center;
+}
+
+/* 标签样式 */
+.now-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  background-color: #0066ff;
+  color: #fff;
+  font-size: 24px;
+  border-radius: 4px;
+  margin-right: 10px;
+  font-style: italic;
+}
+
+/* 学习专题网格 */
+.topics-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.topic-item {
+  width: 20%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.topic-icon-bg {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px;
+  margin-bottom: 10px;
 }
 
-.placeholder {
-  font-size: 16px;
+.topic-icon-text {
+  font-size: 32px;
+  font-weight: bold;
+}
+
+.topic-title {
+  font-size: 28px;
+  color: #333;
+  text-align: center;
+}
+
+/* 新闻列表样式 */
+.news-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.news-card {
+  padding: 16px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.news-card:last-child {
+  border-bottom: none;
+}
+
+.news-title {
+  font-size: 28px;
+  color: #333;
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.news-date {
+  font-size: 24px;
   color: #999;
+}
+
+/* 常见问题列表样式 */
+.faq-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.faq-card {
+  display: flex;
+  padding: 16px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.faq-card:last-child {
+  border-bottom: none;
+}
+
+.faq-icon-container {
+  margin-right: 16px;
+}
+
+.faq-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #3f7efd;
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.faq-content {
+  flex: 1;
+}
+
+.faq-question {
+  font-size: 28px;
+  color: #333;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.faq-answer {
+  font-size: 26px;
+  color: #666;
+  line-height: 1.5;
 }
