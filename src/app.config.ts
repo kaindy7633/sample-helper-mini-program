@@ -1,10 +1,13 @@
 export default defineAppConfig({
   pages: [
     "pages/start/index",
+    "pages/login/index",
     "pages/index/index",
     "pages/task/index",
     "pages/study/index",
     "pages/mine/index",
+    "pages/agreement/index",
+    "pages/privacy/index",
   ],
   window: {
     backgroundTextStyle: "light",

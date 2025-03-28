@@ -15,6 +15,15 @@ page {
   font-size: 32px;
   background-color: var(--background-color);
   color: var(--text-primary-color);
+  overflow-x: hidden;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* 防止内容溢出导致滚动条 */
+view {
+  box-sizing: border-box;
+  max-width: 100%;
 }
 
 /* 调整全局字体大小 */

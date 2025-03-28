@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { View } from "@tarojs/components";
 import Taro from "@tarojs/taro";
+import { getUserState } from "../../stores/userStore";
 import "./index.less";
 
 /**
@@ -9,11 +10,21 @@ import "./index.less";
  */
 const StartPage: React.FC = () => {
   useEffect(() => {
-    // 3秒后跳转到首页
+    // 3秒后检查用户登录状态并跳转
     const timer = setTimeout(() => {
-      Taro.switchTab({
-        url: "/pages/index/index",
-      });
+      const userState = getUserState();
+
+      if (userState.isLoggedIn && userState.token) {
+        // 已登录，跳转到首页
+        Taro.switchTab({
+          url: "/pages/index/index",
+        });
+      } else {
+        // 未登录，跳转到登录页
+        Taro.redirectTo({
+          url: "/pages/login/index",
+        });
+      }
     }, 3000);
 
     return () => clearTimeout(timer);

@@ -2,6 +2,7 @@
  * 统一请求工具
  */
 import Taro from "@tarojs/taro";
+import { API_BASE_URL } from "./config";
 
 /**
  * 统一响应结构
@@ -37,8 +38,8 @@ const DEFAULT_OPTIONS: Partial<RequestOptions> = {
   showErrorToast: true,
 };
 
-/** 接口域名 */
-const BASE_URL = process.env.API_BASE_URL || "";
+/** 业务接口域名 */
+const BASE_URL = API_BASE_URL;
 
 /**
  * 统一请求函数
