@@ -9,7 +9,7 @@ import "./index.less";
  * 登录页面组件
  * @returns {JSX.Element} 登录页面
  */
-const LoginPage: React.FC = () => {
+const LoginPage: React.FC = (): JSX.Element => {
   // 用户名和密码状态
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -57,9 +57,13 @@ const LoginPage: React.FC = () => {
 
       Taro.hideLoading();
 
-      // 登录成功处理
-      if (res.statusCode === 200 && res.data) {
-        const { data, token } = res.data;
+      // 解构响应数据
+      const { data } = res;
+
+      // 判断登录是否成功
+      if (data && data.status === true) {
+        // 登录成功处理
+        const { token } = res.data;
 
         // 存储用户信息和token到全局状态
         userStore.setUserInfo(data);
@@ -70,11 +74,11 @@ const LoginPage: React.FC = () => {
           url: "/pages/index/index",
         });
       } else {
-        // 登录失败
-        Taro.showToast({
-          title: "登录失败，请稍后再试",
-          icon: "none",
-          duration: 2000,
+        // 登录失败，显示服务器返回的错误信息
+        Taro.showModal({
+          title: "登录失败",
+          content: data?.msg || "登录失败，请稍后再试",
+          showCancel: false,
         });
       }
     } catch (error) {
@@ -85,6 +89,8 @@ const LoginPage: React.FC = () => {
         icon: "none",
         duration: 2000,
       });
+    } finally {
+      Taro.hideLoading();
     }
   };
 
