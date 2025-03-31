@@ -18,7 +18,10 @@ export default defineConfig<"vite">(async (merge) => {
     sourceRoot: "src",
     outputRoot: "dist",
     plugins: [],
-    defineConstants: {},
+    defineConstants: {
+      // 在打包时注入环境变量
+      "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV),
+    },
     copy: {
       patterns: [],
       options: {},
@@ -77,8 +80,26 @@ export default defineConfig<"vite">(async (merge) => {
 
   if (process.env.NODE_ENV === "development") {
     // 本地开发构建配置（不混淆压缩）
-    return merge({}, baseConfig, devConfig);
+    const envConfig = devConfig as any;
+    return merge({}, baseConfig, {
+      ...devConfig,
+      defineConstants: {
+        ...baseConfig.defineConstants,
+        "process.env.TARO_APP_API_BASE_URL": JSON.stringify(
+          envConfig.env.API_BASE_URL
+        ),
+      },
+    });
   }
   // 生产构建配置（默认开启压缩混淆等）
-  return merge({}, baseConfig, prodConfig);
+  const envConfig = prodConfig as any;
+  return merge({}, baseConfig, {
+    ...prodConfig,
+    defineConstants: {
+      ...baseConfig.defineConstants,
+      "process.env.TARO_APP_API_BASE_URL": JSON.stringify(
+        envConfig.env.API_BASE_URL
+      ),
+    },
+  });
 });

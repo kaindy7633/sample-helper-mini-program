@@ -1,6 +1,10 @@
-import type { UserConfigExport } from "@tarojs/cli"
+import type { UserConfigExport } from "@tarojs/cli";
 
 export default {
+  /** 生产环境API配置 */
+  env: {
+    API_BASE_URL: "http://cloud.cyznzs.com",
+  },
   mini: {},
   h5: {
     /**
@@ -29,5 +33,5 @@ export default {
     //       postProcess: (context) => ({ ...context, outputPath: path.join(staticDir, 'index.html') })
     //     }))
     // }
-  }
-} satisfies UserConfigExport<"vite">
+  },
+} satisfies UserConfigExport<"vite">;

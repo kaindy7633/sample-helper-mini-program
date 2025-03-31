@@ -62,12 +62,8 @@ const LoginPage: React.FC = (): JSX.Element => {
 
       // 判断登录是否成功
       if (data && data.status === true) {
-        // 登录成功处理
-        const { token } = res.data;
-
-        // 存储用户信息和token到全局状态
         userStore.setUserInfo(data);
-        userStore.setToken(token);
+        userStore.setToken(data?.SSOTGTCookie);
 
         // 跳转到首页
         Taro.switchTab({
