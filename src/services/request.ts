@@ -48,6 +48,27 @@ const BASE_URL = API_BASE_URL;
 let hasShownUnauthorizedToast = false;
 
 /**
+ * 获取请求头
+ * @returns 包含认证信息的请求头
+ */
+function getRequestHeader(): Record<string, string> {
+  const headers: Record<string, string> = {};
+  try {
+    const token = Taro.getStorageSync("user_token");
+    const userInfo = JSON.parse(Taro.getStorageSync("user_info"));
+
+    if (token && userInfo?.ebs_username) {
+      headers[
+        "Authorization"
+      ] = `SSOTGTCookie=${token};ebs_username=${userInfo?.ebs_username}`;
+    }
+  } catch (error) {
+    console.error("获取认证信息失败:", error);
+  }
+  return headers;
+}
+
+/**
  * 统一请求函数
  * @param options 请求配置
  * @returns Promise
@@ -72,18 +93,25 @@ export default function request<T = any>(options: RequestOptions): Promise<T> {
     ? requestOptions.url
     : `${BASE_URL}${requestOptions.url}`;
 
+  // 添加认证头
+  const headers = {
+    ...requestOptions.header,
+    ...getRequestHeader(),
+  };
+
   return new Promise<T>((resolve, reject) => {
     Taro.request({
       ...requestOptions,
       url,
+      header: headers,
       success: (res) => {
         const { statusCode } = res;
         const result = res.data as BaseResponse<T>;
 
         // 请求成功
         if (statusCode >= 200 && statusCode < 300) {
-          // 业务成功
-          if (result.code === 0) {
+          // 业务成功 - 修改判断逻辑，同时支持 code 为 0 或 200 的情况
+          if (result.code === 0 || result.code === 200) {
             resolve(result.data);
           } else {
             // 业务失败
@@ -111,7 +139,7 @@ export default function request<T = any>(options: RequestOptions): Promise<T> {
                 // 清除登录信息
                 try {
                   Taro.removeStorageSync("user_info");
-                  Taro.removeStorageSync("user_token");
+                  Taro.removeStorageSync("token");
                   console.log("已清除过期的登录信息");
                 } catch (e) {
                   console.error("清除登录信息失败:", e);
