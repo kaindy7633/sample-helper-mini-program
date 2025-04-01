@@ -1,4 +1,5 @@
 import { defineConfig, type UserConfigExport } from "@tarojs/cli";
+import path from "path";
 
 import devConfig from "./dev";
 import prodConfig from "./prod";
@@ -23,12 +24,20 @@ export default defineConfig<"vite">(async (merge) => {
       "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV),
     },
     copy: {
-      patterns: [],
+      patterns: [
+        {
+          from: "node_modules/@taroify/icons/dist/index.css",
+          to: "dist/npm/@taroify/icons/dist/index.css",
+        },
+      ],
       options: {},
     },
     framework: "react",
     compiler: "vite",
     mini: {
+      webpackChain(chain) {
+        chain.resolve.alias.set("@", path.resolve(__dirname, "..", "src"));
+      },
       postcss: {
         pxtransform: {
           enable: true,
@@ -37,10 +46,17 @@ export default defineConfig<"vite">(async (merge) => {
           },
         },
         cssModules: {
-          enable: false, // 默认为 false，如需使用 css modules 功能，则设为 true
+          enable: false,
           config: {
-            namingPattern: "module", // 转换模式，取值为 global/module
+            namingPattern: "module",
             generateScopedName: "[name]__[local]___[hash:base64:5]",
+          },
+        },
+        // 添加 url-loader 配置
+        url: {
+          enable: true,
+          config: {
+            limit: 1024, // 设定转换尺寸上限
           },
         },
       },

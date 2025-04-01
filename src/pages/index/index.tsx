@@ -1,21 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, ScrollView, Image } from "@tarojs/components";
+import { Swiper } from "@taroify/core";
 import Taro from "@tarojs/taro";
+import { getFrontPageData, getSampleMessages } from "../../services/home";
+import type { FrontPageData, SampleMessage } from "../../services/home";
 import "./index.less";
 import homeLogo from "../../assets/images/ico_homelogo.png";
 import messageIcon from "../../assets/images/ico_msg.png";
-
-interface WeatherData {
-  location: string;
-  toDayWeather: string;
-  temperature: string;
-  weatherIcon: string;
-}
-
-interface FrontPageData {
-  weather: WeatherData;
-  chickenSoupContent: string;
-}
 
 /**
  * 移除字符串中的HTML标签
@@ -40,9 +31,11 @@ const Index: React.FC = (): JSX.Element => {
     },
     chickenSoupContent: "",
   });
+  const [bannerList, setBannerList] = useState<SampleMessage[]>([]);
 
   useEffect(() => {
     fetchFrontPageData();
+    fetchBannerData();
   }, []);
 
   /**
@@ -50,21 +43,25 @@ const Index: React.FC = (): JSX.Element => {
    */
   const fetchFrontPageData = async () => {
     try {
-      const response = await Taro.request({
-        url: "https://cloud.cyznzs.com/api/app/consumer/frontPage",
-        method: "GET",
+      const data = await getFrontPageData();
+      setFrontPageData({
+        weather: data.weather,
+        chickenSoupContent: removeHtmlTags(data.chickenSoupContent),
       });
-
-      if (response.data.code === 200 && response.data.success) {
-        setFrontPageData({
-          weather: response.data.data.weather,
-          chickenSoupContent: removeHtmlTags(
-            response.data.data.chickenSoupContent
-          ),
-        });
-      }
     } catch (error) {
       console.error("获取首页数据失败:", error);
+    }
+  };
+
+  /**
+   * 获取轮播图数据
+   */
+  const fetchBannerData = async () => {
+    try {
+      const data = await getSampleMessages();
+      setBannerList(data || []);
+    } catch (error) {
+      console.error("获取轮播图数据失败:", error);
     }
   };
 
@@ -173,6 +170,28 @@ const Index: React.FC = (): JSX.Element => {
             </View>
           </View>
         </View>
+      </View>
+
+      {/* 轮播图区域 */}
+      <View className="banner-section">
+        <Swiper className="banner-swiper" autoplay={4000} lazyRender>
+          <Swiper.Indicator />
+          {bannerList.map((banner) => (
+            <Swiper.Item key={banner.id}>
+              <View className="banner-item">
+                <Image
+                  className="banner-image"
+                  src={banner.resourceUrl}
+                  mode="aspectFill"
+                />
+                <View className="banner-content">
+                  <Text className="banner-title">{banner.resourceName}</Text>
+                  <View className="banner-tag">问题推行</View>
+                </View>
+              </View>
+            </Swiper.Item>
+          ))}
+        </Swiper>
       </View>
 
       {/* 内容区域 */}

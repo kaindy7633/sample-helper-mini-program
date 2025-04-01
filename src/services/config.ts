@@ -19,4 +19,11 @@ export const API_PATHS = {
   USER: {
     LOGIN: "/service/external/getUserByNamePwdLims",
   },
+  // 首页
+  HOME: {
+    // 首页数据
+    FRONT_PAGE: "/api/app/consumer/frontPage",
+    // 待确认消息
+    SAMPLE_MESSAGE: "/api/sampleMessage/toBeConfirmedCount",
+  },
 };
