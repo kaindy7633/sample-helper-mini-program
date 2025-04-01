@@ -1,8 +1,11 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect } from "react";
-import { View } from "@tarojs/components";
+import { View, Image } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import { useUser } from "../../stores/userStore";
+// 正确引用图片资源
+import splashImg from "../../assets/images/start-page/ico_splash.png";
+import logoImg from "../../assets/images/start-page/ico_splashlopgo.png";
 import "./index.less";
 
 /**
@@ -72,7 +75,7 @@ const StartPage: React.FC = () => {
           Taro.redirectTo({
             url: "/pages/login/index",
           });
-        }, 3000);
+        }, 1000);
       }
     };
 
@@ -82,11 +85,13 @@ const StartPage: React.FC = () => {
 
   return (
     <View className="start-page">
-      <View className="logo">
-        {/* 使用灰色块状替代暂时没有的图标 */}
-        <View className="logo-placeholder"></View>
+      <View className="splash-container">
+        <Image className="splash-image" src={splashImg} mode="aspectFit" />
       </View>
-      <View className="slogan">让抽样 更简单</View>
+      <View className="logo-container">
+        <Image className="logo-image" src={logoImg} mode="aspectFit" />
+        <View className="slogan">让抽样 更简单</View>
+      </View>
     </View>
   );
 };
