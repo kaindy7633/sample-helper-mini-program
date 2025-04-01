@@ -1,20 +1,71 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, ScrollView, Image } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import "./index.less";
 import homeLogo from "../../assets/images/ico_homelogo.png";
 import messageIcon from "../../assets/images/ico_msg.png";
 
+interface WeatherData {
+  location: string;
+  toDayWeather: string;
+  temperature: string;
+  weatherIcon: string;
+}
+
+interface FrontPageData {
+  weather: WeatherData;
+  chickenSoupContent: string;
+}
+
+/**
+ * 移除字符串中的HTML标签
+ * @param html HTML字符串
+ * @returns 清理后的文本
+ */
+const removeHtmlTags = (html: string): string => {
+  return html?.replace(/<[^>]+>/g, "") || "";
+};
+
 /**
  * 主页组件
  * @returns {JSX.Element} 主页
  */
-const Index: React.FC = () => {
-  // 模拟天气数据
-  const weatherData = {
-    temperature: "12.3°C",
-    condition: "多云",
-    quote: "生活就是创新，只有与时俱进才能跟上时代。",
+const Index: React.FC = (): JSX.Element => {
+  const [frontPageData, setFrontPageData] = useState<FrontPageData>({
+    weather: {
+      location: "",
+      toDayWeather: "",
+      temperature: "",
+      weatherIcon: "",
+    },
+    chickenSoupContent: "",
+  });
+
+  useEffect(() => {
+    fetchFrontPageData();
+  }, []);
+
+  /**
+   * 获取首页数据
+   */
+  const fetchFrontPageData = async () => {
+    try {
+      const response = await Taro.request({
+        url: "https://cloud.cyznzs.com/api/app/consumer/frontPage",
+        method: "GET",
+      });
+
+      if (response.data.code === 200 && response.data.success) {
+        setFrontPageData({
+          weather: response.data.data.weather,
+          chickenSoupContent: removeHtmlTags(
+            response.data.data.chickenSoupContent
+          ),
+        });
+      }
+    } catch (error) {
+      console.error("获取首页数据失败:", error);
+    }
   };
 
   // 模拟范围抽样数据
@@ -99,25 +150,33 @@ const Index: React.FC = () => {
         />
       </View>
 
-      {/* 内容区域 */}
-      <ScrollView className="content" scrollY>
-        {/* 天气信息 */}
-        <View className="weather-card">
-          <View className="weather-info">
-            <Text className="temperature">
-              {weatherData.temperature} {weatherData.condition}
-            </Text>
-            <Text className="quote">{weatherData.quote}</Text>
-          </View>
-
-          {/* 大型横幅 */}
-          <View className="banner">
-            <View className="banner-title">不知如何抽检？</View>
-            <View className="banner-subtitle">/问题推行/</View>
-            <View className="banner-tag">祝您抽检顺利</View>
+      {/* 天气信息区域 */}
+      <View className="weather-section">
+        <View className="weather-info">
+          <Image
+            className="weather-icon"
+            src={frontPageData.weather.weatherIcon}
+            mode="aspectFit"
+          />
+          <View className="weather-content">
+            <View className="weather-detail">
+              <Text className="temperature">
+                {frontPageData.weather.toDayWeather}
+              </Text>
+              <Text className="weather-type">
+                {frontPageData.weather.temperature}{" "}
+                {frontPageData.weather.location}
+              </Text>
+            </View>
+            <View className="scroll-text">
+              <Text className="quote">{frontPageData.chickenSoupContent}</Text>
+            </View>
           </View>
         </View>
+      </View>
 
+      {/* 内容区域 */}
+      <ScrollView className="content" scrollY>
         {/* 范围抽样 */}
         <View className="section">
           <View className="section-title">范围抽样</View>

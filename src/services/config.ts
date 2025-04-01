@@ -9,7 +9,7 @@ export const LOGIN_API_BASE_URL = "https://login.ejclims.com";
 export const API_BASE_URL =
   process.env.NODE_ENV === "development"
     ? process.env.TARO_APP_API_BASE_URL || "http://172.18.142.38:9998"
-    : "http://cloud.cyznzs.com";
+    : "https://cloud.cyznzs.com";
 
 /**
  * 接口路径

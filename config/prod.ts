@@ -3,7 +3,7 @@ import type { UserConfigExport } from "@tarojs/cli";
 export default {
   /** 生产环境API配置 */
   env: {
-    API_BASE_URL: "http://cloud.cyznzs.com",
+    API_BASE_URL: "https://cloud.cyznzs.com",
   },
   mini: {},
   h5: {
