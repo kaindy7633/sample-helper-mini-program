@@ -10,24 +10,35 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px;
-  background-color: #fff;
+  padding: 24px 32px;
+  background: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   position: sticky;
   top: 0;
   z-index: 10;
 }
 
-.logo {
-  font-size: 18px;
-  font-weight: bold;
-  color: #333;
+.header-left {
+  display: flex;
+  align-items: center;
+
+  .home-logo {
+    width: 48px;
+    height: 48px;
+    margin-right: 16px;
+  }
+
+  .logo-text {
+    font-size: 36px;
+    font-weight: 500;
+    color: #333;
+  }
 }
 
-.header-icon {
-  width: 24px;
-  height: 24px;
-  background-color: #ddd;
-  border-radius: 50%;
+.message-icon {
+  width: 48px;
+  height: 48px;
+  padding: 8px;
 }
 
 .content {

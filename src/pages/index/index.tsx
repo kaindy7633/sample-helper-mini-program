@@ -1,6 +1,9 @@
 import React from "react";
-import { View, Text, ScrollView } from "@tarojs/components";
+import { View, Text, ScrollView, Image } from "@tarojs/components";
+import Taro from "@tarojs/taro";
 import "./index.less";
+import homeLogo from "../../assets/images/ico_homelogo.png";
+import messageIcon from "../../assets/images/ico_msg.png";
 
 /**
  * 主页组件
@@ -71,12 +74,29 @@ const Index: React.FC = () => {
     },
   ];
 
+  /**
+   * 跳转到消息中心
+   */
+  const handleMessageClick = () => {
+    Taro.navigateTo({
+      url: "/pages/message/index",
+    });
+  };
+
   return (
     <View className="container">
       {/* 头部区域 */}
       <View className="header">
-        <View className="logo">抽样助手</View>
-        <View className="header-icon"></View>
+        <View className="header-left">
+          <Image className="home-logo" src={homeLogo} mode="aspectFit" />
+          <Text className="logo-text">抽样助手</Text>
+        </View>
+        <Image
+          className="message-icon"
+          src={messageIcon}
+          mode="aspectFit"
+          onClick={handleMessageClick}
+        />
       </View>
 
       {/* 内容区域 */}
