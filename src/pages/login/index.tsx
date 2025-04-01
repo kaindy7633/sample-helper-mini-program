@@ -62,8 +62,16 @@ const LoginPage: React.FC = (): JSX.Element => {
 
       // 判断登录是否成功
       if (data && data.status === true) {
+        console.log("登录成功，存储用户信息");
+
+        // 存储完整的登录响应数据
+        Taro.setStorageSync("user_info", JSON.stringify(data));
+        console.log("用户信息已保存到Storage");
+
+        // 更新到状态管理中
         userStore.setUserInfo(data);
         userStore.setToken(data?.SSOTGTCookie);
+        console.log("用户信息已更新到Store中");
 
         // 跳转到首页
         Taro.switchTab({

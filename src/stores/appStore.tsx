@@ -32,7 +32,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
   // 设置主题
   const setTheme = (newTheme: ThemeType) => {
     setThemeState(newTheme);
-    Taro.setStorageSync("app_theme", newTheme);
+    Taro.setStorage({
+      key: "app_theme",
+      data: newTheme,
+    });
   };
 
   // 设置加载状态
@@ -74,7 +77,10 @@ export const getAppState = (): AppState => {
       setTheme: (newTheme) => {
         if (appState) {
           appState.theme = newTheme;
-          Taro.setStorageSync("app_theme", newTheme);
+          Taro.setStorage({
+            key: "app_theme",
+            data: newTheme,
+          });
         }
       },
       setLoading: (isLoading) => {

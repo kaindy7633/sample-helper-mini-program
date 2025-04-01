@@ -95,8 +95,8 @@ sample-helper-mini-program/
 2. 组件按需引入：
 
 ```typescript
-import { Button } from "@taroify/core"
-import "@taroify/core/button/style" // 导入对应组件样式
+import { Button } from "@taroify/core";
+import "@taroify/core/button/style"; // 导入对应组件样式
 ```
 
 ### 状态管理
@@ -107,8 +107,8 @@ import "@taroify/core/button/style" // 导入对应组件样式
 
 ```typescript
 // stores/userStore.tsx
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-import Taro from '@tarojs/taro';
+import React, { createContext, useContext, useState, ReactNode } from "react";
+import Taro from "@tarojs/taro";
 
 // 定义状态类型
 interface UserState {
@@ -122,26 +122,33 @@ interface UserState {
 const UserContext = createContext<UserState | null>(null);
 
 // Provider 组件
-export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const UserProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const [userInfo, setUserInfoState] = useState(null);
   const isLoggedIn = !!userInfo;
-  
+
   const setUserInfo = (info: any) => {
     setUserInfoState(info);
     if (info) {
-      Taro.setStorageSync('user_info', JSON.stringify(info));
+      Taro.setStorage("user_info", JSON.stringify(info));
     }
   };
-  
+
   const logout = () => {
     setUserInfoState(null);
-    Taro.removeStorageSync('user_info');
+    Taro.removeStorageSync("user_info");
   };
-  
+
   return (
-    <UserContext.Provider value={{
-      userInfo, isLoggedIn, setUserInfo, logout
-    }}>
+    <UserContext.Provider
+      value={{
+        userInfo,
+        isLoggedIn,
+        setUserInfo,
+        logout,
+      }}
+    >
       {children}
     </UserContext.Provider>
   );
@@ -151,7 +158,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 export const useUser = () => {
   const context = useContext(UserContext);
   if (!context) {
-    throw new Error('useUser 必须在 UserProvider 内部使用');
+    throw new Error("useUser 必须在 UserProvider 内部使用");
   }
   return context;
 };

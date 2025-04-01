@@ -27,6 +27,8 @@ export interface RequestOptions
   loadingText?: string;
   /** 是否显示错误提示 */
   showErrorToast?: boolean;
+  /** 是否在401时自动跳转到登录页 */
+  autoRedirectOnUnauthorized?: boolean;
 }
 
 /**
@@ -36,10 +38,14 @@ const DEFAULT_OPTIONS: Partial<RequestOptions> = {
   showLoading: false,
   loadingText: "加载中...",
   showErrorToast: true,
+  autoRedirectOnUnauthorized: true,
 };
 
 /** 业务接口域名 */
 const BASE_URL = API_BASE_URL;
+
+// 标记是否已经显示了401提示，避免重复提示
+let hasShownUnauthorizedToast = false;
 
 /**
  * 统一请求函数
@@ -48,7 +54,13 @@ const BASE_URL = API_BASE_URL;
  */
 export default function request<T = any>(options: RequestOptions): Promise<T> {
   const opt = { ...DEFAULT_OPTIONS, ...options };
-  const { showLoading, loadingText, showErrorToast, ...requestOptions } = opt;
+  const {
+    showLoading,
+    loadingText,
+    showErrorToast,
+    autoRedirectOnUnauthorized,
+    ...requestOptions
+  } = opt;
 
   // 显示loading
   if (showLoading) {
@@ -84,8 +96,40 @@ export default function request<T = any>(options: RequestOptions): Promise<T> {
             }
             reject(result);
           }
+        } else if (statusCode === 401) {
+          // 处理 401 未授权错误（token失效）
+          if (autoRedirectOnUnauthorized && !hasShownUnauthorizedToast) {
+            hasShownUnauthorizedToast = true;
+
+            console.log("Token已失效，需要重新登录");
+
+            Taro.showToast({
+              title: "登录已过期，请重新登录",
+              icon: "none",
+              duration: 2000,
+              complete: () => {
+                // 清除登录信息
+                try {
+                  Taro.removeStorageSync("user_info");
+                  Taro.removeStorageSync("user_token");
+                  console.log("已清除过期的登录信息");
+                } catch (e) {
+                  console.error("清除登录信息失败:", e);
+                }
+
+                // 延迟跳转，确保Toast能够显示
+                setTimeout(() => {
+                  hasShownUnauthorizedToast = false;
+                  Taro.redirectTo({
+                    url: "/pages/login/index",
+                  });
+                }, 1500);
+              },
+            });
+          }
+          reject(res);
         } else {
-          // HTTP 错误
+          // 其他 HTTP 错误
           if (showErrorToast) {
             Taro.showToast({
               title: `请求错误: ${statusCode}`,
