@@ -66,12 +66,12 @@ const Index: React.FC = (): JSX.Element => {
     }
   };
 
-  // 模拟范围抽样数据
+  // 修改为靶向抽样数据
   const scopeSamplingItems = [
     {
       id: 1,
       title: "抽样重复查询",
-      icon: "scope-query",
+      icon: "targeted-sampling",
     },
   ];
 
@@ -193,9 +193,9 @@ const Index: React.FC = (): JSX.Element => {
           </Swiper>
         </View>
 
-        {/* 范围抽样 */}
+        {/* 范围抽样 - 修改为靶向抽样 */}
         <View className="section">
-          <View className="section-title">范围抽样</View>
+          <View className="section-title">靶向抽样</View>
           <View className="items-grid">
             {scopeSamplingItems.map((item) => (
               <View key={item.id} className="grid-item">
