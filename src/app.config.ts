@@ -1,14 +1,30 @@
 export default defineAppConfig({
   pages: [
-    "pages/start/index",
-    "pages/login/index",
     "pages/index/index",
-    "pages/task/index",
-    "pages/study/index",
-    "pages/mine/index",
-    "pages/agreement/index",
-    "pages/privacy/index",
     "pages/message/index",
+    "SPATask/pages/task/index",
+    "SPAStudy/pages/study/index",
+    "SPAMine/pages/mine/index",
+  ],
+  subPackages: [
+    // 登录模块分包
+    {
+      root: "SPALogin",
+      name: "subpackage-login",
+      pages: ["pages/login/index"],
+    },
+    // 起始页模块分包
+    {
+      root: "SPAStartPage",
+      name: "subpackage-start-page",
+      pages: ["pages/start/index"],
+    },
+    // 协议模块分包
+    {
+      root: "SPAProtocol",
+      name: "subpackage-protocol",
+      pages: ["pages/agreement/index", "pages/privacy/index"],
+    },
   ],
   window: {
     backgroundTextStyle: "light",
@@ -29,19 +45,19 @@ export default defineAppConfig({
         selectedIconPath: "assets/images/tabbar/tab_home_active.png",
       },
       {
-        pagePath: "pages/task/index",
+        pagePath: "SPATask/pages/task/index",
         text: "任务",
         iconPath: "assets/images/tabbar/tab_task.png",
         selectedIconPath: "assets/images/tabbar/tab_task_active.png",
       },
       {
-        pagePath: "pages/study/index",
+        pagePath: "SPAStudy/pages/study/index",
         text: "学习",
         iconPath: "assets/images/tabbar/tab_app.png",
         selectedIconPath: "assets/images/tabbar/tab_app_active.png",
       },
       {
-        pagePath: "pages/mine/index",
+        pagePath: "SPAMine/pages/mine/index",
         text: "我的",
         iconPath: "assets/images/tabbar/tab_mine.png",
         selectedIconPath: "assets/images/tabbar/tab_mine_active.png",

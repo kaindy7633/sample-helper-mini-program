@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { View, Text, Input, InputProps } from "@tarojs/components";
 import Taro from "@tarojs/taro";
-import { useUser } from "../../stores/userStore";
-import { LOGIN_API_BASE_URL, API_PATHS } from "../../services/config";
+import { useUser } from "../../../stores/userStore";
+import { LOGIN_API_BASE_URL, API_PATHS } from "../../../services/config";
 import "./index.less";
 
 /**

@@ -2,10 +2,10 @@
 import React, { useEffect } from "react";
 import { View, Image } from "@tarojs/components";
 import Taro from "@tarojs/taro";
-import { useUser } from "../../stores/userStore";
+import { useUser } from "../../../stores/userStore";
 // 正确引用图片资源
-import splashImg from "../../assets/images/start-page/ico_splash.png";
-import logoImg from "../../assets/images/start-page/ico_splashlopgo.png";
+import splashImg from "../../../assets/images/start-page/ico_splash.png";
+import logoImg from "../../../assets/images/start-page/ico_splashlopgo.png";
 import "./index.less";
 
 /**
