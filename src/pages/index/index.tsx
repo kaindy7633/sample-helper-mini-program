@@ -34,6 +34,9 @@ const Index: React.FC = (): JSX.Element => {
     chickenSoupContent: "",
   });
 
+  // 添加状态控制滚动文字显示
+  const [showScrollText, setShowScrollText] = useState<boolean>(false);
+
   // 应用菜单状态
   // const [menuItems, setMenuItems] = useState<Record<string, any>[]>([]);
 
@@ -58,6 +61,13 @@ const Index: React.FC = (): JSX.Element => {
   useEffect(() => {
     fetchFrontPageData();
     fetchAppMenu();
+
+    // 延迟显示滚动文字，确保首次渲染时样式已经正确应用
+    const timer = setTimeout(() => {
+      setShowScrollText(true);
+    }, 500);
+
+    return () => clearTimeout(timer);
   }, []);
 
   /**
@@ -107,7 +117,6 @@ const Index: React.FC = (): JSX.Element => {
       // 将学习模块菜单数据存储到storage中
       if (studyList && studyList.length > 0) {
         Taro.setStorageSync("study_menu_list", studyList);
-        console.log("学习模块菜单数据已保存到storage", studyList);
       }
     } catch (error) {
       console.error("获取应用菜单失败:", error);
@@ -180,9 +189,11 @@ const Index: React.FC = (): JSX.Element => {
                 </Text>
               </View>
               <View className="scroll-text">
-                <Text className="quote">
-                  {frontPageData.chickenSoupContent}
-                </Text>
+                {showScrollText && (
+                  <Text className="quote">
+                    {frontPageData.chickenSoupContent}
+                  </Text>
+                )}
               </View>
             </View>
           </View>

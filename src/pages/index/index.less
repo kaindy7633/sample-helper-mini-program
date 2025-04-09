@@ -297,17 +297,21 @@
         overflow: hidden;
         height: 36px;
         background: #F8F8F8;
-        padding: 0 16px;
+        border-radius: 4px;
 
         .quote {
           position: absolute;
+          width: 100%;
+          line-height: 36px;
+          height: 36px;
           left: 0;
-          top: 45%;
-          transform: translateY(-50%);
+          top: 0;
           font-size: 24px;
           color: #666;
           white-space: nowrap;
           padding: 0 16px;
+          box-sizing: border-box;
+          text-align: center;
           animation: scrollText 20s linear infinite;
         }
       }
@@ -317,10 +321,10 @@
 
 @keyframes scrollText {
   0% {
-    transform: translate(100%, -50%);
+    transform: translateX(100%);
   }
   100% {
-    transform: translate(-100%, -50%);
+    transform: translateX(-100%);
   }
 }
 
@@ -328,10 +332,16 @@
   margin: 0 16px;
   border-radius: 12px;
   overflow: hidden;
-  height: 300px;
+  position: relative;
+  width: calc(100% - 32px);
+  padding-top: calc((387 / 1014) * (100% - 32px));
+  height: 0;
 }
 
 .banner-swiper {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   border-radius: 12px;
@@ -340,6 +350,6 @@
 .banner-image {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   border-radius: 12px;
 }
