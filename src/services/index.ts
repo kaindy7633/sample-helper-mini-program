@@ -2,5 +2,7 @@
  * API 导出入口
  */
 import * as userApi from "./user";
+import * as appApi from "./app";
+import * as bannerApi from "./banner";
 
-export { userApi };
+export { userApi, appApi, bannerApi };

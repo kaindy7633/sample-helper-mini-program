@@ -4,14 +4,10 @@ import { Swiper } from "@taroify/core";
 import Taro from "@tarojs/taro";
 import { getFrontPageData } from "../../services/home";
 import type { FrontPageData } from "../../services/home";
+import { appApi } from "../../services";
 import "./index.less";
 import homeLogo from "../../assets/images/ico_homelogo.png";
 import messageIcon from "../../assets/images/ico_msg.png";
-// 导入轮播图图片
-import swiper01 from "../../assets/images/temp/swiper-01.png";
-import swiper02 from "../../assets/images/temp/swiper-02.png";
-import swiper03 from "../../assets/images/temp/swiper-03.png";
-import swiper04 from "../../assets/images/temp/swiper-04.png";
 
 /**
  * 移除字符串中的HTML标签
@@ -37,22 +33,20 @@ const Index: React.FC = (): JSX.Element => {
     chickenSoupContent: "",
   });
 
-  // 修改轮播图数据为本地数据
-  const [bannerList] = useState<
-    Array<{ id: number; resourceUrl: string; resourceName: string }>
-  >([
-    { id: 1, resourceUrl: swiper01, resourceName: "轮播图1" },
-    { id: 2, resourceUrl: swiper02, resourceName: "轮播图2" },
-    { id: 3, resourceUrl: swiper03, resourceName: "轮播图3" },
-    { id: 4, resourceUrl: swiper04, resourceName: "轮播图4" },
-  ]);
+  // 应用菜单状态
+  const [menuItems, setMenuItems] = useState<appApi.AppMenuItem[]>([]);
+
+  // 轮播图数据
+  const [bannerList, setBannerList] = useState<Record<string, any>[]>([]);
 
   useEffect(() => {
     fetchFrontPageData();
+    fetchAppMenu();
   }, []);
 
   /**
    * 获取首页数据
+   * 这里也包含了轮播图的数据
    */
   const fetchFrontPageData = async () => {
     try {
@@ -61,8 +55,21 @@ const Index: React.FC = (): JSX.Element => {
         weather: data.weather,
         chickenSoupContent: removeHtmlTags(data.chickenSoupContent),
       });
+      setBannerList(data.resourceList || []);
     } catch (error) {
       console.error("获取首页数据失败:", error);
+    }
+  };
+
+  /**
+   * 获取应用菜单
+   */
+  const fetchAppMenu = async () => {
+    try {
+      const menuData = await appApi.getAppMenu();
+      setMenuItems(menuData);
+    } catch (error) {
+      console.error("获取应用菜单失败:", error);
     }
   };
 
@@ -179,18 +186,20 @@ const Index: React.FC = (): JSX.Element => {
 
         {/* 轮播图区域 */}
         <View className="banner-section">
-          <Swiper className="banner-swiper" autoplay={4000} lazyRender>
-            <Swiper.Indicator />
-            {bannerList.map((banner) => (
-              <Swiper.Item key={banner.id}>
-                <Image
-                  className="banner-image"
-                  src={banner.resourceUrl}
-                  mode="aspectFill"
-                />
-              </Swiper.Item>
-            ))}
-          </Swiper>
+          {bannerList.length > 0 && (
+            <Swiper className="banner-swiper" autoplay={4000} lazyRender>
+              <Swiper.Indicator />
+              {bannerList.map((banner) => (
+                <Swiper.Item key={banner.id}>
+                  <Image
+                    className="banner-image"
+                    src={banner.resourceUrl}
+                    mode="aspectFill"
+                  />
+                </Swiper.Item>
+              ))}
+            </Swiper>
+          )}
         </View>
 
         {/* 范围抽样 - 修改为靶向抽样 */}

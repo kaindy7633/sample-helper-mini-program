@@ -1,5 +1,6 @@
 export default defineAppConfig({
   pages: [
+    "SPAStartPage/pages/start/index",
     "pages/index/index",
     "pages/message/index",
     "SPATask/pages/task/index",
@@ -12,12 +13,6 @@ export default defineAppConfig({
       root: "SPALogin",
       name: "subpackage-login",
       pages: ["pages/login/index"],
-    },
-    // 起始页模块分包
-    {
-      root: "SPAStartPage",
-      name: "subpackage-start-page",
-      pages: ["pages/start/index"],
     },
     // 协议模块分包
     {

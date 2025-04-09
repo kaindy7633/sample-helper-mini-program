@@ -20,6 +20,7 @@ export interface WeatherData {
 export interface FrontPageData {
   weather: WeatherData;
   chickenSoupContent: string;
+  resourceList?: Record<string, any>[];
 }
 
 /**

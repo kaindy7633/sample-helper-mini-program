@@ -23,4 +23,15 @@ export const API_PATHS = {
     // 待确认消息
     SAMPLE_MESSAGE: "/api/sampleMessage/toBeConfirmedCount",
   },
+  // 应用
+  APP: {
+    // 获取应用菜单
+    GET_APP_MENU: "/api/app/consumer/getAppMenu",
+  },
+  // 轮播图
+  BANNER: {
+    // 获取轮播图数据
+    GET_EXCHANGE_DETAILS:
+      "/api/smartCoinsManagement/exchange/appExchangeDetails",
+  },
 };
