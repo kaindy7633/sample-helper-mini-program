@@ -34,4 +34,9 @@ export const API_PATHS = {
     GET_EXCHANGE_DETAILS:
       "/api/smartCoinsManagement/exchange/appExchangeDetails",
   },
+  // 学习模块
+  LEARN: {
+    // 常见问题列表
+    COMMON_PROBLEM: "/api/learnPublish/commonProblem/pageList",
+  },
 };

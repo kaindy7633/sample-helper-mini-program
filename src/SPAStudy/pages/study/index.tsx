@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from "react";
 import { View, Text, Image } from "@tarojs/components";
 import Taro from "@tarojs/taro";
@@ -147,9 +148,22 @@ const StudyPage: React.FC = () => {
   const [newsItems, setNewsItems] = useState<Record<string, any>[]>([]);
   // 加载状态
   const [loading, setLoading] = useState<boolean>(false);
+  // 常见问题数据状态
+  const [faqItems, setFaqItems] = useState<Record<string, any>[]>([]);
+  // 常见问题加载状态
+  const [faqLoading, setFaqLoading] = useState<boolean>(false);
+  // 常见问题分页状态
+  const [faqPagination, setFaqPagination] = useState({
+    current: 1,
+    size: 10,
+    total: 0,
+    hasMore: false,
+  });
 
-  // 获取学习专题数据
-  useEffect(() => {
+  /**
+   * 获取学习专题数据
+   */
+  const fetchStudyTopics = () => {
     try {
       const studyMenuList = Taro.getStorageSync("study_menu_list");
       if (studyMenuList && studyMenuList.length > 0) {
@@ -168,11 +182,16 @@ const StudyPage: React.FC = () => {
     } catch (error) {
       console.error("获取学习模块菜单数据失败:", error);
     }
-  }, []);
+  };
 
-  // 获取最新动态数据
+  // 获取所有数据
   useEffect(() => {
+    // 获取学习专题数据
+    fetchStudyTopics();
+    // 获取最新动态数据
     fetchNewsMessages();
+    // 获取常见问题数据
+    fetchCommonProblems();
   }, []);
 
   /**
@@ -227,44 +246,85 @@ const StudyPage: React.FC = () => {
     }
   };
 
-  // 常见问题数据
-  const faqItems = [
-    {
-      id: 1,
-      icon: "Q",
-      question: "电子签章出现问题，如何处理？",
-      answer:
-        "建议在新国抽首页登录页找联系方式进行联系。服务群内反馈即可，企业微信客服实时受理。",
-    },
-    {
-      id: 2,
-      icon: "Q",
-      question: "新国抽上异议处置结果撤回异议是申请情况下选择？",
-      answer:
-        "老国抽系统，异议分三部，登记，受理，处置。现在新系统只有登记和处置两个步骤，具体操作请咨询你呼我应。",
-    },
-    {
-      id: 3,
-      icon: "Q",
-      question: "10+3+1限制条件范围？",
-      answer:
-        "仅在星级报送分类任务中限制重复抽检有效，对于市市县县级别无法限制。",
-    },
-    {
-      id: 4,
-      icon: "Q",
-      question: "样品信息如需修改",
-      answer:
-        "修改后下载数据中心模块数据，仍是之前的数据数据，注意在3小时后下载数据才能更新为已调整数据。",
-    },
-    {
-      id: 5,
-      icon: "Q",
-      question: "报告签章时报错？",
-      answer:
-        "签章时检签章规则判断错误，检查检测模块的签章配置的规则和信步云是否一致。",
-    },
-  ];
+  /**
+   * 获取常见问题数据
+   * @param refresh 是否刷新列表
+   */
+  const fetchCommonProblems = async (refresh = true) => {
+    try {
+      setFaqLoading(true);
+      const currentPage = refresh ? 1 : faqPagination.current + 1;
+
+      const response = await messageApi.getCommonProblems({
+        current: currentPage,
+        size: faqPagination.size,
+      });
+
+      console.log("获取到的常见问题数据:", response);
+
+      // 处理数据并更新状态
+      if (response && response.records && response.records.length > 0) {
+        // 将API返回的数据转换为组件需要的格式
+        const formattedFaqs = response.records.map((item, index) => {
+          // HTML内容处理：移除HTML标签
+          const cleanAnswer = item.answer.replace(/<\/?[^>]+(>|$)/g, "");
+
+          return {
+            id: item.id || String(index + 1),
+            icon: "Q",
+            question: item.problemName,
+            answer: cleanAnswer,
+          };
+        });
+
+        // 更新分页信息
+        const total = Number(response.total) || 0;
+        const current = Number(response.current) || 1;
+        const size = Number(response.size) || 10;
+        const hasMore = total > current * size;
+
+        // 更新状态 - 如果是加载更多则追加数据，否则替换数据
+        setFaqItems(refresh ? formattedFaqs : [...faqItems, ...formattedFaqs]);
+        setFaqPagination({
+          current: current,
+          size: size,
+          total: total,
+          hasMore: hasMore,
+        });
+      } else {
+        // 如果没有数据，则清空列表
+        if (refresh) {
+          setFaqItems([]);
+          setFaqPagination({
+            current: 1,
+            size: 10,
+            total: 0,
+            hasMore: false,
+          });
+        }
+      }
+    } catch (error) {
+      console.error("获取常见问题数据失败:", error);
+      if (refresh) {
+        setFaqItems([]);
+        setFaqPagination({
+          current: 1,
+          size: 10,
+          total: 0,
+          hasMore: false,
+        });
+      }
+    } finally {
+      setFaqLoading(false);
+    }
+  };
+
+  /**
+   * 加载更多常见问题
+   */
+  const loadMoreFaq = () => {
+    fetchCommonProblems(false);
+  };
 
   return (
     <View className="container">
@@ -321,14 +381,28 @@ const StudyPage: React.FC = () => {
       <View className="section">
         <View className="section-title">常见问题</View>
         <View className="faq-list">
-          {faqItems.map((item) => (
-            <QuestionCard
-              key={item.id}
-              icon={item.icon}
-              question={item.question}
-              answer={item.answer}
-            />
-          ))}
+          {faqLoading && faqItems.length === 0 ? (
+            <View className="loading-text">加载中...</View>
+          ) : faqItems.length > 0 ? (
+            <>
+              {faqItems.map((item) => (
+                <QuestionCard
+                  key={item.id}
+                  icon={item.icon}
+                  question={item.question}
+                  answer={item.answer}
+                />
+              ))}
+
+              {faqPagination.hasMore && (
+                <View className="load-more-btn" onClick={loadMoreFaq}>
+                  {faqLoading ? "加载中..." : "加载更多"}
+                </View>
+              )}
+            </>
+          ) : (
+            <View className="empty-text">暂无常见问题</View>
+          )}
         </View>
       </View>
     </View>
