@@ -34,10 +34,25 @@ const Index: React.FC = (): JSX.Element => {
   });
 
   // 应用菜单状态
-  const [menuItems, setMenuItems] = useState<appApi.AppMenuItem[]>([]);
+  const [menuItems, setMenuItems] = useState<Record<string, any>[]>([]);
 
   // 轮播图数据
   const [bannerList, setBannerList] = useState<Record<string, any>[]>([]);
+
+  // 靶向抽样模块菜单
+  const [scopeSamplingItems, setScopeSamplingItems] = useState<
+    Record<string, any>[]
+  >([]);
+
+  // 规范抽备模块菜单
+  const [normalSamplingItems, setNormalSamplingItems] = useState<
+    Record<string, any>[]
+  >([]);
+
+  // 便捷工具模块菜单
+  const [convenientToolsItems, setConvenientToolsItems] = useState<
+    Record<string, any>[]
+  >([]);
 
   useEffect(() => {
     fetchFrontPageData();
@@ -63,52 +78,34 @@ const Index: React.FC = (): JSX.Element => {
 
   /**
    * 获取应用菜单
+   * 这里其实是首页应用中的菜单数据
    */
   const fetchAppMenu = async () => {
     try {
-      const menuData = await appApi.getAppMenu();
-      setMenuItems(menuData);
+      const { studyList, tools } = await appApi.getAppMenu();
+      setMenuItems(tools);
+      setScopeSamplingItems(
+        tools?.filter(
+          (item: Record<string, any>) => item.appName === "抽样重复查询"
+        )
+      );
+      setNormalSamplingItems(
+        tools?.filter(
+          (item: Record<string, any>) =>
+            item.appName === "食品分类查询" ||
+            item.appName === "标法查询" ||
+            item.appName === "抽样单验证"
+        )
+      );
+      setConvenientToolsItems(
+        tools?.filter(
+          (item: Record<string, any>) => item.appName === "企业证照查询"
+        )
+      );
     } catch (error) {
       console.error("获取应用菜单失败:", error);
     }
   };
-
-  // 修改为靶向抽样数据
-  const scopeSamplingItems = [
-    {
-      id: 1,
-      title: "抽样重复查询",
-      icon: "targeted-sampling",
-    },
-  ];
-
-  // 模拟规范抽备数据
-  const normalSamplingItems = [
-    {
-      id: 1,
-      title: "食品分类查询",
-      icon: "food_category_search",
-    },
-    {
-      id: 2,
-      title: "标法查询",
-      icon: "standard-law",
-    },
-    {
-      id: 3,
-      title: "抽样单验证",
-      icon: "sample-verify",
-    },
-  ];
-
-  // 模拟便捷工具数据
-  const toolItems = [
-    {
-      id: 1,
-      title: "企业证照查询",
-      icon: "company-license",
-    },
-  ];
 
   // 模拟社区讨论数据
   const communityPosts = [
@@ -208,8 +205,12 @@ const Index: React.FC = (): JSX.Element => {
           <View className="items-grid">
             {scopeSamplingItems.map((item) => (
               <View key={item.id} className="grid-item">
-                <View className={`item-icon ${item.icon}`}></View>
-                <Text className="item-title">{item.title}</Text>
+                <Image
+                  className="item-icon"
+                  src={item.appIcon}
+                  mode="aspectFit"
+                />
+                <Text className="item-title">{item.appName}</Text>
               </View>
             ))}
           </View>
@@ -221,8 +222,12 @@ const Index: React.FC = (): JSX.Element => {
           <View className="items-grid">
             {normalSamplingItems.map((item) => (
               <View key={item.id} className="grid-item">
-                <View className={`item-icon ${item.icon}`}></View>
-                <Text className="item-title">{item.title}</Text>
+                <Image
+                  className="item-icon"
+                  src={item.appIcon}
+                  mode="aspectFit"
+                />
+                <Text className="item-title">{item.appName}</Text>
               </View>
             ))}
           </View>
@@ -232,10 +237,14 @@ const Index: React.FC = (): JSX.Element => {
         <View className="section">
           <View className="section-title">便捷工具</View>
           <View className="items-grid">
-            {toolItems.map((item) => (
+            {convenientToolsItems.map((item) => (
               <View key={item.id} className="grid-item">
-                <View className={`item-icon ${item.icon}`}></View>
-                <Text className="item-title">{item.title}</Text>
+                <Image
+                  className="item-icon"
+                  src={item.appIcon}
+                  mode="aspectFit"
+                />
+                <Text className="item-title">{item.appName}</Text>
               </View>
             ))}
           </View>
