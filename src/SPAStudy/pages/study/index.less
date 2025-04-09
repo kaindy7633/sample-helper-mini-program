@@ -4,6 +4,7 @@
   width: 100%;
   min-height: 100vh;
   background-color: #f7f8fa;
+  padding: 0 16px;
 }
 
 /* 头部样式 */
@@ -52,17 +53,12 @@
 
 /* 标签样式 */
 .now-badge {
-  display: inline-block;
-  padding: 4px 8px;
-  background-color: #0066ff;
-  color: #fff;
-  font-size: 24px;
-  border-radius: 4px;
+  width: 60rpx;
+  height: 30rpx;
   margin-right: 10px;
-  font-style: italic;
 }
 
-/* 学习专题网格 */
+/* 学习专题网格 - 更新为设计图样式 */
 .topics-grid {
   display: flex;
   flex-wrap: wrap;
@@ -70,16 +66,16 @@
 }
 
 .topic-item {
-  width: 20%;
+  width: 25%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 30px;
 }
 
 .topic-icon-bg {
-  width: 80px;
-  height: 80px;
+  width: 120rpx;
+  height: 120rpx;
   border-radius: 50%;
   display: flex;
   justify-content: center;
@@ -88,14 +84,47 @@
 }
 
 .topic-icon-text {
-  font-size: 32px;
+  font-size: 36rpx;
   font-weight: bold;
 }
 
+.topic-icon-image {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  margin-bottom: 10px;
+}
+
 .topic-title {
-  font-size: 28px;
+  font-size: 28rpx;
   color: #333;
   text-align: center;
+}
+
+/* 专题图标特定颜色 */
+.topic-color-red {
+  background-color: rgba(255, 82, 82, 0.1);
+  color: #ff5252;
+}
+
+.topic-color-blue {
+  background-color: rgba(33, 150, 243, 0.1);
+  color: #2196f3;
+}
+
+.topic-color-orange {
+  background-color: rgba(255, 152, 0, 0.1);
+  color: #ff9800;
+}
+
+.topic-color-green {
+  background-color: rgba(76, 175, 80, 0.1);
+  color: #4caf50;
+}
+
+.topic-color-indigo {
+  background-color: rgba(63, 81, 181, 0.1);
+  color: #3f51b5;
 }
 
 /* 新闻列表样式 */
@@ -123,6 +152,21 @@
 .news-date {
   font-size: 24px;
   color: #999;
+}
+
+/* 加载和空状态样式 */
+.loading-text {
+  padding: 30px 0;
+  text-align: center;
+  color: #999;
+  font-size: 28px;
+}
+
+.empty-text {
+  padding: 30px 0;
+  text-align: center;
+  color: #999;
+  font-size: 28px;
 }
 
 /* 常见问题列表样式 */

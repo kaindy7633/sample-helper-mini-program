@@ -102,6 +102,12 @@ const Index: React.FC = (): JSX.Element => {
           (item: Record<string, any>) => item.appName === "企业证照查询"
         )
       );
+
+      // 将学习模块菜单数据存储到storage中
+      if (studyList && studyList.length > 0) {
+        Taro.setStorageSync("study_menu_list", studyList);
+        console.log("学习模块菜单数据已保存到storage", studyList);
+      }
     } catch (error) {
       console.error("获取应用菜单失败:", error);
     }

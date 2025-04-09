@@ -21,7 +21,7 @@ export const API_PATHS = {
     // 首页数据
     FRONT_PAGE: "/api/app/consumer/frontPage",
     // 待确认消息
-    SAMPLE_MESSAGE: "/api/sampleMessage/toBeConfirmedCount",
+    SAMPLE_MESSAGE: "/api/app/center/latestNews",
   },
   // 应用
   APP: {

@@ -1,5 +1,9 @@
-import React from "react";
-import { View, Text } from "@tarojs/components";
+import React, { useState, useEffect } from "react";
+import { View, Text, Image } from "@tarojs/components";
+import Taro from "@tarojs/taro";
+import { messageApi } from "../../../services";
+import type { NewsResponse, NewsItem } from "../../../services/message";
+import icoNew from "../../../assets/images/ico_new.png";
 import "./index.less";
 
 /**
@@ -33,14 +37,57 @@ const QuestionCard: React.FC<{
  * @param {Object} props - 组件属性
  * @param {string} props.title - 新闻标题
  * @param {string} props.date - 发布日期
+ * @param {string} props.fileUrl - PDF文件URL
  * @returns {JSX.Element} 新闻卡片组件
  */
-const NewsCard: React.FC<{ title: string; date: string }> = ({
-  title,
-  date,
-}) => {
+const NewsCard: React.FC<{
+  title: string;
+  date: string;
+  fileUrl?: string;
+}> = ({ title, date, fileUrl }) => {
+  /**
+   * 处理点击新闻卡片事件
+   */
+  const handleNewsClick = () => {
+    if (fileUrl) {
+      // 打开PDF文件
+      Taro.showLoading({ title: "文件加载中..." });
+
+      // 使用Taro.downloadFile下载文件后再打开
+      Taro.downloadFile({
+        url: fileUrl,
+        success: (res) => {
+          Taro.hideLoading();
+          if (res.statusCode === 200) {
+            Taro.openDocument({
+              filePath: res.tempFilePath,
+              success: () => {
+                console.log("打开文档成功");
+              },
+              fail: (error) => {
+                console.error("打开文档失败", error);
+                Taro.showToast({
+                  title: "无法打开文件",
+                  icon: "none",
+                });
+              },
+            });
+          }
+        },
+        fail: (error) => {
+          Taro.hideLoading();
+          console.error("下载文件失败", error);
+          Taro.showToast({
+            title: "文件下载失败",
+            icon: "none",
+          });
+        },
+      });
+    }
+  };
+
   return (
-    <View className="news-card">
+    <View className="news-card" onClick={handleNewsClick}>
       <View className="news-title">{title}</View>
       <View className="news-date">{date}</View>
     </View>
@@ -48,72 +95,157 @@ const NewsCard: React.FC<{ title: string; date: string }> = ({
 };
 
 /**
+ * 获取图标颜色类名
+ * @param index 索引号
+ * @returns 对应的颜色类名
+ */
+const getColorClass = (index: number): string => {
+  const colorClasses = [
+    "topic-color-red",
+    "topic-color-blue",
+    "topic-color-orange",
+    "topic-color-green",
+    "topic-color-indigo",
+  ];
+  return colorClasses[index % colorClasses.length];
+};
+
+/**
+ * 格式化日期
+ * @param dateString 日期字符串
+ * @returns 格式化后的日期（YYYY-MM-DD）
+ */
+const formatDate = (dateString?: string): string => {
+  if (!dateString) return "";
+  try {
+    const date = new Date(dateString);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+      2,
+      "0"
+    )}-${String(date.getDate()).padStart(2, "0")}`;
+  } catch (error) {
+    console.error("日期格式化失败:", error);
+    return dateString;
+  }
+};
+
+/**
  * 学习页面组件
  * @returns {JSX.Element} 学习页面
  */
 const StudyPage: React.FC = () => {
-  // 学习专题数据
-  const studyTopics = [
+  // 学习专题数据状态
+  const [studyTopics, setStudyTopics] = useState<Record<string, any>[]>([
     {
       id: 1,
-      icon: "细则",
-      bgColor: "#ffebee",
-      iconColor: "#ff5252",
+      icon: "细",
       title: "抽样细则",
     },
     {
       id: 2,
-      icon: "规范",
-      bgColor: "#e3f2fd",
-      iconColor: "#2196f3",
+      icon: "范",
       title: "抽样规范",
     },
     {
       id: 3,
       icon: "?",
-      bgColor: "#fff8e1",
-      iconColor: "#ff9800",
       title: "常见问题",
     },
     {
       id: 4,
       icon: "食",
-      bgColor: "#e8f5e9",
-      iconColor: "#4caf50",
       title: "食安云学堂",
     },
     {
       id: 5,
-      icon: "视",
-      bgColor: "#e8eaf6",
-      iconColor: "#3f51b5",
+      icon: "讯",
       title: "大家再聊",
     },
-  ];
+  ]);
 
-  // 最新动态数据
-  const newsItems = [
-    {
-      id: 1,
-      title: "国家食品安全监督抽检实施细则（2025年版）抽样板块",
-      date: "2025-03-13",
-    },
-    {
-      id: 2,
-      title: "2025年国抽细则变化",
-      date: "2025-03-13",
-    },
-    {
-      id: 3,
-      title: "全国食品安全监督抽检实施细则（2024年版）",
-      date: "2024-02-23",
-    },
-    {
-      id: 4,
-      title: "国家食品安全抽样检验抽样单填表说明",
-      date: "2024-02-23",
-    },
-  ];
+  // 最新动态数据状态
+  const [newsItems, setNewsItems] = useState<Record<string, any>[]>([]);
+  // 加载状态
+  const [loading, setLoading] = useState<boolean>(false);
+
+  // 获取学习专题数据
+  useEffect(() => {
+    try {
+      const studyMenuList = Taro.getStorageSync("study_menu_list");
+      if (studyMenuList && studyMenuList.length > 0) {
+        console.log("从storage获取到学习模块菜单数据", studyMenuList);
+
+        // 转换数据格式
+        const formattedTopics = studyMenuList.map((item, index) => ({
+          id: item.id || index + 1,
+          appIcon: item.appIcon, // 服务器返回的图标URL
+          icon: item.appName?.substring(0, 1) || "?", // 取名称第一个字作为图标
+          title: item.appName || item.name || "未命名",
+        }));
+
+        setStudyTopics(formattedTopics);
+      }
+    } catch (error) {
+      console.error("获取学习模块菜单数据失败:", error);
+    }
+  }, []);
+
+  // 获取最新动态数据
+  useEffect(() => {
+    fetchNewsMessages();
+  }, []);
+
+  /**
+   * 获取最新动态数据
+   */
+  const fetchNewsMessages = async () => {
+    try {
+      setLoading(true);
+      const response = await messageApi.getNewsMessages();
+      console.log("获取到的最新动态数据:", response);
+
+      // 处理数据并更新状态
+      if (response && response.length > 0) {
+        // 格式化日期并按日期降序排序
+        const formattedMessages = response
+          .map((item) => ({
+            id: item.id || String(Math.random()),
+            title: item.newsName,
+            publishDate: item.newsTime,
+            fileUrl: item.originalFileUrl,
+            fileName: item.originalFileName,
+          }))
+          .sort((a, b) => {
+            // 降序排序（最新的在前面）
+            return (
+              new Date(b.publishDate).getTime() -
+              new Date(a.publishDate).getTime()
+            );
+          });
+
+        setNewsItems(formattedMessages);
+      } else {
+        setNewsItems([]);
+      }
+    } catch (error) {
+      console.error("获取最新动态数据失败:", error);
+      // 设置默认数据
+      setNewsItems([
+        {
+          id: "1",
+          title: "国家食品安全监督抽检实施细则（2025年版）抽样板块",
+          publishDate: "2025-03-13",
+        },
+        {
+          id: "2",
+          title: "2025年国抽细则变化",
+          publishDate: "2025-03-13",
+        },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // 常见问题数据
   const faqItems = [
@@ -156,28 +288,23 @@ const StudyPage: React.FC = () => {
 
   return (
     <View className="container">
-      {/* 头部标题 */}
-      <View className="study-header">
-        <Text className="study-title">学习</Text>
-      </View>
-
       {/* 学习专题部分 */}
       <View className="section">
         <View className="section-title">学习专题</View>
         <View className="topics-grid">
-          {studyTopics.map((topic) => (
+          {studyTopics.map((topic, index) => (
             <View className="topic-item" key={topic.id}>
-              <View
-                className="topic-icon-bg"
-                style={{ backgroundColor: topic.bgColor }}
-              >
-                <Text
-                  className="topic-icon-text"
-                  style={{ color: topic.iconColor }}
-                >
-                  {topic.icon}
-                </Text>
-              </View>
+              {topic.appIcon ? (
+                <Image
+                  className="topic-icon-image"
+                  src={topic.appIcon}
+                  mode="aspectFit"
+                />
+              ) : (
+                <View className={`topic-icon-bg ${getColorClass(index)}`}>
+                  <Text className="topic-icon-text">{topic.icon}</Text>
+                </View>
+              )}
               <Text className="topic-title">{topic.title}</Text>
             </View>
           ))}
@@ -188,14 +315,25 @@ const StudyPage: React.FC = () => {
       <View className="section">
         <View className="section-header">
           <View className="section-title-container">
-            <View className="now-badge">Now</View>
+            <Image className="now-badge" src={icoNew} mode="aspectFit" />
             <Text className="section-title">最新动态</Text>
           </View>
         </View>
         <View className="news-list">
-          {newsItems.map((item) => (
-            <NewsCard key={item.id} title={item.title} date={item.date} />
-          ))}
+          {loading ? (
+            <View className="loading-text">加载中...</View>
+          ) : newsItems.length > 0 ? (
+            newsItems.map((item) => (
+              <NewsCard
+                key={item.id}
+                title={item.title}
+                date={item.publishDate || ""}
+                fileUrl={item.fileUrl}
+              />
+            ))
+          ) : (
+            <View className="empty-text">暂无最新动态</View>
+          )}
         </View>
       </View>
 
