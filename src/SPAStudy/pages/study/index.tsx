@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { View, Text, Image } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import { messageApi } from "../../../services";
-import type { NewsResponse, NewsItem } from "../../../services/message";
 import icoNew from "../../../assets/images/ico_new.png";
 import "./index.less";
 
@@ -108,25 +107,6 @@ const getColorClass = (index: number): string => {
     "topic-color-indigo",
   ];
   return colorClasses[index % colorClasses.length];
-};
-
-/**
- * 格式化日期
- * @param dateString 日期字符串
- * @returns 格式化后的日期（YYYY-MM-DD）
- */
-const formatDate = (dateString?: string): string => {
-  if (!dateString) return "";
-  try {
-    const date = new Date(dateString);
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
-      2,
-      "0"
-    )}-${String(date.getDate()).padStart(2, "0")}`;
-  } catch (error) {
-    console.error("日期格式化失败:", error);
-    return dateString;
-  }
 };
 
 /**
