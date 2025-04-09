@@ -35,7 +35,7 @@ const Index: React.FC = (): JSX.Element => {
   });
 
   // 应用菜单状态
-  const [menuItems, setMenuItems] = useState<Record<string, any>[]>([]);
+  // const [menuItems, setMenuItems] = useState<Record<string, any>[]>([]);
 
   // 轮播图数据
   const [bannerList, setBannerList] = useState<Record<string, any>[]>([]);
@@ -84,7 +84,7 @@ const Index: React.FC = (): JSX.Element => {
   const fetchAppMenu = async () => {
     try {
       const { studyList, tools } = await appApi.getAppMenu();
-      setMenuItems(tools);
+      // setMenuItems(tools);
       setScopeSamplingItems(
         tools?.filter(
           (item: Record<string, any>) => item.appName === "抽样重复查询"
@@ -139,7 +139,7 @@ const Index: React.FC = (): JSX.Element => {
    */
   const handleMessageClick = () => {
     Taro.navigateTo({
-      url: "/pages/message/index",
+      url: "/SPAMessage/pages/message/index",
     });
   };
 

@@ -2,7 +2,6 @@ export default defineAppConfig({
   pages: [
     "SPAStartPage/pages/start/index",
     "pages/index/index",
-    "pages/message/index",
     "SPATask/pages/task/index",
     "SPAStudy/pages/study/index",
     "SPAMine/pages/mine/index",
@@ -19,6 +18,12 @@ export default defineAppConfig({
       root: "SPAProtocol",
       name: "subpackage-protocol",
       pages: ["pages/agreement/index", "pages/privacy/index"],
+    },
+    // 消息中心分包
+    {
+      root: "SPAMessage",
+      name: "subpackage-message",
+      pages: ["pages/message/index"],
     },
   ],
   window: {
