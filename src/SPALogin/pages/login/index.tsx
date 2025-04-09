@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { View, Text, Input, InputProps } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import { useUser } from "../../../stores/userStore";
-import { LOGIN_API_BASE_URL, API_PATHS } from "../../../services/config";
+import { API_PATHS, API_BASE_URL } from "../../../services/config";
 import "./index.less";
 
 /**
@@ -46,12 +46,11 @@ const LoginPage: React.FC = (): JSX.Element => {
 
       // 调用登录API
       const res = await Taro.request({
-        url: `${LOGIN_API_BASE_URL}${API_PATHS.USER.LOGIN}`,
+        url: `${API_BASE_URL}${API_PATHS.USER.LOGIN}`,
         method: "POST",
         data: {
-          name: username,
-          pwd: password,
-          level: 1,
+          username,
+          password,
         },
       });
 
@@ -61,16 +60,17 @@ const LoginPage: React.FC = (): JSX.Element => {
       const { data } = res;
 
       // 判断登录是否成功
-      if (data && data.status === true) {
+      if (data && data?.token) {
         console.log("登录成功，存储用户信息");
 
         // 存储完整的登录响应数据
+        // TODO 这里后端仅仅返回了一个 token，没有返回用户信息
         Taro.setStorageSync("user_info", JSON.stringify(data));
         console.log("用户信息已保存到Storage");
 
         // 更新到状态管理中
         userStore.setUserInfo(data);
-        userStore.setToken(data?.SSOTGTCookie);
+        userStore.setToken(data?.token);
         console.log("用户信息已更新到Store中");
 
         // 跳转到首页

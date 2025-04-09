@@ -55,12 +55,10 @@ function getRequestHeader(): Record<string, string> {
   const headers: Record<string, string> = {};
   try {
     const token = Taro.getStorageSync("user_token");
-    const userInfo = JSON.parse(Taro.getStorageSync("user_info"));
+    // const userInfo = JSON.parse(Taro.getStorageSync("user_info"));
 
-    if (token && userInfo?.ebs_username) {
-      headers[
-        "Authorization"
-      ] = `SSOTGTCookie=${token};ebs_username=${userInfo?.ebs_username}`;
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
     }
   } catch (error) {
     console.error("获取认证信息失败:", error);
@@ -149,7 +147,7 @@ export default function request<T = any>(options: RequestOptions): Promise<T> {
                 setTimeout(() => {
                   hasShownUnauthorizedToast = false;
                   Taro.redirectTo({
-                    url: "/pages/login/index",
+                    url: "/SPALogin/pages/login/index",
                   });
                 }, 1500);
               },

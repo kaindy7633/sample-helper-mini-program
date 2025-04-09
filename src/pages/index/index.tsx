@@ -80,7 +80,7 @@ const Index: React.FC = (): JSX.Element => {
     {
       id: 1,
       title: "食品分类查询",
-      icon: "food-category",
+      icon: "food_category_search",
     },
     {
       id: 2,
