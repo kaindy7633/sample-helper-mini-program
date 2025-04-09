@@ -38,7 +38,7 @@ const StartPage: React.FC = () => {
           } else {
             // 未登录，跳转到登录页
             Taro.redirectTo({
-              url: "/pages/login/index",
+              url: "/SPALogin/pages/login/index",
             });
           }
         }, 2000);
@@ -47,7 +47,7 @@ const StartPage: React.FC = () => {
         // 发生错误时，默认跳转到登录页
         setTimeout(() => {
           Taro.redirectTo({
-            url: "/pages/login/index",
+            url: "/SPALogin/pages/login/index",
           });
         }, 1000);
       }

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useEffect, useState } from "react";
 import { View, Text, ScrollView, Image } from "@tarojs/components";
 import { Swiper } from "@taroify/core";
