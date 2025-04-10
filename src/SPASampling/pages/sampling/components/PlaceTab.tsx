@@ -8,7 +8,14 @@ import "@taroify/core/picker/style";
 import "@taroify/core/field/style";
 import "@taroify/core/button/style";
 import "@taroify/core/popup/style";
-import { Search, Arrow, Replay, Location, Aim } from "@taroify/icons";
+import {
+  Search,
+  Arrow,
+  ArrowDown,
+  Replay,
+  Location,
+  Aim,
+} from "@taroify/icons";
 import "@taroify/icons/style";
 
 /**
@@ -55,6 +62,7 @@ const PlaceTab: React.FC = (): JSX.Element => {
           </View>
           <Text className="location-text">{location}</Text>
         </View>
+        <View className="location-divider"></View>
         <View className="refresh-button">
           <Text className="refresh-text">重新定位</Text>
           <Aim />
@@ -72,24 +80,35 @@ const PlaceTab: React.FC = (): JSX.Element => {
             placeholder="输入场所名称/营业执照号/社会信用代码"
           />
         </View>
-        <Button color="primary" size="small" onClick={handleSearch}>
+        <Button
+          variant="text"
+          color="primary"
+          size="small"
+          onClick={handleSearch}
+        >
           搜索
         </Button>
       </View>
 
       {/* 筛选条件 */}
       <View className="filter-section">
-        <View
-          className="filter-item"
-          onClick={() => setDistancePriorityOpen(true)}
-        >
-          <Text>{distancePriority}</Text>
-          <Arrow />
+        <View className="filter-left">
+          <View
+            className="filter-item"
+            onClick={() => setDistancePriorityOpen(true)}
+          >
+            <Text>{distancePriority}</Text>
+            <ArrowDown />
+          </View>
+          <View
+            className="filter-item"
+            onClick={() => setCompanyTypeOpen(true)}
+          >
+            <Text>{companyType}</Text>
+            <ArrowDown />
+          </View>
         </View>
-        <View className="filter-item" onClick={() => setCompanyTypeOpen(true)}>
-          <Text>{companyType}</Text>
-          <Arrow />
-        </View>
+        <View className="filter-divider"></View>
         <View className="reset-button" onClick={handleReset}>
           <Replay size="18" />
           <Text>重置</Text>
