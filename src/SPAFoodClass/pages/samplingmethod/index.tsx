@@ -41,13 +41,9 @@ const SamplingMethodPage: React.FC = () => {
           </View>
         </View>
 
-        {/* 步骤条 */}
+        {/* 步骤条 - 按照官方文档使用默认样式 */}
         <View className="steps-container">
-          <Steps
-            className="custom-steps"
-            value={categories.length}
-            direction="vertical"
-          >
+          <Steps value={categories.length} direction="vertical">
             {categories.map((category, index) => (
               <Steps.Step key={`step-${index}`}>{category}</Steps.Step>
             ))}

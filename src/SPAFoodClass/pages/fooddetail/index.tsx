@@ -151,57 +151,34 @@ const FoodDetailPage: React.FC = () => {
         <View className="food-content">
           {/* 使用Steps组件显示分类层级 */}
           <View className="classification-steps">
-            <Steps className="custom-steps" value={4} direction="vertical">
+            <Steps value={4} direction="vertical">
               {foodItem.firstCategory && (
-                <Steps.Step>
-                  <View className="step-content">
-                    <Text className="step-value">{foodItem.firstCategory}</Text>
-                  </View>
-                </Steps.Step>
+                <Steps.Step>{foodItem.firstCategory}</Steps.Step>
               )}
               {foodItem.secondCategory && (
-                <Steps.Step>
-                  <View className="step-content">
-                    <Text className="step-value">
-                      {foodItem.secondCategory}
-                    </Text>
-                  </View>
-                </Steps.Step>
+                <Steps.Step>{foodItem.secondCategory}</Steps.Step>
               )}
               {foodItem.thirdCategory && (
-                <Steps.Step>
-                  <View className="step-content">
-                    <Text className="step-value">{foodItem.thirdCategory}</Text>
-                  </View>
-                </Steps.Step>
+                <Steps.Step>{foodItem.thirdCategory}</Steps.Step>
               )}
               {foodItem.fourthCategory && (
-                <Steps.Step>
-                  <View className="step-content">
-                    <Text className="step-value">
-                      {foodItem.fourthCategory}
-                    </Text>
-                  </View>
-                </Steps.Step>
+                <Steps.Step>{foodItem.fourthCategory}</Steps.Step>
               )}
               {foodItem.ordinarySample &&
                 foodItem.ordinarySample.length > 0 && (
                   <Steps.Step>
-                    <View className="step-content">
-                      <View className="sample-info">
-                        <View className="sample-item">
-                          <Text className="sample-label">抽样数量:</Text>
-                          <Text className="sample-value">
-                            {foodItem.ordinarySample[0].minSampleQuantity ||
-                              "-"}
-                          </Text>
-                        </View>
-                        <View className="sample-item">
-                          <Text className="sample-label">备样数量:</Text>
-                          <Text className="sample-value">
-                            {foodItem.ordinarySample[0].minBackupWeight || "-"}
-                          </Text>
-                        </View>
+                    <View className="sample-info">
+                      <View className="sample-item">
+                        <Text className="sample-label">抽样数量:</Text>
+                        <Text className="sample-value">
+                          {foodItem.ordinarySample[0].minSampleQuantity || "-"}
+                        </Text>
+                      </View>
+                      <View className="sample-item">
+                        <Text className="sample-label">备样数量:</Text>
+                        <Text className="sample-value">
+                          {foodItem.ordinarySample[0].minBackupWeight || "-"}
+                        </Text>
                       </View>
                     </View>
                   </Steps.Step>
