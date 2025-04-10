@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { View, Text, Input, InputProps } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import { useUser } from "../../../stores/userStore";
-import { API_PATHS, API_BASE_URL } from "../../../services/config";
+import { userApi } from "../../../services";
 import "./index.less";
 
 /**
@@ -40,37 +40,28 @@ const LoginPage: React.FC = (): JSX.Element => {
     }
 
     try {
-      Taro.showLoading({
-        title: "登录中...",
+      // 使用封装好的login方法进行登录
+      const userData = await userApi.login({
+        username,
+        password,
       });
 
-      // 调用登录API
-      const res = await Taro.request({
-        url: `${API_BASE_URL}${API_PATHS.USER.LOGIN}`,
-        method: "POST",
-        data: {
-          username,
-          password,
-        },
-      });
+      // 从返回数据中提取token
+      const { token, ...userInfo } = userData;
 
-      Taro.hideLoading();
-
-      // 解构响应数据
-      const { data } = res;
-
-      // 判断登录是否成功
-      if (data && data?.token) {
+      if (token) {
         console.log("登录成功，存储用户信息");
 
-        // 存储完整的登录响应数据
-        // TODO 这里后端仅仅返回了一个 token，没有返回用户信息
-        Taro.setStorageSync("user_info", JSON.stringify(data));
+        // 单独存储token
+        Taro.setStorageSync("user_token", token);
+
+        // 存储用户信息(不包含token)
+        Taro.setStorageSync("user_info", JSON.stringify(userInfo));
         console.log("用户信息已保存到Storage");
 
         // 更新到状态管理中
-        userStore.setUserInfo(data);
-        userStore.setToken(data?.token);
+        userStore.setUserInfo(userInfo);
+        userStore.setToken(token);
         console.log("用户信息已更新到Store中");
 
         // 跳转到首页
@@ -78,23 +69,20 @@ const LoginPage: React.FC = (): JSX.Element => {
           url: "/pages/index/index",
         });
       } else {
-        // 登录失败，显示服务器返回的错误信息
+        // 登录失败，显示错误信息
         Taro.showModal({
           title: "登录失败",
-          content: data?.msg || "登录失败，请稍后再试",
+          content: "获取用户令牌失败，请稍后再试",
           showCancel: false,
         });
       }
     } catch (error) {
       console.error("登录异常：", error);
-      Taro.hideLoading();
       Taro.showToast({
         title: "登录失败，请检查网络后重试",
         icon: "none",
         duration: 2000,
       });
-    } finally {
-      Taro.hideLoading();
     }
   };
 
@@ -110,7 +98,7 @@ const LoginPage: React.FC = (): JSX.Element => {
    */
   const goToUserAgreement = () => {
     Taro.navigateTo({
-      url: "/pages/agreement/index",
+      url: "/SPAProtocol/pages/agreement/index",
     });
   };
 
@@ -119,7 +107,7 @@ const LoginPage: React.FC = (): JSX.Element => {
    */
   const goToPrivacyPolicy = () => {
     Taro.navigateTo({
-      url: "/pages/privacy/index",
+      url: "/SPAProtocol/pages/privacy/index",
     });
   };
 

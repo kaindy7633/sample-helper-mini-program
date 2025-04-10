@@ -2,14 +2,46 @@
  * 用户相关服务
  */
 import request from "./request";
+import { API_PATHS } from "./config";
+
+/**
+ * 登录响应数据接口
+ */
+export interface LoginResponse {
+  orgId: string;
+  orgName: string;
+  id: string;
+  account: string | null;
+  userName: string;
+  phoneNumber: string | null;
+  email: string | null;
+  status: string | null;
+  orgProvince: string;
+  orgCity: string | null;
+  orgArea: string | null;
+  orgAddress: string;
+  orgContact: string | null;
+  orgTel: string | null;
+  orgEmail: string | null;
+  orgZip: string | null;
+  orgFax: string | null;
+  userRealName: string | null;
+  realName: string;
+  groups: string | null;
+  userLimsLevel: string | null;
+  token: string;
+}
 
 /**
  * 用户登录
  * @param params 登录参数
  */
-export async function login(params: API.LoginParams): Promise<API.LoginResult> {
-  return request<API.LoginResult>({
-    url: "/api/user/login",
+export async function login(params: {
+  username: string;
+  password: string;
+}): Promise<LoginResponse> {
+  return request<LoginResponse>({
+    url: API_PATHS.USER.LOGIN,
     method: "POST",
     data: params,
     showLoading: true,
