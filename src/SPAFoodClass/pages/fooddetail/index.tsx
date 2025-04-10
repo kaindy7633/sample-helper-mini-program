@@ -17,7 +17,7 @@ import "./index.less";
  */
 const FoodDetailPage: React.FC = () => {
   const router = useRouter();
-  const { name } = router.params;
+  const { name, barCode } = router.params;
 
   // 食品详情
   const [foodInfo, setFoodInfo] = useState<foodClassApi.FoodClassInfo | null>(
@@ -96,8 +96,9 @@ const FoodDetailPage: React.FC = () => {
    * 加载食品详情
    */
   const loadFoodDetail = async () => {
-    if (!name) {
-      setErrorMsg("未指定食品名称");
+    // 如果没有名称也没有条形码，则显示错误
+    if (!name && !barCode) {
+      setErrorMsg("未指定食品名称或条形码");
       setLoading(false);
       return;
     }
@@ -105,7 +106,20 @@ const FoodDetailPage: React.FC = () => {
     try {
       setLoading(true);
       showToast("loading", "正在查询...");
-      const result = await foodClassApi.identifyFood(decodeURIComponent(name));
+
+      let result;
+      if (barCode) {
+        // 使用条形码查询
+        result = await foodClassApi.identifyFood(
+          `barCode=${decodeURIComponent(barCode)}`
+        );
+      } else if (name) {
+        // 使用食品名称查询
+        result = await foodClassApi.identifyFood(decodeURIComponent(name));
+      } else {
+        throw new Error("缺少必要参数");
+      }
+
       setFoodInfo(result);
       setToast((prev) => ({ ...prev, open: false }));
     } catch (err) {

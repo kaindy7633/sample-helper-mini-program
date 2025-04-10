@@ -99,15 +99,26 @@ export async function getSearchItems(): Promise<SearchItemsResponse> {
 }
 
 /**
- * 根据名称识别食品分类
- * @param name 食品名称
+ * 根据名称或条形码识别食品分类
+ * @param query 食品名称或条形码查询参数
  * @returns 食品分类信息
  */
-export async function identifyFood(name: string): Promise<FoodClassInfo> {
+export async function identifyFood(query: string): Promise<FoodClassInfo> {
+  // 判断是名称查询还是条形码查询
+  const isBarCode = query.startsWith("barCode=");
+
+  let url = `${API_PATHS.FOOD_CLASS.IDENTIFY_FOOD}?`;
+
+  if (isBarCode) {
+    // 条形码查询，query已经包含了barCode=xxx格式
+    url += query;
+  } else {
+    // 名称查询
+    url += `name=${encodeURIComponent(query)}`;
+  }
+
   return request<FoodClassInfo>({
-    url: `${API_PATHS.FOOD_CLASS.IDENTIFY_FOOD}?name=${encodeURIComponent(
-      name
-    )}`,
+    url,
     method: "GET",
   });
 }
