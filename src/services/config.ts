@@ -39,4 +39,11 @@ export const API_PATHS = {
     // 常见问题列表
     COMMON_PROBLEM: "/api/learnPublish/commonProblem/pageList",
   },
+  // 食品分类查询
+  FOOD_CLASS: {
+    // 获取搜索项
+    SEARCH_ITEMS: "/api/app/center/searchItem",
+    // 识别食品
+    IDENTIFY_FOOD: "/api/app/center/identify",
+  },
 };

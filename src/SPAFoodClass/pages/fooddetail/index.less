@@ -1,0 +1,234 @@
+.fooddetail-container {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #f7f7f7;
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-header {
+  display: flex;
+  align-items: center;
+  height: 88px;
+  background-color: #fff;
+  padding: 0 30px;
+  position: relative;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.back-btn {
+  padding: 10px;
+  margin-right: 10px;
+}
+
+.page-title {
+  font-size: 36px;
+  font-weight: 500;
+  color: #333;
+  flex: 1;
+  text-align: center;
+  margin-right: 50px; /* 为了平衡左侧的返回按钮 */
+}
+
+.search-info {
+  padding: 24px 30px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.search-text {
+  font-size: 28px;
+  color: #666;
+}
+
+.content {
+  flex: 1;
+  padding: 20px;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+}
+
+.error-container,
+.empty-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  flex-direction: column;
+}
+
+.error-text,
+.empty-text {
+  font-size: 30px;
+  color: #999;
+  text-align: center;
+}
+
+.food-results {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.food-card {
+  background-color: #f0f7ff;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.food-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  background-color: #e5efff;
+  padding: 16px;
+  border-radius: 8px;
+}
+
+.food-name {
+  font-size: 32px;
+  font-weight: bold;
+  color: #333;
+}
+
+.food-ratio {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.ratio-text {
+  font-size: 32px;
+  font-weight: bold;
+  color: #3f7efd;
+}
+
+.batch-text {
+  font-size: 24px;
+  color: #666;
+  margin-top: 4px;
+}
+
+.food-content {
+  padding: 10px 0;
+  display: flex;
+}
+
+.classification-steps {
+  flex: 1;
+}
+
+/* 步骤条样式自定义 */
+.custom-steps {
+  width: 100%;
+
+  .taroify-step__title {
+    line-height: 1.5;
+  }
+
+  .taroify-step--active,
+  .taroify-step--completed {
+    .taroify-step__circle {
+      background-color: #3f7efd;
+    }
+
+    .taroify-step__line {
+      display: none; /* 隐藏分割线 */
+    }
+  }
+}
+
+.step-content {
+  display: flex;
+  align-items: center;
+  padding: 4px 0;
+}
+
+.step-title {
+  font-size: 26px;
+  color: #666;
+  margin-right: 20px;
+  min-width: 120px;
+}
+
+.step-value {
+  font-size: 28px;
+  color: #333;
+  font-weight: 500;
+}
+
+.sample-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sample-item {
+  display: flex;
+  align-items: center;
+}
+
+.sample-label {
+  font-size: 26px;
+  color: #666;
+  margin-right: 10px;
+}
+
+.sample-value {
+  font-size: 28px;
+  color: #333;
+}
+
+.sampling-button-container {
+  display: flex;
+  justify-content: center;
+  margin: 30px 0 15px;
+}
+
+.sampling-button {
+  border-radius: 30px;
+  font-size: 28px;
+  color: #3f7efd;
+  border-color: #3f7efd;
+  padding: 0 40px;
+}
+
+.confusion-tip {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 15px;
+  margin-top: 20px;
+}
+
+.confusion-text {
+  font-size: 26px;
+  color: #ff9800;
+  line-height: 1.5;
+}
+
+/* 分隔符样式 */
+.divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.divider-line {
+  height: 1px;
+  background-color: #e0e0e0;
+  flex: 1;
+}
+
+.divider-star {
+  margin: 0 10px;
+  color: #3f7efd;
+  font-size: 24px;
+}

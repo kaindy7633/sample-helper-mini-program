@@ -10,6 +10,7 @@
     "framework": "React"
   },
   "scripts": {
+    "// 说明": "使用SASS_DEPRECATION_WARNINGS=false环境变量禁用Sass弃用警告信息",
     "build:weapp": "SASS_DEPRECATION_WARNINGS=false taro build --type weapp",
     "build:swan": "SASS_DEPRECATION_WARNINGS=false taro build --type swan",
     "build:alipay": "SASS_DEPRECATION_WARNINGS=false taro build --type alipay",
@@ -29,7 +30,8 @@
     "dev:jd": "SASS_DEPRECATION_WARNINGS=false npm run build:jd -- --watch",
     "dev:harmony-hybrid": "SASS_DEPRECATION_WARNINGS=false npm run build:harmony-hybrid -- --watch",
     "sass:find-imports": "find node_modules/@taroify -name \"*.scss\" | xargs grep -l \"@import\"",
-    "// 说明": "使用SASS_DEPRECATION_WARNINGS=false环境变量禁用Sass弃用警告信息"
+    "// dev:we命令说明": "使用NODE_ENV=production环境变量, 构建生产环境的小程序代码",
+    "dev:we": "NODE_ENV=production taro build --type weapp --watch"
   },
   "browserslist": [
     "defaults and fully supports es6-module",

@@ -247,7 +247,24 @@ const Index: React.FC = (): JSX.Element => {
           <View className="section-title">规范抽备</View>
           <View className="items-grid">
             {normalSamplingItems.map((item) => (
-              <View key={item.id} className="grid-item">
+              <View
+                key={item.id}
+                className="grid-item"
+                onClick={() => {
+                  // 根据应用名称跳转到不同页面
+                  if (item.appName === "食品分类查询") {
+                    Taro.navigateTo({
+                      url: "/SPAFoodClass/pages/foodclass/index",
+                    });
+                  } else {
+                    // 其他应用暂时没有实现，可以显示提示
+                    Taro.showToast({
+                      title: `${item.appName}功能开发中`,
+                      icon: "none",
+                    });
+                  }
+                }}
+              >
                 <Image
                   className="item-icon"
                   src={item.appIcon}

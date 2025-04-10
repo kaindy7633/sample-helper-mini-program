@@ -1,0 +1,132 @@
+.samplingmethod-container {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #f7f7f7;
+  display: flex;
+  flex-direction: column;
+}
+
+.header-section {
+  padding: 30px 20px;
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+.food-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.food-name {
+  font-size: 36px;
+  font-weight: bold;
+  color: #333;
+}
+
+.food-ratio {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.ratio-text {
+  font-size: 36px;
+  font-weight: bold;
+  color: #3f7efd;
+}
+
+.batch-text {
+  font-size: 24px;
+  color: #666;
+  margin-top: 4px;
+}
+
+.steps-container {
+  padding: 10px 0 20px;
+}
+
+/* 步骤条样式自定义 */
+.custom-steps {
+  width: 100%;
+  .taroify-step {
+    padding-bottom: 24px;
+  }
+
+  .taroify-step__title {
+    font-size: 30px;
+    line-height: 1.5;
+    color: #333;
+  }
+
+  .taroify-step__circle {
+    background-color: #3f7efd;
+  }
+
+  .taroify-step__line {
+    display: none;
+  }
+
+  .taroify-step--completed {
+    .taroify-step__circle {
+      background-color: #3f7efd;
+    }
+
+    .taroify-step__line {
+      display: none;
+    }
+  }
+}
+
+.method-button {
+  display: flex;
+  justify-content: center;
+  padding: 20px 0;
+  background: #fff;
+  border-top: 1px solid #f0f0f0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.method-label {
+  font-size: 30px;
+  color: #3f7efd;
+  font-weight: 500;
+}
+
+.content {
+  flex: 1;
+  padding: 20px;
+}
+
+.method-title {
+  font-size: 32px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 20px;
+  display: block;
+}
+
+.method-card {
+  background-color: #fff;
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+}
+
+.method-title {
+  font-size: 32px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 20px;
+  display: block;
+}
+
+.method-text {
+  font-size: 28px;
+  color: #333;
+  line-height: 1.8;
+  white-space: pre-line;
+  text-align: justify;
+}

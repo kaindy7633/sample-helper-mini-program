@@ -31,6 +31,16 @@ export default defineAppConfig({
       name: "subpackage-sampling",
       pages: ["pages/sampling/index"],
     },
+    // 食品分类查询分包
+    {
+      root: "SPAFoodClass",
+      name: "subpackage-foodclass",
+      pages: [
+        "pages/foodclass/index",
+        "pages/fooddetail/index",
+        "pages/samplingmethod/index",
+      ],
+    },
   ],
   window: {
     backgroundTextStyle: "light",
