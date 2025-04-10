@@ -222,7 +222,15 @@ const Index: React.FC = (): JSX.Element => {
           <View className="section-title">靶向抽样</View>
           <View className="items-grid">
             {scopeSamplingItems.map((item) => (
-              <View key={item.id} className="grid-item">
+              <View
+                key={item.id}
+                className="grid-item"
+                onClick={() => {
+                  Taro.navigateTo({
+                    url: "/SPASampling/pages/sampling/index",
+                  });
+                }}
+              >
                 <Image
                   className="item-icon"
                   src={item.appIcon}

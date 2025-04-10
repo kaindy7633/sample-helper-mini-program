@@ -25,6 +25,12 @@ export default defineAppConfig({
       name: "subpackage-message",
       pages: ["pages/message/index"],
     },
+    // 抽样重复查询分包
+    {
+      root: "SPASampling",
+      name: "subpackage-sampling",
+      pages: ["pages/sampling/index"],
+    },
   ],
   window: {
     backgroundTextStyle: "light",
