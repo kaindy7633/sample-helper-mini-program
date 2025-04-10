@@ -122,3 +122,14 @@ export async function identifyFood(query: string): Promise<FoodClassInfo> {
     method: "GET",
   });
 }
+
+/**
+ * 删除历史搜索记录
+ * @returns 删除结果
+ */
+export async function deleteSearchHistory(): Promise<any> {
+  return request({
+    url: "/api/app/center/deleteSearchHistory",
+    method: "GET",
+  });
+}

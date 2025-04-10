@@ -10,7 +10,6 @@ import "@taroify/core/toast/style";
 import "@taroify/core/dialog/style";
 import "@taroify/icons/style";
 import { foodClassApi } from "../../../services";
-import request from "../../../services/request";
 import SearchIcon from "../../../assets/images/ico_search_grey.png";
 import "./index.less";
 
@@ -120,15 +119,12 @@ const FoodClassPage: React.FC = () => {
   /**
    * 删除历史记录
    */
-  const deleteSearchHistory = async () => {
+  const handleDeleteHistory = async () => {
     try {
       showToast("loading", "正在删除...");
 
       // 调用删除历史记录API
-      await request({
-        url: "/api/app/center/deleteSearchHistory",
-        method: "GET",
-      });
+      await foodClassApi.deleteSearchHistory();
 
       // 更新本地状态
       setHistoryList([]);
@@ -272,7 +268,7 @@ const FoodClassPage: React.FC = () => {
             color="primary"
             onClick={() => {
               setDialogVisible(false);
-              deleteSearchHistory();
+              handleDeleteHistory();
             }}
           >
             确认
