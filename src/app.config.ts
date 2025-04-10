@@ -70,4 +70,12 @@ export default defineAppConfig({
       },
     ],
   },
+  // 申请获取位置信息权限
+  requiredPrivateInfos: ["getLocation"],
+  // 详细描述位置权限
+  permission: {
+    "scope.userLocation": {
+      desc: "你的位置信息将用于获取附近的场所信息",
+    },
+  },
 });
