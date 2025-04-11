@@ -64,6 +64,9 @@ const LoginPage: React.FC = (): JSX.Element => {
         userStore.setToken(token);
         console.log("用户信息已更新到Store中");
 
+        // 确保关闭所有loading，防止loading在页面跳转后仍然显示
+        Taro.hideLoading();
+
         // 跳转到首页
         Taro.switchTab({
           url: "/pages/index/index",

@@ -129,6 +129,11 @@ export default function request<T = any>(options: RequestOptions): Promise<T> {
 
             console.log("Token已失效，需要重新登录");
 
+            // 确保先关闭loading
+            if (showLoading) {
+              Taro.hideLoading();
+            }
+
             Taro.showToast({
               title: "登录已过期，请重新登录",
               icon: "none",

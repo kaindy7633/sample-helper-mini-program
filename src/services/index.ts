@@ -6,5 +6,6 @@ import * as appApi from "./app";
 import * as bannerApi from "./banner";
 import * as messageApi from "./message";
 import * as foodClassApi from "./foodclass";
+import * as taskApi from "./task";
 
-export { userApi, appApi, bannerApi, messageApi, foodClassApi };
+export { userApi, appApi, bannerApi, messageApi, foodClassApi, taskApi };

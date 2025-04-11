@@ -1,9 +1,12 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from "react";
 import { View, Text, ScrollView, Input, Image } from "@tarojs/components";
-import { Button } from "@taroify/core";
+import { Button, Empty } from "@taroify/core";
 import { ArrowDown, Replay } from "@taroify/icons";
 import Taro from "@tarojs/taro";
 import SearchIcon from "../../../assets/images/ico_search_grey.png";
+import { taskApi } from "../../../services";
 import "./index.less";
 
 /**
@@ -103,33 +106,23 @@ const TaskPage: React.FC = (): JSX.Element => {
       setLoading(true);
       const isFinish = activeTab === "pending" ? "0" : "1";
 
-      // 调用API获取任务列表
-      const response = await Taro.request({
-        url: "/planTask/detailPage",
-        method: "GET",
-        data: {
-          current,
-          size: pageSize,
-          isFinish,
-          classA: filterA !== "报送分类A" ? filterA : undefined,
-          classB: filterB !== "报送分类B" ? filterB : undefined,
-          keyword: keyword || undefined,
-        },
+      // 使用taskApi服务获取任务列表
+      const result = await taskApi.getPlanTasks({
+        current,
+        size: pageSize,
+        isFinish,
+        classA: filterA !== "报送分类A" ? filterA : undefined,
+        classB: filterB !== "报送分类B" ? filterB : undefined,
+        keyword: keyword || undefined,
       });
 
-      const { data } = response;
-
-      if (data.code === 200 && data.success) {
-        if (activeTab === "pending") {
-          setPendingTasks(data.data.records);
-        } else {
-          setCompletedTasks(data.data.records);
-        }
-
-        setTotal(Number(data.data.total));
+      if (activeTab === "pending") {
+        setPendingTasks(result.records);
       } else {
-        showToastMessage("error", "获取任务列表失败");
+        setCompletedTasks(result.records);
       }
+
+      setTotal(Number(result.total));
     } catch (error) {
       console.error("获取任务列表失败:", error);
       showToastMessage("error", "获取任务列表失败");
@@ -144,16 +137,13 @@ const TaskPage: React.FC = (): JSX.Element => {
    */
   const handleCompleteTask = async (taskId: string) => {
     try {
-      const response = await Taro.request({
-        url: `/planTask/complete/${taskId}`,
-        method: "POST",
-      });
+      const success = await taskApi.completeTask(taskId);
 
-      if (response.data.code === 200 && response.data.success) {
+      if (success) {
         showToastMessage("success", "完成任务");
         fetchTaskList();
       } else {
-        showToastMessage("error", response.data.msg || "操作失败");
+        showToastMessage("error", "操作失败");
       }
     } catch (error) {
       console.error("完成任务失败:", error);
@@ -167,16 +157,13 @@ const TaskPage: React.FC = (): JSX.Element => {
    */
   const handleCancelTask = async (taskId: string) => {
     try {
-      const response = await Taro.request({
-        url: `/planTask/cancel/${taskId}`,
-        method: "POST",
-      });
+      const success = await taskApi.cancelTask(taskId);
 
-      if (response.data.code === 200 && response.data.success) {
+      if (success) {
         showToastMessage("error", "取消任务");
         fetchTaskList();
       } else {
-        showToastMessage("error", response.data.msg || "操作失败");
+        showToastMessage("error", "操作失败");
       }
     } catch (error) {
       console.error("取消任务失败:", error);
@@ -433,7 +420,12 @@ const TaskPage: React.FC = (): JSX.Element => {
                 </View>
               ))
             ) : (
-              <View className="empty-state">暂无任务数据</View>
+              <View className="empty-state">
+                <Empty>
+                  <Empty.Image src="search" />
+                  <Empty.Description>暂无任务数据</Empty.Description>
+                </Empty>
+              </View>
             )}
           </View>
         )}

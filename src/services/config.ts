@@ -46,4 +46,13 @@ export const API_PATHS = {
     // 识别食品
     IDENTIFY_FOOD: "/api/app/center/identify",
   },
+  // 任务管理
+  TASK: {
+    // 获取任务列表
+    PLAN_TASKS: "/planTask/detailPage",
+    // 完成任务
+    COMPLETE_TASK: "/planTask/complete",
+    // 取消任务
+    CANCEL_TASK: "/planTask/cancel",
+  },
 };
