@@ -49,11 +49,11 @@ export const API_PATHS = {
   // 任务管理
   TASK: {
     // 获取任务列表
-    PLAN_TASKS: "/planTask/detailPage",
+    PLAN_TASKS: "/api/planTask/detailPage",
     // 完成任务
-    COMPLETE_TASK: "/planTask/complete",
+    COMPLETE_TASK: "/api/planTask/complete",
     // 取消任务
-    CANCEL_TASK: "/planTask/cancel",
+    CANCEL_TASK: "/api/planTask/cancel",
   },
   // 标法查询
   STANDARD: {

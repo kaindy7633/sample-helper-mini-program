@@ -13,10 +13,10 @@ import "./index.less";
 const StandardDetailPage: React.FC = (): JSX.Element => {
   const router = useRouter();
   const standardId = router.params.id || "";
-  
+
   // 标准详情
   const [standard, setStandard] = useState<StandardDetail | null>(null);
-  
+
   // 加载状态
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -91,32 +91,32 @@ const StandardDetailPage: React.FC = (): JSX.Element => {
       <View className="content">
         <View className="detail-card">
           <View className="standard-name">{standard.standardName}</View>
-          
+
           <View className="detail-item">
             <Text className="item-label">标准编号：</Text>
             <Text className="item-value">{standard.standardCode}</Text>
           </View>
-          
+
           <View className="detail-item">
             <Text className="item-label">标准类型：</Text>
             <Text className="item-value">{standard.standardType}</Text>
           </View>
-          
+
           <View className="detail-item">
             <Text className="item-label">标准状态：</Text>
             <Text className="item-value">{standard.standardStatus}</Text>
           </View>
-          
+
           <View className="detail-item">
             <Text className="item-label">发布日期：</Text>
             <Text className="item-value">{standard.publishDate}</Text>
           </View>
-          
+
           <View className="detail-item">
             <Text className="item-label">实施日期：</Text>
             <Text className="item-value">{standard.implementDate}</Text>
           </View>
-          
+
           <View className="detail-item">
             <Text className="item-label">地区：</Text>
             <Text className="item-value">{standard.region}</Text>

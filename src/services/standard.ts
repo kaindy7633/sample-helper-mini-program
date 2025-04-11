@@ -1,8 +1,8 @@
 /**
  * 标法查询相关服务
  */
-import request from "../request";
-import { API_PATHS } from "../config";
+import request from "./request";
+import { API_PATHS } from "./config";
 
 /**
  * 标准查询参数

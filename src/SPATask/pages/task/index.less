@@ -179,31 +179,59 @@
 .content {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
+}
+
+.loading-indicator {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+
+  :global(.taroify-loading) {
+    color: #3f7efd;
+  }
 }
 
 /* 任务列表 */
 .task-list {
+  width: 100%;
   display: flex;
   flex-direction: column;
+  gap: 16px;
+  margin-top: 16px;
 }
 
 .task-card {
   background-color: #fff;
   border-radius: 12px;
   padding: 20px;
-  margin-bottom: 16px;
+  margin-left: 16px;
+  margin-right: 16px;
 }
 
 .task-id-row {
   display: flex;
   align-items: center;
   margin-bottom: 16px;
+  position: relative;
+  font-weight: 500;
 }
 
 .task-id-label {
   font-size: 28px;
   color: #333;
+  display: flex;
+  align-items: center;
+}
+
+.task-id-label::before {
+  content: "";
+  display: block;
+  width: 4px;
+  height: 16px;
+  background-color: #3f7efd;
+  margin-right: 8px;
+  border-radius: 2px;
 }
 
 .task-id-value {
@@ -221,22 +249,33 @@
   border-radius: 4px;
 }
 
+.task-link-tag {
+  position: absolute;
+  right: 0;
+  top: 0;
+  font-size: 24px;
+  color: #666;
+  background-color: #f5f5f5;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
 .task-title-row {
-  margin-bottom: 16px;
+  margin-bottom: 8px;
 }
 
 .task-title {
-  font-size: 30px;
+  font-size: 28px;
   color: #666;
 }
 
 .task-info-row {
   display: flex;
-  margin-bottom: 8px;
+  margin-bottom: 16px;
 }
 
 .task-info-row:last-child {
-  margin-bottom: 16px;
+  margin-bottom: 8px;
 }
 
 .task-info-label {
@@ -291,23 +330,24 @@
 /* 任务操作按钮 */
 .task-actions {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
+  margin-top: 20px;
 }
 
 .task-action-btn {
-  flex: 1;
+  width: 160px;
   height: 80px;
   display: flex;
   justify-content: center;
   align-items: center;
   border-radius: 8px;
   font-size: 30px;
-  margin: 0 10px;
 }
 
 .task-action-btn.cancel {
   background-color: #f7f7f7;
   color: #666;
+  margin-right: 20px;
 }
 
 .task-action-btn.complete {

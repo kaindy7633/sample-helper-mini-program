@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { View, Text, ScrollView, Input, Image } from "@tarojs/components";
-import { Button, Empty } from "@taroify/core";
+import { Button, Empty, Loading } from "@taroify/core";
 import { ArrowDown, Replay } from "@taroify/icons";
 import Taro from "@tarojs/taro";
 import SearchIcon from "../../../assets/images/ico_search_grey.png";
@@ -44,6 +44,8 @@ interface TaskDetail {
     /** 具体食品 */
     cate4: string;
   };
+  /** 抽样链接 */
+  sampleLink: string;
 }
 
 /**
@@ -93,41 +95,43 @@ const TaskPage: React.FC = (): JSX.Element => {
   // 任务数据状态
   const [pendingTasks, setPendingTasks] = useState<TaskDetail[]>([]);
   const [completedTasks, setCompletedTasks] = useState<TaskDetail[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
   const [current, setCurrent] = useState<number>(1);
   const [total, setTotal] = useState<number>(0);
-  const [pageSize, setPageSize] = useState<number>(10);
+  const [pageSize, setPageSize] = useState<number>(5);
 
   /**
    * 获取任务列表数据
    */
   const fetchTaskList = async () => {
     try {
-      setLoading(true);
       const isFinish = activeTab === "pending" ? "0" : "1";
 
       // 使用taskApi服务获取任务列表
       const result = await taskApi.getPlanTasks({
-        current,
-        size: pageSize,
+        current: Number(current),
+        size: Number(pageSize),
         isFinish,
-        classA: filterA !== "报送分类A" ? filterA : undefined,
-        classB: filterB !== "报送分类B" ? filterB : undefined,
-        keyword: keyword || undefined,
+        classa: filterA === "报送分类A" ? undefined : filterA,
+        classb: filterB === "报送分类B" ? undefined : filterB,
       });
 
       if (activeTab === "pending") {
-        setPendingTasks(result.records);
+        setPendingTasks(result?.records || []);
       } else {
-        setCompletedTasks(result.records);
+        setCompletedTasks(result?.records || []);
       }
 
-      setTotal(Number(result.total));
+      setTotal(Number(result?.total || 0));
     } catch (error) {
       console.error("获取任务列表失败:", error);
+      // 发生错误时清空数据
+      if (activeTab === "pending") {
+        setPendingTasks([]);
+      } else {
+        setCompletedTasks([]);
+      }
+      setTotal(0);
       showToastMessage("error", "获取任务列表失败");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -237,34 +241,24 @@ const TaskPage: React.FC = (): JSX.Element => {
   };
 
   // 获取当前显示的任务列表
-  const currentTasks = activeTab === "pending" ? pendingTasks : completedTasks;
+  const currentTasks = useMemo(() => {
+    return activeTab === "pending" ? pendingTasks : completedTasks;
+  }, [activeTab, pendingTasks, completedTasks]);
 
   /**
    * 渲染任务详情表格
-   * @param cateList 食品类别数据
+   * @param task 任务详情数据
    */
-  const renderTaskDetails = (
-    cateList: TaskDetail["cateList"]
-  ): DetailItem[] => {
-    // 将逗号分隔的字符串转为数组
-    const cate2Array = cateList.cate2.split(",");
-    const cate3Array = cateList.cate3.split(",");
-    const cate4Array = cateList.cate4.split(",");
-    const maxLength = Math.max(
-      cate2Array.length,
-      cate3Array.length,
-      cate4Array.length
-    );
-
+  const renderTaskDetails = (task: TaskDetail): DetailItem[] => {
     const details: DetailItem[] = [];
-    for (let i = 0; i < maxLength; i++) {
-      details.push({
-        category: i === 0 ? cateList.cate1 : "",
-        subcategory: cate2Array[i] || "",
-        property: cate3Array[i] || "",
-        brand: cate4Array[i] || "",
-      });
-    }
+
+    // 只添加一行数据，使用任务本身的字段
+    details.push({
+      category: task.cate1 || "",
+      subcategory: "", // 食品亚类
+      property: "", // 食品品种
+      brand: task.cate4 || "", // 食品细类
+    });
 
     return details;
   };
@@ -346,89 +340,86 @@ const TaskPage: React.FC = (): JSX.Element => {
 
       {/* 内容区域 */}
       <ScrollView className="content" scrollY>
-        {loading ? (
-          <View className="loading-indicator">加载中...</View>
-        ) : (
-          <View className="task-list">
-            {currentTasks.length > 0 ? (
-              currentTasks.map((task) => (
-                <View key={task.id} className="task-card">
-                  {/* 抽样单号 */}
-                  <View className="task-id-row">
-                    <Text className="task-id-label">抽样单编号：</Text>
-                    <Text className="task-id-value">{task.sampleNo}</Text>
-                    <View className="task-print-btn">打印</View>
-                  </View>
-
-                  {/* 任务名称 */}
-                  <View className="task-title-row">
-                    <Text className="task-title">{task.classB}</Text>
-                  </View>
-
-                  {/* 抽样人员 */}
-                  <View className="task-info-row">
-                    <Text className="task-info-label">抽样人员：</Text>
-                    <Text className="task-info-value">{task.sampleTeam}</Text>
-                  </View>
-
-                  {/* 下达时间 */}
-                  <View className="task-info-row">
-                    <Text className="task-info-label">下达时间：</Text>
-                    <Text className="task-info-value">{task.createDate}</Text>
-                  </View>
-
-                  {/* 食品详情表格 */}
-                  <View className="task-details-table">
-                    <View className="table-header">
-                      <View className="table-cell">食品大类</View>
-                      <View className="table-cell">食品亚类</View>
-                      <View className="table-cell">食品属性</View>
-                      <View className="table-cell">食品品牌</View>
-                    </View>
-
-                    {renderTaskDetails(task.cateList).map((detail, index) => (
-                      <View key={index} className="table-row">
-                        <View className="table-cell">{detail.category}</View>
-                        <View className="table-cell">{detail.subcategory}</View>
-                        <View className="table-cell">{detail.property}</View>
-                        <View className="table-cell">{detail.brand}</View>
-                      </View>
-                    ))}
-                  </View>
-
-                  {/* 任务操作按钮 - 仅在待执行tab下显示 */}
-                  {activeTab === "pending" && (
-                    <View className="task-actions">
-                      <View
-                        className="task-action-btn cancel"
-                        onClick={() =>
-                          showConfirmModal("cancel", String(task.id))
-                        }
-                      >
-                        取消任务
-                      </View>
-                      <View
-                        className="task-action-btn complete"
-                        onClick={() =>
-                          showConfirmModal("complete", String(task.id))
-                        }
-                      >
-                        完成任务
-                      </View>
-                    </View>
-                  )}
+        <View className="task-list">
+          {currentTasks.length > 0 ? (
+            currentTasks.map((task) => (
+              <View key={task.id} className="task-card">
+                {/* 抽样单号 */}
+                <View className="task-id-row">
+                  <Text className="task-id-label">抽样单编号：</Text>
+                  <Text className="task-id-value">{task.sampleNo}</Text>
+                  <Text className="task-link-tag">{task.sampleLink}</Text>
                 </View>
-              ))
-            ) : (
-              <View className="empty-state">
-                <Empty>
-                  <Empty.Image src="search" />
-                  <Empty.Description>暂无任务数据</Empty.Description>
-                </Empty>
+
+                {/* 任务名称 */}
+                <View className="task-title-row">
+                  <Text className="task-title">{task.classB}</Text>
+                </View>
+
+                {/* 抽样人员 */}
+                <View className="task-info-row">
+                  <Text className="task-info-label">抽样人员：</Text>
+                  <Text className="task-info-value">{task.sampleTeam}</Text>
+                </View>
+
+                {/* 下达时间 */}
+                <View className="task-info-row">
+                  <Text className="task-info-label">下达时间：</Text>
+                  <Text className="task-info-value">{task.createDate}</Text>
+                </View>
+
+                {/* 食品详情表格 */}
+                <View className="task-details-table">
+                  <View className="table-header">
+                    <View className="table-cell">食品大类</View>
+                    <View className="table-cell">食品亚类</View>
+                    <View className="table-cell">食品品种</View>
+                    <View className="table-cell">食品细类</View>
+                  </View>
+
+                  {renderTaskDetails(task).map((detail, index) => (
+                    <View key={index} className="table-row">
+                      <View className="table-cell">{detail.category}</View>
+                      <View className="table-cell">{detail.subcategory}</View>
+                      <View className="table-cell">{detail.property}</View>
+                      <View className="table-cell">{detail.brand}</View>
+                    </View>
+                  ))}
+                </View>
+
+                {/* 任务操作按钮 - 仅在待执行tab下显示 */}
+                {activeTab === "pending" && (
+                  <View className="task-actions">
+                    {/* 暂时屏蔽取消任务按钮 */}
+                    {/*<View
+                      className="task-action-btn cancel"
+                      onClick={() =>
+                        showConfirmModal("cancel", String(task.id))
+                      }
+                    >
+                      取消任务
+                    </View>*/}
+                    <View
+                      className="task-action-btn complete"
+                      onClick={() =>
+                        showConfirmModal("complete", String(task.id))
+                      }
+                    >
+                      完成任务
+                    </View>
+                  </View>
+                )}
               </View>
-            )}
-          </View>
-        )}
+            ))
+          ) : (
+            <View className="empty-state">
+              <Empty>
+                <Empty.Image src="search" />
+                <Empty.Description>暂无任务数据</Empty.Description>
+              </Empty>
+            </View>
+          )}
+        </View>
 
         {/* 底部空白占位，防止内容被底部导航遮挡 */}
         <View className="bottom-spacer"></View>

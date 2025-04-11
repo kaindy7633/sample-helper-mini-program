@@ -68,9 +68,9 @@ export interface TaskQueryParams {
   /** 每页大小 */
   size?: number;
   /** 抽检监测类别 */
-  classA?: string;
+  classa?: string;
   /** 抽检计划名称 */
-  classB?: string;
+  classb?: string;
   /** 是否完成 0-未完成 1-已完成 */
   isFinish?: string;
   /** 搜索关键词(食品大类) */
