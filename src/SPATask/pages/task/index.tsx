@@ -252,15 +252,59 @@ const TaskPage: React.FC = (): JSX.Element => {
   const renderTaskDetails = (task: TaskDetail): DetailItem[] => {
     const details: DetailItem[] = [];
 
-    // 只添加一行数据，使用任务本身的字段
-    details.push({
-      category: task.cate1 || "",
-      subcategory: "", // 食品亚类
-      property: "", // 食品品种
-      brand: task.cate4 || "", // 食品细类
-    });
+    if (!task.cateList) {
+      return details;
+    }
+
+    // 将逗号分隔的字符串转为数组
+    const cate2List = task.cateList.cate2?.split(",") || [];
+    const cate3List = task.cateList.cate3?.split(",") || [];
+    const cate4List = task.cateList.cate4?.split(",") || [];
+
+    // 获取最大长度,确保所有数组能对齐
+    const maxLength = Math.max(
+      cate2List.length,
+      cate3List.length,
+      cate4List.length
+    );
+
+    // 生成每一行的数据
+    for (let i = 0; i < maxLength; i++) {
+      details.push({
+        category: i === 0 ? task.cateList.cate1 || "" : "", // 只在第一行显示 cate1
+        subcategory: cate2List[i] || "",
+        property: cate3List[i] || "",
+        brand: cate4List[i] || "",
+      });
+    }
 
     return details;
+  };
+
+  /**
+   * 渲染表格单元格
+   * @param content 单元格内容
+   * @param isFirstColumn 是否是第一列
+   * @param rowSpan 行合并数
+   */
+  const renderTableCell = (
+    content: string,
+    isFirstColumn: boolean = false,
+    rowSpan: number = 1
+  ) => {
+    return (
+      <View
+        className="table-cell"
+        style={{
+          visibility:
+            isFirstColumn && rowSpan > 1 && content === ""
+              ? "hidden"
+              : "visible",
+        }}
+      >
+        {content}
+      </View>
+    );
   };
 
   return (
@@ -379,10 +423,10 @@ const TaskPage: React.FC = (): JSX.Element => {
 
                   {renderTaskDetails(task).map((detail, index) => (
                     <View key={index} className="table-row">
-                      <View className="table-cell">{detail.category}</View>
-                      <View className="table-cell">{detail.subcategory}</View>
-                      <View className="table-cell">{detail.property}</View>
-                      <View className="table-cell">{detail.brand}</View>
+                      {renderTableCell(detail.category, true)}
+                      {renderTableCell(detail.subcategory)}
+                      {renderTableCell(detail.property)}
+                      {renderTableCell(detail.brand)}
                     </View>
                   ))}
                 </View>
