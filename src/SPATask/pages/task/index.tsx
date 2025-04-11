@@ -1,6 +1,8 @@
 import React, { useState } from "react";
-import { View, Text, ScrollView, Input } from "@tarojs/components";
-import Taro from "@tarojs/taro";
+import { View, Text, ScrollView, Input, Image } from "@tarojs/components";
+import { Button } from "@taroify/core";
+import { ArrowDown, Replay } from "@taroify/icons";
+import SearchIcon from "../../../assets/images/ico_search_grey.png";
 import "./index.less";
 
 /**
@@ -12,6 +14,9 @@ const TaskPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"pending" | "completed">(
     "pending"
   );
+
+  // 搜索关键词
+  const [keyword, setKeyword] = useState<string>("");
 
   // 搜索关键词
   const [searchKeyword, setSearchKeyword] = useState<string>("");
@@ -172,15 +177,6 @@ const TaskPage: React.FC = () => {
 
   return (
     <View className="container">
-      {/* 顶部导航栏 */}
-      <View className="task-header">
-        <Text className="title">任务列表</Text>
-        <View className="header-right">
-          <View className="icon-more"></View>
-          <View className="icon-refresh"></View>
-        </View>
-      </View>
-
       {/* Tab标签页 */}
       <View className="task-tabs">
         <View
@@ -202,36 +198,71 @@ const TaskPage: React.FC = () => {
       {/* 搜索和筛选区域 */}
       <View className="search-filter-section">
         {/* 搜索框 */}
-        <View className="search-box">
-          <View className="search-icon"></View>
-          <Input
-            className="search-input"
-            placeholder="输入食品大类"
-            value={searchKeyword}
-            onInput={(e) => setSearchKeyword(e.detail.value)}
-          />
-          <View className="search-btn" onClick={handleSearch}>
-            搜索
+        <View className="search-header">
+          <View className="search-box">
+            <Image
+              src={SearchIcon}
+              style={{ width: 22, height: 22, marginRight: 5 }}
+            />
+            <Input
+              className="search-input"
+              value={keyword}
+              onInput={(e) => setKeyword(e.detail.value)}
+              placeholder="输入食品大类"
+              confirmType="search"
+              // onConfirm={(e) => handleSearch(e.detail.value)}
+            />
           </View>
+          <Button
+            className="search-btn"
+            variant="text"
+            color="primary"
+            size="small"
+            // onClick={() => handleSearch(keyword)}
+          >
+            搜索
+          </Button>
         </View>
 
         {/* 筛选器 */}
-        <View className="filters">
+        <View className="filter-section">
+          <View className="filter-left">
+            <View
+              className="filter-item"
+              // onClick={() => setDistancePriorityOpen(true)}
+            >
+              <Text style={{ marginRight: 3, fontSize: 16 }}>{filterA}</Text>
+              <ArrowDown />
+            </View>
+            <View
+              className="filter-item"
+              // onClick={() => setCompanyTypeOpen(true)}
+            >
+              <Text style={{ marginRight: 3, fontSize: 16 }}>{filterB}</Text>
+              <ArrowDown />
+            </View>
+          </View>
+          <View className="filter-divider"></View>
+          <View className="reset-button" onClick={() => {}}>
+            <Replay size="18" />
+            <Text style={{ fontSize: 16 }}>重置</Text>
+          </View>
+        </View>
+
+        {/* <View className="filters">
           <View className="filter-item">
             <Text className="filter-text">{filterA}</Text>
-            <View className="filter-arrow"></View>
+            <View className="filter-arrow">▼</View>
           </View>
           <View className="filter-item">
             <Text className="filter-text">{filterB}</Text>
-            <View className="filter-arrow"></View>
+            <View className="filter-arrow">▼</View>
           </View>
           <View className="order-toggle" onClick={toggleOrder}>
             <Text className="order-text">重置</Text>
-            <View
-              className={`order-icon ${isDescOrder ? "desc" : "asc"}`}
-            ></View>
+            <View className="refresh-icon">⟳</View>
           </View>
-        </View>
+        </View> */}
       </View>
 
       {/* 内容区域 */}
