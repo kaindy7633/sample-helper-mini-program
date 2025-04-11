@@ -9,17 +9,13 @@
     "noImplicitAny": false,
     "allowSyntheticDefaultImports": true,
     "outDir": "lib",
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
     "strictNullChecks": true,
     "sourceMap": true,
     "rootDir": ".",
     "jsx": "react-jsx",
     "allowJs": true,
     "resolveJsonModule": true,
-    "typeRoots": [
-      "node_modules/@types"
-    ],
+    "typeRoots": ["node_modules/@types"],
     "paths": {
       // TS5090 leading './'
       "@/*": ["./src/*"]

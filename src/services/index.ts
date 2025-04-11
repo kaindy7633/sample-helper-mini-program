@@ -7,5 +7,14 @@ import * as bannerApi from "./banner";
 import * as messageApi from "./message";
 import * as foodClassApi from "./foodclass";
 import * as taskApi from "./task";
+import * as standardApi from "./standard";
 
-export { userApi, appApi, bannerApi, messageApi, foodClassApi, taskApi };
+export {
+  userApi,
+  appApi,
+  bannerApi,
+  messageApi,
+  foodClassApi,
+  taskApi,
+  standardApi,
+};

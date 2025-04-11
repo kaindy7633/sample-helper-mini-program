@@ -256,6 +256,10 @@ const Index: React.FC = (): JSX.Element => {
                     Taro.navigateTo({
                       url: "/SPAFoodClass/pages/foodclass/index",
                     });
+                  } else if (item.appName === "标法查询") {
+                    Taro.navigateTo({
+                      url: "/SPAStandard/pages/standard/index",
+                    });
                   } else {
                     // 其他应用暂时没有实现，可以显示提示
                     Taro.showToast({

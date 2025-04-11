@@ -1,0 +1,165 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100vh;
+  background-color: #fff;
+}
+
+/* 顶部栏 */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 20px;
+  background-color: #fff;
+  position: relative;
+}
+
+.back-icon {
+  width: 40px;
+  height: 40px;
+  position: relative;
+}
+
+.back-icon:before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  border-left: 2px solid #333;
+  border-bottom: 2px solid #333;
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.title {
+  font-size: 36px;
+  font-weight: 500;
+  color: #333;
+  text-align: center;
+  flex: 1;
+}
+
+.placeholder {
+  width: 40px;
+  height: 40px;
+}
+
+/* 搜索区域 */
+.search-area {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  background-color: #fff;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.region-selector {
+  display: flex;
+  align-items: center;
+  background-color: #f5f5f5;
+  padding: 0 16px;
+  height: 76px;
+  border-radius: 38px;
+  margin-right: 16px;
+}
+
+.region-text {
+  font-size: 28px;
+  color: #333;
+  margin-right: 8px;
+}
+
+.search-box {
+  flex: 1;
+  height: 76px;
+  background-color: #f5f5f5;
+  border-radius: 38px;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+}
+
+.search-input {
+  flex: 1;
+  height: 76px;
+  font-size: 28px;
+  color: #333;
+}
+
+.placeholder {
+  color: #999;
+  font-size: 28px;
+}
+
+.search-btn {
+  width: 120px;
+  height: 76px;
+  background-color: #1677ff;
+  color: #fff;
+  border-radius: 38px;
+  font-size: 28px;
+  margin-left: 16px;
+  font-weight: normal;
+  line-height: 76px;
+  padding: 0;
+}
+
+/* 内容区域 */
+.content {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  background-color: #f7f8fa;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px;
+  color: #999;
+  font-size: 28px;
+}
+
+.empty-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  padding: 40px 0;
+}
+
+.standard-list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* 标准项样式 - 预留，实际数据加载后完善 */
+.standard-item {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.standard-title {
+  font-size: 30px;
+  color: #333;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.standard-code {
+  font-size: 26px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.standard-date {
+  font-size: 24px;
+  color: #999;
+}

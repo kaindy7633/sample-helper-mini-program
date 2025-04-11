@@ -55,4 +55,11 @@ export const API_PATHS = {
     // 取消任务
     CANCEL_TASK: "/planTask/cancel",
   },
+  // 标法查询
+  STANDARD: {
+    // 查询标准列表
+    QUERY: "/api/standard/query",
+    // 获取标准详情
+    DETAIL: "/api/standard/detail",
+  },
 };
