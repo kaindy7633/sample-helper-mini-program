@@ -143,8 +143,6 @@ const TaskPage: React.FC = (): JSX.Element => {
       const isFinish = activeTab === "pending" ? "0" : "1";
       const pageNum = isRefresh ? 1 : current;
 
-      console.log("获取任务列表，页码:", pageNum, "每页条数:", pageSize);
-
       // 使用taskApi服务获取任务列表
       const result = await taskApi.getPlanTasks({
         current: Number(pageNum),
@@ -179,14 +177,6 @@ const TaskPage: React.FC = (): JSX.Element => {
         // 判断是否还有更多数据可加载
         const hasMoreData =
           newRecords.length > 0 && pageNum * pageSize < totalCount;
-
-        console.log("数据加载状态：", {
-          pageNum,
-          pageSize,
-          newRecordsLength: newRecords.length,
-          totalCount,
-          hasMoreData,
-        });
 
         setHasMore(hasMoreData);
 
@@ -279,6 +269,8 @@ const TaskPage: React.FC = (): JSX.Element => {
     setFilterA("报送分类A");
     setFilterB("报送分类B");
     setKeyword("");
+    setCurrent(1);
+    setHasMore(true);
     onRefresh();
   };
 
@@ -405,11 +397,9 @@ const TaskPage: React.FC = (): JSX.Element => {
   // 加载更多数据
   const onLoad = () => {
     if (!hasMore || loading) {
-      console.log("跳过加载更多:", { hasMore, loading });
       return;
     }
 
-    console.log("触发加载更多，当前页码:", current);
     setLoading(true);
     setCurrent((prev) => prev + 1);
   };
@@ -417,7 +407,6 @@ const TaskPage: React.FC = (): JSX.Element => {
   // 监听页码变化加载数据
   useEffect(() => {
     if (current > 1) {
-      console.log("页码变化，加载更多数据，页码:", current);
       fetchTaskList(false);
     }
   }, [current]);
@@ -456,9 +445,22 @@ const TaskPage: React.FC = (): JSX.Element => {
       classTreeData.length > 0
     ) {
       setCurrent(1); // 重置页码
-      fetchTaskList();
+      onRefresh(); // 使用onRefresh代替fetchTaskList
     }
   }, [filterA, filterB]);
+
+  // 在点击分类A和分类B时记录值
+  const openClassAPopup = () => {
+    setClassAOpen(true);
+  };
+
+  const openClassBPopup = () => {
+    if (filterA === "报送分类A") {
+      showToastMessage("error", "请先选择报送分类A");
+      return;
+    }
+    setClassBOpen(true);
+  };
 
   return (
     <View className="container">
@@ -512,14 +514,11 @@ const TaskPage: React.FC = (): JSX.Element => {
         {/* 筛选器 */}
         <View className="filter-section">
           <View className="filter-left">
-            <View className="filter-item" onClick={() => setClassAOpen(true)}>
+            <View className="filter-item" onClick={openClassAPopup}>
               <Text style={{ marginRight: 3, fontSize: 16 }}>{filterA}</Text>
               <ArrowDown />
             </View>
-            <View
-              className="filter-item"
-              onClick={() => filterA !== "报送分类A" && setClassBOpen(true)}
-            >
+            <View className="filter-item" onClick={openClassBPopup}>
               <Text style={{ marginRight: 3, fontSize: 16 }}>{filterB}</Text>
               <ArrowDown />
             </View>
@@ -545,7 +544,6 @@ const TaskPage: React.FC = (): JSX.Element => {
           immediateCheck
           fixedHeight
           onLoad={onLoad}
-          onScroll={(e) => console.log("List滚动", e.detail?.scrollTop)}
           className="task-list-container"
           style={{ height: "100%" }}
         >
@@ -657,9 +655,15 @@ const TaskPage: React.FC = (): JSX.Element => {
           </Text>
         </View>
         <Picker
-          columns={[classTreeData.map((item) => item.name)]}
+          columns={
+            classTreeData.length > 0
+              ? [classTreeData.map((item) => item.name)]
+              : [[]]
+          }
           onCancel={() => setClassAOpen(false)}
-          onConfirm={(values) => handleClassASelect(values[0])}
+          onConfirm={(values) => {
+            if (values[0]) handleClassASelect(values[0]);
+          }}
         />
       </Popup>
 
@@ -677,9 +681,15 @@ const TaskPage: React.FC = (): JSX.Element => {
           </Text>
         </View>
         <Picker
-          columns={[classBOptions.map((item) => item.name)]}
+          columns={
+            classBOptions.length > 0
+              ? [classBOptions.map((item) => item.name)]
+              : [[]]
+          }
           onCancel={() => setClassBOpen(false)}
-          onConfirm={(values) => handleClassBSelect(values[0])}
+          onConfirm={(values) => {
+            if (values[0]) handleClassBSelect(values[0]);
+          }}
         />
       </Popup>
 

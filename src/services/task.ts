@@ -105,8 +105,6 @@ export async function getPlanTasks(params: TaskQueryParams) {
     url: API_PATHS.TASK.PLAN_TASKS,
     method: "GET",
     data: params,
-    showLoading: true,
-    loadingText: "加载中...",
   });
 }
 
@@ -119,8 +117,6 @@ export async function completeTask(taskId: string) {
   return request<boolean>({
     url: `${API_PATHS.TASK.COMPLETE_TASK}/${taskId}`,
     method: "POST",
-    showLoading: true,
-    loadingText: "处理中...",
   });
 }
 
@@ -133,8 +129,6 @@ export async function cancelTask(taskId: string) {
   return request<boolean>({
     url: `${API_PATHS.TASK.CANCEL_TASK}/${taskId}`,
     method: "POST",
-    showLoading: true,
-    loadingText: "处理中...",
   });
 }
 
@@ -156,7 +150,5 @@ export async function getClassTree() {
   return request<ClassTreeNode[]>({
     url: API_PATHS.TASK.LIST_CLASS_TREE,
     method: "GET",
-    showLoading: true,
-    loadingText: "加载中...",
   });
 }
