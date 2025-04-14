@@ -54,6 +54,8 @@ interface TaskDetail {
   };
   /** 抽样链接 */
   sampleLink: string;
+  /** 计划任务代码ID */
+  planTaskCodeId: string | null;
 }
 
 /**
@@ -228,17 +230,31 @@ const TaskPage: React.FC = (): JSX.Element => {
   const handleCompleteTask = async (taskId: string) => {
     try {
       console.log("完成任务 - 接收到的任务ID:", taskId);
-      console.log(
-        "完成任务 - 当前任务详情:",
-        currentTasks.find((task) => String(task.id) === taskId)
+
+      // 根据ID找到当前任务对象
+      const currentTask = currentTasks.find(
+        (task) => String(task.id) === taskId
       );
+      console.log("完成任务 - 当前任务详情:", currentTask);
+
+      // 检查任务是否存在
+      if (!currentTask) {
+        showToastMessage("error", "找不到对应的任务");
+        return;
+      }
+
+      // 检查planTaskCodeId是否存在
+      if (!currentTask.planTaskCodeId) {
+        showToastMessage("error", "该任务缺少必要的计划任务代码");
+        return;
+      }
 
       // 将字符串ID转为数字
-      const numericId = parseInt(taskId, 10);
-      console.log("完成任务 - 转换后的数字ID:", numericId);
+      const numericId = parseInt(currentTask.planTaskCodeId, 10);
+      console.log("完成任务 - 转换后的planTaskCodeId:", numericId);
 
       if (Number.isNaN(numericId)) {
-        showToastMessage("error", "任务ID无效");
+        showToastMessage("error", "任务代码ID无效");
         return;
       }
 
