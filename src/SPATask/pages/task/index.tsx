@@ -12,7 +12,6 @@ import {
   List,
 } from "@taroify/core";
 import { ArrowDown, Replay, WarningOutlined } from "@taroify/icons";
-import Taro from "@tarojs/taro";
 import SearchIcon from "../../../assets/images/ico_search_grey.png";
 import { taskApi } from "../../../services";
 import "./index.less";
@@ -120,7 +119,7 @@ const TaskPage: React.FC = (): JSX.Element => {
   // 加载状态
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
-  const [finished, setFinished] = useState<boolean>(false);
+  const [hasMore, setHasMore] = useState<boolean>(true);
 
   /**
    * 获取分类树数据
@@ -144,6 +143,8 @@ const TaskPage: React.FC = (): JSX.Element => {
       const isFinish = activeTab === "pending" ? "0" : "1";
       const pageNum = isRefresh ? 1 : current;
 
+      console.log("获取任务列表，页码:", pageNum, "每页条数:", pageSize);
+
       // 使用taskApi服务获取任务列表
       const result = await taskApi.getPlanTasks({
         current: Number(pageNum),
@@ -155,49 +156,64 @@ const TaskPage: React.FC = (): JSX.Element => {
       });
 
       const newRecords = result?.records || [];
+      const totalCount = Number(result?.total || 0);
 
-      if (activeTab === "pending") {
-        if (isRefresh) {
-          setPendingTasks(newRecords);
+      // 添加1秒延迟，让加载效果更明显
+      setTimeout(() => {
+        if (activeTab === "pending") {
+          if (isRefresh) {
+            setPendingTasks(newRecords);
+          } else {
+            setPendingTasks((prev) => [...prev, ...newRecords]);
+          }
         } else {
-          setPendingTasks((prev) => [...prev, ...newRecords]);
+          if (isRefresh) {
+            setCompletedTasks(newRecords);
+          } else {
+            setCompletedTasks((prev) => [...prev, ...newRecords]);
+          }
         }
-      } else {
+
+        setTotal(totalCount);
+
+        // 判断是否还有更多数据可加载
+        const hasMoreData =
+          newRecords.length > 0 && pageNum * pageSize < totalCount;
+
+        console.log("数据加载状态：", {
+          pageNum,
+          pageSize,
+          newRecordsLength: newRecords.length,
+          totalCount,
+          hasMoreData,
+        });
+
+        setHasMore(hasMoreData);
+
         if (isRefresh) {
-          setCompletedTasks(newRecords);
+          setRefreshing(false);
+          setCurrent(1);
         } else {
-          setCompletedTasks((prev) => [...prev, ...newRecords]);
+          setLoading(false);
         }
-      }
-
-      setTotal(Number(result?.total || 0));
-
-      // 判断是否加载完毕
-      const isFinishedLoading =
-        !newRecords.length || pageNum * pageSize >= Number(result?.total || 0);
-      setFinished(isFinishedLoading);
-
-      if (isRefresh) {
-        setRefreshing(false);
-        setCurrent(1);
-      } else {
-        setLoading(false);
-      }
+      }, 1000); // 延迟1秒更新状态
     } catch (error) {
       console.error("获取任务列表失败:", error);
-      // 发生错误时清空数据
-      if (isRefresh) {
-        if (activeTab === "pending") {
-          setPendingTasks([]);
+      // 发生错误时延迟1秒清空数据，保持统一的加载时间感
+      setTimeout(() => {
+        if (isRefresh) {
+          if (activeTab === "pending") {
+            setPendingTasks([]);
+          } else {
+            setCompletedTasks([]);
+          }
+          setTotal(0);
+          setRefreshing(false);
         } else {
-          setCompletedTasks([]);
+          setLoading(false);
         }
-        setTotal(0);
-        setRefreshing(false);
-      } else {
-        setLoading(false);
-      }
-      showToastMessage("error", "获取任务列表失败");
+        showToastMessage("error", "获取任务列表失败");
+      }, 1000);
     }
   };
 
@@ -211,7 +227,7 @@ const TaskPage: React.FC = (): JSX.Element => {
 
       if (success) {
         showToastMessage("success", "完成任务");
-        fetchTaskList();
+        onRefresh();
       } else {
         showToastMessage("error", "操作失败");
       }
@@ -241,69 +257,11 @@ const TaskPage: React.FC = (): JSX.Element => {
     }
   };
 
-  // 处理下拉刷新
-  const onRefresh = () => {
-    setRefreshing(true);
-    setFinished(false);
-    fetchTaskList(true);
-  };
-
-  // 加载更多数据
-  const onLoad = () => {
-    if (finished) return;
-
-    setLoading(true);
-    setCurrent((prev) => prev + 1);
-    fetchTaskList(false);
-  };
-
-  // 初始化加载数据
-  useEffect(() => {
-    fetchClassTree();
-    onRefresh();
-  }, [activeTab]);
-
-  // 当页码变化时加载数据，但不触发初始化
-  useEffect(() => {
-    if (current > 1) {
-      fetchTaskList(false);
-    }
-  }, [current]);
-
-  // 当选择分类A时，更新分类B的选项
-  useEffect(() => {
-    if (filterA !== "报送分类A") {
-      // 查找当前选择的分类A节点
-      const selectedNode = classTreeData.find((node) => node.name === filterA);
-      if (selectedNode && selectedNode.children) {
-        setClassBOptions(selectedNode.children);
-      } else {
-        setClassBOptions([]);
-      }
-
-      // 如果切换了分类A，重置分类B的选择
-      setFilterB("报送分类B");
-    } else {
-      setClassBOptions([]);
-    }
-  }, [filterA, classTreeData]);
-
-  // 当选择分类A或分类B时，刷新列表
-  useEffect(() => {
-    if (
-      (filterA !== "报送分类A" || filterB !== "报送分类B") &&
-      // 确保不是初始化时触发
-      classTreeData.length > 0
-    ) {
-      setCurrent(1); // 重置页码
-      fetchTaskList();
-    }
-  }, [filterA, filterB]);
-
   // 切换Tab
   const handleTabChange = (tab: "pending" | "completed") => {
     setActiveTab(tab);
-    setCurrent(1); // 切换Tab时重置页码
+    setCurrent(1);
+    setHasMore(true);
   };
 
   // 处理搜索
@@ -437,6 +395,71 @@ const TaskPage: React.FC = (): JSX.Element => {
     );
   };
 
+  // 处理下拉刷新
+  const onRefresh = () => {
+    setRefreshing(true);
+    setHasMore(true);
+    fetchTaskList(true);
+  };
+
+  // 加载更多数据
+  const onLoad = () => {
+    if (!hasMore || loading) {
+      console.log("跳过加载更多:", { hasMore, loading });
+      return;
+    }
+
+    console.log("触发加载更多，当前页码:", current);
+    setLoading(true);
+    setCurrent((prev) => prev + 1);
+  };
+
+  // 监听页码变化加载数据
+  useEffect(() => {
+    if (current > 1) {
+      console.log("页码变化，加载更多数据，页码:", current);
+      fetchTaskList(false);
+    }
+  }, [current]);
+
+  // 初始化加载数据
+  useEffect(() => {
+    fetchClassTree();
+    setCurrent(1);
+    setHasMore(true);
+    onRefresh();
+  }, [activeTab]);
+
+  // 当选择分类A时，更新分类B的选项
+  useEffect(() => {
+    if (filterA !== "报送分类A") {
+      // 查找当前选择的分类A节点
+      const selectedNode = classTreeData.find((node) => node.name === filterA);
+      if (selectedNode && selectedNode.children) {
+        setClassBOptions(selectedNode.children);
+      } else {
+        setClassBOptions([]);
+      }
+
+      // 如果切换了分类A，重置分类B的选择
+      setFilterB("报送分类B");
+    } else {
+      setClassBOptions([]);
+    }
+  }, [filterA, classTreeData]);
+
+  // 当选择分类A或分类B时，刷新列表
+  useEffect(() => {
+    if (
+      (filterA !== "报送分类A" || filterB !== "报送分类B") &&
+      // 确保不是初始化时触发
+      classTreeData.length > 0
+    ) {
+      setCurrent(1); // 重置页码
+      fetchTaskList();
+    }
+  }, [filterA, filterB]);
+
   return (
     <View className="container">
       {/* Tab标签页 */}
@@ -515,7 +538,17 @@ const TaskPage: React.FC = (): JSX.Element => {
         onRefresh={onRefresh}
         className="content"
       >
-        <List loading={loading} onLoad={onLoad}>
+        <List
+          loading={loading}
+          hasMore={hasMore}
+          offset={100}
+          immediateCheck
+          fixedHeight
+          onLoad={onLoad}
+          onScroll={(e) => console.log("List滚动", e.detail?.scrollTop)}
+          className="task-list-container"
+          style={{ height: "100%" }}
+        >
           <View className="task-list">
             {currentTasks.length > 0 ? (
               currentTasks.map((task) => (
@@ -525,6 +558,9 @@ const TaskPage: React.FC = (): JSX.Element => {
                     <Text className="task-id-label">抽样单编号：</Text>
                     <Text className="task-id-value">{task.sampleNo}</Text>
                     <Text className="task-link-tag">{task.sampleLink}</Text>
+                    <Text style={{ fontSize: "10px", color: "#999" }}>
+                      总数:{total}
+                    </Text>
                   </View>
 
                   {/* 任务名称 */}
@@ -600,16 +636,10 @@ const TaskPage: React.FC = (): JSX.Element => {
           {/* 列表加载状态 */}
           <List.Placeholder>
             {loading && <Loading className="list-loading">加载中...</Loading>}
-            {!loading && !finished && currentTasks.length > 0 && (
-              <View className="list-more">上拉加载更多</View>
-            )}
-            {finished && currentTasks.length > 0 && (
+            {!loading && !hasMore && currentTasks.length > 0 && (
               <View className="list-finished">没有更多数据了</View>
             )}
           </List.Placeholder>
-
-          {/* 底部空白占位，防止内容被底部导航遮挡 */}
-          <View className="bottom-spacer"></View>
         </List>
       </PullRefresh>
 
