@@ -4,47 +4,8 @@
   width: 100%;
   height: 100vh;
   background-color: #fff;
-}
-
-/* 顶部栏 */
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 24px 20px;
-  background-color: #fff;
+  overflow: hidden;
   position: relative;
-}
-
-.back-icon {
-  width: 40px;
-  height: 40px;
-  position: relative;
-}
-
-.back-icon:before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 16px;
-  height: 16px;
-  border-left: 2px solid #333;
-  border-bottom: 2px solid #333;
-  transform: translate(-50%, -50%) rotate(45deg);
-}
-
-.title {
-  font-size: 36px;
-  font-weight: 500;
-  color: #333;
-  text-align: center;
-  flex: 1;
-}
-
-.placeholder {
-  width: 40px;
-  height: 40px;
 }
 
 /* 搜索区域 */
@@ -54,6 +15,13 @@
   padding: 20px;
   background-color: #fff;
   border-bottom: 1px solid #f5f5f5;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  height: 110px;
+  box-sizing: border-box;
 }
 
 .region-selector {
@@ -99,26 +67,23 @@
   text-align: center;
 }
 
-/* 按钮禁用样式 */
-.search-btn[disabled] {
-  opacity: 0.6;
-}
-
 /* 内容区域 */
 .content {
   flex: 1;
-  padding: 20px;
-  overflow-y: auto;
+  position: fixed;
+  top: 110px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
   background-color: #f7f8fa;
+  overflow: hidden;
 }
 
-.loading {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100px;
-  color: #999;
-  font-size: 28px;
+.standard-list-container {
+  height: 100%;
+  overflow-y: auto;
+  background-color: #f7f8fa;
 }
 
 .empty-container {
@@ -133,9 +98,10 @@
 .standard-list {
   display: flex;
   flex-direction: column;
+  padding: 20px;
 }
 
-/* 标准项样式 - 预留，实际数据加载后完善 */
+/* 标准项样式 */
 .standard-item {
   background-color: #fff;
   border-radius: 8px;
@@ -159,4 +125,100 @@
 .standard-date {
   font-size: 24px;
   color: #999;
+  margin-bottom: 8px;
+}
+
+.standard-info {
+  font-size: 24px;
+  color: #666;
+}
+
+/* 骨架屏样式 */
+.skeleton-card {
+  margin-bottom: 16px;
+}
+
+.skeleton-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  align-items: center;
+}
+
+/* List加载状态 */
+.list-loading {
+  color: #999;
+  font-size: 26px;
+  text-align: center;
+  padding: 16px 0;
+}
+
+.list-finished {
+  color: #999;
+  font-size: 26px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.list-finished::before,
+.list-finished::after {
+  content: "";
+  display: block;
+  height: 1px;
+  width: 80px;
+  background: #e5e5e5;
+  margin: 0 15px;
+}
+
+/* Taroify List 组件样式覆盖 */
+:global {
+  .taroify-list {
+    height: 100%;
+    overflow: auto !important;
+  }
+
+  .taroify-list__placeholder {
+    padding: 16px 0;
+    text-align: center;
+    color: #999;
+    font-size: 28px;
+    background-color: #f7f8fa;
+    padding-bottom: 40px;
+  }
+
+  .taroify-pull-refresh {
+    overflow: visible;
+    height: 100%;
+  }
+
+  .taroify-list__loading {
+    padding: 20px 0 40px;
+  }
+
+  .taroify-list__loading,
+  .taroify-list__finished {
+    padding: 16px 0;
+    font-size: 28px;
+  }
+
+  .taroify-list__finished {
+    color: #999;
+    font-size: 26px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &::before,
+    &::after {
+      content: "";
+      display: block;
+      height: 1px;
+      width: 80px;
+      background: #e5e5e5;
+      margin: 0 15px;
+    }
+  }
 }

@@ -2,7 +2,15 @@
 import React, { useMemo, useState } from "react";
 import { View, Text, Input } from "@tarojs/components";
 import Taro from "@tarojs/taro";
-import { Button, Picker, Empty, Popup } from "@taroify/core";
+import {
+  Button,
+  Picker,
+  Empty,
+  Popup,
+  List,
+  PullRefresh,
+  Skeleton,
+} from "@taroify/core";
 import { ArrowDown, Location, Search } from "@taroify/icons";
 import { standardApi } from "../../../services";
 import type { StandardDetail } from "../../../services/standard";
@@ -25,6 +33,11 @@ const StandardPage: React.FC = (): JSX.Element => {
 
   // 加载状态
   const [loading, setLoading] = useState<boolean>(false);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [hasMore, setHasMore] = useState<boolean>(true);
+
+  // 初始加载状态 - 用于显示骨架屏
+  const [initialLoading, setInitialLoading] = useState<boolean>(false);
 
   // 标准列表
   const [standardList, setStandardList] = useState<StandardDetail[]>([]);
@@ -34,7 +47,7 @@ const StandardPage: React.FC = (): JSX.Element => {
   const [pageSize, setPageSize] = useState<number>(10);
   const [total, setTotal] = useState<number>(0);
 
-  // 是否已搜索过
+  // 是否已执行过搜索
   const [hasSearched, setHasSearched] = useState<boolean>(false);
 
   // 地区选项列表 - 使用公共常量
@@ -42,9 +55,15 @@ const StandardPage: React.FC = (): JSX.Element => {
 
   /**
    * 处理搜索
+   * @param isRefresh 是否是刷新操作
    */
-  const handleSearch = async () => {
+  const handleSearch = async (isRefresh: boolean = false) => {
     if (!keyword.trim()) {
+      // 只在用户主动搜索时提示
+      if (!hasSearched) {
+        setHasSearched(true);
+        return;
+      }
       Taro.showToast({
         title: "请输入搜索关键词",
         icon: "none",
@@ -52,36 +71,138 @@ const StandardPage: React.FC = (): JSX.Element => {
       return;
     }
 
-    setLoading(true);
-    setHasSearched(true);
+    // 如果是首次搜索或刷新，显示骨架屏
+    if (!hasSearched || isRefresh) {
+      setInitialLoading(true);
+    }
+
+    if (isRefresh) {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+    }
 
     try {
+      const pageNum = isRefresh ? 1 : current;
       const params = {
         input: keyword.trim(),
         province: region !== "地区" ? region : "四川省",
-        currentPage: current,
+        currentPage: pageNum,
         pageSize: pageSize,
       };
 
       const result = await standardApi.queryStandards(params);
-      setStandardList(result.rows);
-      setTotal(Number(result.total));
+
+      // 添加1秒延迟，让加载效果更明显
+      setTimeout(() => {
+        if (isRefresh) {
+          setStandardList(result.rows);
+          setCurrent(1);
+        } else {
+          setStandardList((prev) => [...prev, ...result.rows]);
+        }
+
+        setTotal(Number(result.total));
+        setHasSearched(true);
+
+        // 判断是否还有更多数据
+        const hasMoreData =
+          result.rows.length > 0 && pageNum * pageSize < result.total;
+        setHasMore(hasMoreData);
+
+        if (isRefresh) {
+          setRefreshing(false);
+        } else {
+          setLoading(false);
+        }
+
+        // 首次加载完成后，关闭骨架屏显示
+        setInitialLoading(false);
+      }, 1000);
     } catch (error) {
       console.error("查询标准失败:", error);
       Taro.showToast({
         title: "查询失败，请稍后重试",
         icon: "none",
       });
-    } finally {
-      setLoading(false);
+
+      // 出错时也需要关闭骨架屏
+      setInitialLoading(false);
+
+      if (isRefresh) {
+        setRefreshing(false);
+      } else {
+        setLoading(false);
+      }
     }
   };
 
   /**
-   * 返回上一页
+   * 处理下拉刷新
    */
-  const handleBack = () => {
-    Taro.navigateBack();
+  const onRefresh = () => {
+    if (!hasSearched || !keyword.trim()) {
+      setRefreshing(false);
+      return;
+    }
+    handleSearch(true);
+  };
+
+  /**
+   * 处理滚动加载
+   */
+  const onLoad = () => {
+    if (!hasSearched || !keyword.trim() || !hasMore || loading) return;
+
+    // 计算新页码
+    const nextPage = current + 1;
+    setCurrent(nextPage);
+
+    // 直接调用加载函数并传递新页码
+    handleSearchWithPage(nextPage);
+  };
+
+  /**
+   * 使用指定页码进行搜索
+   * @param pageNum 页码
+   */
+  const handleSearchWithPage = async (pageNum: number) => {
+    try {
+      setLoading(true);
+
+      const params = {
+        input: keyword.trim(),
+        province: region !== "地区" ? region : "四川省",
+        currentPage: pageNum,
+        pageSize: pageSize,
+      };
+
+      const result = await standardApi.queryStandards(params);
+
+      // 添加1秒延迟，让加载效果更明显
+      setTimeout(() => {
+        setStandardList((prev) => [...prev, ...result.rows]);
+        setTotal(Number(result.total));
+
+        // 判断是否还有更多数据
+        const hasMoreData =
+          result.rows.length > 0 && pageNum * pageSize < result.total;
+        setHasMore(hasMoreData);
+        setLoading(false);
+
+        // 关闭骨架屏显示
+        setInitialLoading(false);
+      }, 1000);
+    } catch (error) {
+      console.error("查询标准失败:", error);
+      Taro.showToast({
+        title: "查询失败，请稍后重试",
+        icon: "none",
+      });
+
+      setInitialLoading(false);
+      setLoading(false);
+    }
   };
 
   /**
@@ -101,6 +222,32 @@ const StandardPage: React.FC = (): JSX.Element => {
     Taro.navigateTo({
       url: `/SPAStandard/pages/detail/index?id=${standardId}`,
     });
+  };
+
+  /**
+   * 渲染骨架屏
+   */
+  const renderSkeleton = () => {
+    return (
+      <View>
+        {[1, 2, 3].map((item) => (
+          <View key={item} className="standard-item skeleton-card">
+            <View className="skeleton-row">
+              <Skeleton style={{ width: "80%", height: "32px" }} />
+            </View>
+            <View className="skeleton-row">
+              <Skeleton style={{ width: "60%", height: "26px" }} />
+            </View>
+            <View className="skeleton-row">
+              <Skeleton style={{ width: "90%", height: "24px" }} />
+            </View>
+            <View className="skeleton-row">
+              <Skeleton style={{ width: "50%", height: "24px" }} />
+            </View>
+          </View>
+        ))}
+      </View>
+    );
   };
 
   return (
@@ -123,51 +270,83 @@ const StandardPage: React.FC = (): JSX.Element => {
             placeholder="输入标准编号、标准名称"
             placeholderStyle="color: #999; font-size: 28rpx;"
             confirmType="search"
-            onConfirm={handleSearch}
+            onConfirm={() => handleSearch(true)}
           />
         </View>
 
         {/* 搜索按钮 */}
-        <Text className="search-text" onClick={handleSearch}>
+        <Text className="search-text" onClick={() => handleSearch(true)}>
           {loading ? "搜索中..." : "搜索"}
         </Text>
       </View>
 
       {/* 内容区域 */}
       <View className="content">
-        {loading ? (
-          <View className="loading">加载中...</View>
-        ) : standardList.length === 0 ? (
-          <View className="empty-container">
-            <Empty>
-              <Empty.Image src="search" />
-              <Empty.Description>暂无数据</Empty.Description>
-            </Empty>
-          </View>
-        ) : (
-          <View className="standard-list">
-            {standardList.map((standard) => (
-              <View
-                key={standard.fileId}
-                className="standard-item"
-                onClick={() => viewStandardDetail(standard.fileId)}
-              >
-                <View className="standard-title">{standard.name}</View>
-                <View className="standard-code">{standard.number}</View>
-                <View className="standard-date">
-                  发布日期：
-                  {new Date(standard.publishDate).toLocaleDateString()} |
-                  实施日期：
-                  {new Date(standard.applyDate).toLocaleDateString()}
-                </View>
-                <View className="standard-info">
-                  {standard.standardGrade} |{" "}
-                  {standard.stateNum === 1 ? "现行有效" : "已废止"}
-                </View>
+        <PullRefresh
+          loading={refreshing}
+          onRefresh={onRefresh}
+          style={{ height: "100%" }}
+        >
+          <List
+            loading={loading}
+            hasMore={hasMore}
+            offset={100}
+            immediateCheck={false}
+            fixedHeight
+            onLoad={onLoad}
+            className="standard-list-container"
+            style={{ height: "100%" }}
+          >
+            {initialLoading && hasSearched ? (
+              renderSkeleton()
+            ) : !hasSearched ? (
+              <View className="empty-container">
+                <Empty>
+                  <Empty.Image src="search" />
+                  <Empty.Description>请输入关键词搜索</Empty.Description>
+                </Empty>
               </View>
-            ))}
-          </View>
-        )}
+            ) : standardList.length === 0 ? (
+              <View className="empty-container">
+                <Empty>
+                  <Empty.Image src="search" />
+                  <Empty.Description>暂无数据</Empty.Description>
+                </Empty>
+              </View>
+            ) : (
+              <View className="standard-list">
+                {standardList.map((standard) => (
+                  <View
+                    key={standard.fileId}
+                    className="standard-item"
+                    onClick={() => viewStandardDetail(standard.fileId)}
+                  >
+                    <View className="standard-title">{standard.name}</View>
+                    <View className="standard-code">{standard.number}</View>
+                    <View className="standard-date">
+                      发布日期：
+                      {new Date(standard.publishDate).toLocaleDateString()} |
+                      实施日期：
+                      {new Date(standard.applyDate).toLocaleDateString()}
+                    </View>
+                    <View className="standard-info">
+                      {standard.standardGrade} |{" "}
+                      {standard.stateNum === 1 ? "现行有效" : "已废止"}
+                    </View>
+                  </View>
+                ))}
+              </View>
+            )}
+            <List.Placeholder>
+              {loading && <View className="list-loading">加载中...</View>}
+              {!hasMore && standardList.length > 0 && (
+                <View className="list-finished">没有更多数据了</View>
+              )}
+              {/* 底部额外空间 */}
+              <View style={{ height: "40px" }}></View>
+            </List.Placeholder>
+          </List>
+        </PullRefresh>
       </View>
 
       {/* 地区选择器弹出层 */}

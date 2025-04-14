@@ -86,7 +86,7 @@ export async function queryStandards(
 ): Promise<StandardResponse> {
   try {
     // 显示加载状态
-    Taro.showLoading({ title: "加载中...", mask: true });
+    // Taro.showLoading({ title: "加载中...", mask: true });
 
     // 构建完整URL
     const url = `${STANDARD_BASE_URL}/api/retrieval/externalApi/samplingAssistant`;
