@@ -8,6 +8,7 @@ import * as messageApi from "./message";
 import * as foodClassApi from "./foodclass";
 import * as taskApi from "./task";
 import * as standardApi from "./standard";
+import * as sampleValidationApi from "./sampleValidation";
 
 export {
   userApi,
@@ -17,4 +18,5 @@ export {
   foodClassApi,
   taskApi,
   standardApi,
+  sampleValidationApi,
 };

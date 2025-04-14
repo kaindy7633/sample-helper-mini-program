@@ -47,6 +47,12 @@ export default defineAppConfig({
       name: "subpackage-standard",
       pages: ["pages/standard/index", "pages/detail/index"],
     },
+    // 抽样单验证分包
+    {
+      root: "SPASampleValidation",
+      name: "subpackage-validation",
+      pages: ["pages/validation/index"],
+    },
   ],
   window: {
     backgroundTextStyle: "light",
