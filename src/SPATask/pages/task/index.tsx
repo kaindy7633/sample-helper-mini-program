@@ -10,6 +10,7 @@ import {
   Picker,
   PullRefresh,
   List,
+  Skeleton,
 } from "@taroify/core";
 import { ArrowDown, Replay, WarningOutlined } from "@taroify/icons";
 import SearchIcon from "../../../assets/images/ico_search_grey.png";
@@ -121,12 +122,20 @@ const TaskPage: React.FC = (): JSX.Element => {
   const [loading, setLoading] = useState<boolean>(false);
   const [hasMore, setHasMore] = useState<boolean>(true);
 
+  // 首次加载标记
+  const [isFirstLoad, setIsFirstLoad] = useState<boolean>(true);
+
+  // 初始加载状态 - 用于显示骨架屏
+  const [initialLoading, setInitialLoading] = useState<boolean>(true);
+
   /**
    * 获取分类树数据
    */
   const fetchClassTree = async () => {
     try {
+      console.log("获取分类树数据开始");
       const result = await taskApi.getClassTree();
+      console.log("获取到分类树数据:", result);
       setClassTreeData(result || []);
     } catch (error) {
       console.error("获取分类树数据失败:", error);
@@ -186,6 +195,9 @@ const TaskPage: React.FC = (): JSX.Element => {
         } else {
           setLoading(false);
         }
+
+        // 首次加载完成后，关闭骨架屏显示
+        setInitialLoading(false);
       }, 1000); // 延迟1秒更新状态
     } catch (error) {
       console.error("获取任务列表失败:", error);
@@ -202,6 +214,8 @@ const TaskPage: React.FC = (): JSX.Element => {
         } else {
           setLoading(false);
         }
+        // 出错时也需要关闭骨架屏
+        setInitialLoading(false);
         showToastMessage("error", "获取任务列表失败");
       }, 1000);
     }
@@ -250,6 +264,9 @@ const TaskPage: React.FC = (): JSX.Element => {
   // 切换Tab
   const handleTabChange = (tab: "pending" | "completed") => {
     setActiveTab(tab);
+    // 标记为首次加载，避免触发额外的加载
+    setIsFirstLoad(true);
+    // 重置其他状态
     setCurrent(1);
     setHasMore(true);
   };
@@ -266,12 +283,21 @@ const TaskPage: React.FC = (): JSX.Element => {
 
   // 重置筛选条件
   const handleReset = () => {
+    // 重置筛选条件
     setFilterA("报送分类A");
     setFilterB("报送分类B");
     setKeyword("");
+
+    // 标记为首次加载，避免触发额外的加载
+    setIsFirstLoad(true);
+
+    // 重置分页状态
     setCurrent(1);
     setHasMore(true);
-    onRefresh();
+
+    // 刷新数据
+    setRefreshing(true);
+    fetchTaskList(true);
   };
 
   // 处理分类A选择
@@ -389,8 +415,12 @@ const TaskPage: React.FC = (): JSX.Element => {
 
   // 处理下拉刷新
   const onRefresh = () => {
+    // 标记为首次加载，避免触发额外的加载
+    setIsFirstLoad(true);
+    // 设置刷新状态
     setRefreshing(true);
     setHasMore(true);
+    setCurrent(1); // 重置为第一页
     fetchTaskList(true);
   };
 
@@ -406,17 +436,31 @@ const TaskPage: React.FC = (): JSX.Element => {
 
   // 监听页码变化加载数据
   useEffect(() => {
+    // 跳过首次加载，因为初始化时已经加载了第一页
+    if (isFirstLoad) {
+      setIsFirstLoad(false);
+      return;
+    }
+
+    // 只有页码大于1时才触发加载更多
     if (current > 1) {
       fetchTaskList(false);
     }
-  }, [current]);
+  }, [current, isFirstLoad]);
 
   // 初始化加载数据
   useEffect(() => {
+    // 加载分类树数据
     fetchClassTree();
-    setCurrent(1);
+
+    // 重置状态，但不触发加载
     setHasMore(true);
-    onRefresh();
+    setLoading(false);
+    setRefreshing(false);
+
+    // 直接调用一次fetchTaskList加载第一页数据
+    setCurrent(1);
+    fetchTaskList(true);
   }, [activeTab]);
 
   // 当选择分类A时，更新分类B的选项
@@ -451,12 +495,12 @@ const TaskPage: React.FC = (): JSX.Element => {
 
   // 在点击分类A和分类B时记录值
   const openClassAPopup = () => {
+    // 即使没有数据也显示弹窗
     setClassAOpen(true);
   };
 
   const openClassBPopup = () => {
     if (filterA === "报送分类A") {
-      showToastMessage("error", "请先选择报送分类A");
       return;
     }
     setClassBOpen(true);
@@ -514,132 +558,177 @@ const TaskPage: React.FC = (): JSX.Element => {
         {/* 筛选器 */}
         <View className="filter-section">
           <View className="filter-left">
-            <View className="filter-item" onClick={openClassAPopup}>
+            <View
+              className="filter-item"
+              onClick={openClassAPopup}
+              style={{ display: "flex", alignItems: "center", padding: "8px" }}
+            >
               <Text style={{ marginRight: 3, fontSize: 16 }}>{filterA}</Text>
               <ArrowDown />
             </View>
-            <View className="filter-item" onClick={openClassBPopup}>
+            <View
+              className="filter-item"
+              onClick={openClassBPopup}
+              style={{ display: "flex", alignItems: "center", padding: "8px" }}
+            >
               <Text style={{ marginRight: 3, fontSize: 16 }}>{filterB}</Text>
               <ArrowDown />
             </View>
           </View>
           <View className="filter-divider"></View>
-          <View className="reset-button" onClick={handleReset}>
+          <View
+            className="reset-button"
+            onClick={handleReset}
+            style={{ padding: "8px", cursor: "pointer" }}
+          >
             <Replay size="18" />
             <Text style={{ fontSize: 16 }}>重置</Text>
           </View>
         </View>
       </View>
 
-      {/* 内容区域 */}
-      <PullRefresh
-        loading={refreshing}
-        onRefresh={onRefresh}
-        className="content"
-      >
-        <List
-          loading={loading}
-          hasMore={hasMore}
-          offset={100}
-          immediateCheck
-          fixedHeight
-          onLoad={onLoad}
-          className="task-list-container"
+      {/* 内容区域 - 必须在所有上方控件之后渲染，避免覆盖问题 */}
+      <View className="content">
+        <PullRefresh
+          loading={refreshing}
+          onRefresh={onRefresh}
           style={{ height: "100%" }}
         >
-          <View className="task-list">
-            {currentTasks.length > 0 ? (
-              currentTasks.map((task) => (
-                <View key={task.id} className="task-card">
-                  {/* 抽样单号 */}
-                  <View className="task-id-row">
-                    <Text className="task-id-label">抽样单编号：</Text>
-                    <Text className="task-id-value">{task.sampleNo}</Text>
-                    <Text className="task-link-tag">{task.sampleLink}</Text>
-                    <Text style={{ fontSize: "10px", color: "#999" }}>
-                      总数:{total}
-                    </Text>
-                  </View>
-
-                  {/* 任务名称 */}
-                  <View className="task-title-row">
-                    <Text className="task-title">{task.classB}</Text>
-                  </View>
-
-                  {/* 抽样人员 */}
-                  <View className="task-info-row">
-                    <Text className="task-info-label">抽样人员：</Text>
-                    <Text className="task-info-value">{task.sampleTeam}</Text>
-                  </View>
-
-                  {/* 下达时间 */}
-                  <View className="task-info-row">
-                    <Text className="task-info-label">下达时间：</Text>
-                    <Text className="task-info-value">{task.createDate}</Text>
-                  </View>
-
-                  {/* 食品详情表格 */}
-                  <View className="task-details-table">
-                    <View className="table-header">
-                      <View className="table-cell">食品大类</View>
-                      <View className="table-cell">食品亚类</View>
-                      <View className="table-cell">食品品种</View>
-                      <View className="table-cell">食品细类</View>
-                    </View>
-
-                    {renderTaskDetails(task).map((detail, index) => (
-                      <View key={index} className="table-row">
-                        {renderTableCell(detail.category, true)}
-                        {renderTableCell(detail.subcategory)}
-                        {renderTableCell(detail.property)}
-                        {renderTableCell(detail.brand)}
+          <List
+            loading={loading}
+            hasMore={hasMore}
+            offset={100}
+            immediateCheck={false}
+            fixedHeight
+            onLoad={onLoad}
+            className="task-list-container"
+            style={{ height: "100%" }}
+          >
+            <View className="task-list">
+              {initialLoading ? (
+                // 骨架屏 - 显示3个卡片的骨架
+                <View>
+                  {[1, 2, 3].map((item) => (
+                    <View key={item} className="task-card skeleton-card">
+                      <View className="skeleton-row">
+                        <Skeleton style={{ width: "40%", height: "36px" }} />
+                        <Skeleton style={{ width: "30%", height: "28px" }} />
                       </View>
-                    ))}
-                  </View>
-
-                  {/* 任务操作按钮 - 仅在待执行tab下显示 */}
-                  {activeTab === "pending" && (
-                    <View className="task-actions">
-                      {/* 暂时屏蔽取消任务按钮 */}
-                      {/*<View
-                        className="task-action-btn cancel"
-                        onClick={() =>
-                          showConfirmModal("cancel", String(task.id))
-                        }
-                      >
-                        取消任务
-                      </View>*/}
-                      <View
-                        className="task-action-btn complete"
-                        onClick={() =>
-                          showConfirmModal("complete", String(task.id))
-                        }
-                      >
-                        完成任务
+                      <View className="skeleton-row">
+                        <Skeleton style={{ width: "70%", height: "28px" }} />
+                      </View>
+                      <View className="skeleton-row">
+                        <Skeleton style={{ width: "50%", height: "28px" }} />
+                        <Skeleton style={{ width: "40%", height: "28px" }} />
+                      </View>
+                      <View className="skeleton-row">
+                        <Skeleton style={{ width: "50%", height: "28px" }} />
+                        <Skeleton style={{ width: "40%", height: "28px" }} />
+                      </View>
+                      <View className="skeleton-table">
+                        <View className="skeleton-header">
+                          <Skeleton style={{ width: "100%", height: "40px" }} />
+                        </View>
+                        <View className="skeleton-row">
+                          <Skeleton style={{ width: "100%", height: "40px" }} />
+                        </View>
                       </View>
                     </View>
-                  )}
+                  ))}
                 </View>
-              ))
-            ) : (
-              <View className="empty-state">
-                <Empty>
-                  <Empty.Image src="search" />
-                  <Empty.Description>暂无任务数据</Empty.Description>
-                </Empty>
-              </View>
-            )}
-          </View>
+              ) : currentTasks.length > 0 ? (
+                currentTasks.map((task) => (
+                  <View key={task.id} className="task-card">
+                    {/* 抽样单号 */}
+                    <View className="task-id-row">
+                      <Text className="task-id-label">抽样单编号：</Text>
+                      <Text className="task-id-value">{task.sampleNo}</Text>
+                      <Text className="task-link-tag">{task.sampleLink}</Text>
+                      <Text style={{ fontSize: "10px", color: "#999" }}>
+                        总数:{total}
+                      </Text>
+                    </View>
 
-          {/* 列表加载状态 */}
-          <List.Placeholder>
-            {loading && <Loading className="list-loading">加载中...</Loading>}
-            {!loading && !hasMore && currentTasks.length > 0 && (
-              <View className="list-finished">没有更多数据了</View>
-            )}
-          </List.Placeholder>
-        </List>
-      </PullRefresh>
+                    {/* 任务名称 */}
+                    <View className="task-title-row">
+                      <Text className="task-title">{task.classB}</Text>
+                    </View>
+
+                    {/* 抽样人员 */}
+                    <View className="task-info-row">
+                      <Text className="task-info-label">抽样人员：</Text>
+                      <Text className="task-info-value">{task.sampleTeam}</Text>
+                    </View>
+
+                    {/* 下达时间 */}
+                    <View className="task-info-row">
+                      <Text className="task-info-label">下达时间：</Text>
+                      <Text className="task-info-value">{task.createDate}</Text>
+                    </View>
+
+                    {/* 食品详情表格 */}
+                    <View className="task-details-table">
+                      <View className="table-header">
+                        <View className="table-cell">食品大类</View>
+                        <View className="table-cell">食品亚类</View>
+                        <View className="table-cell">食品品种</View>
+                        <View className="table-cell">食品细类</View>
+                      </View>
+
+                      {renderTaskDetails(task).map((detail, index) => (
+                        <View key={index} className="table-row">
+                          {renderTableCell(detail.category, true)}
+                          {renderTableCell(detail.subcategory)}
+                          {renderTableCell(detail.property)}
+                          {renderTableCell(detail.brand)}
+                        </View>
+                      ))}
+                    </View>
+
+                    {/* 任务操作按钮 - 仅在待执行tab下显示 */}
+                    {activeTab === "pending" && (
+                      <View className="task-actions">
+                        {/* 暂时屏蔽取消任务按钮 */}
+                        {/*<View
+                          className="task-action-btn cancel"
+                          onClick={() =>
+                            showConfirmModal("cancel", String(task.id))
+                          }
+                        >
+                          取消任务
+                        </View>*/}
+                        <View
+                          className="task-action-btn complete"
+                          onClick={() =>
+                            showConfirmModal("complete", String(task.id))
+                          }
+                        >
+                          完成任务
+                        </View>
+                      </View>
+                    )}
+                  </View>
+                ))
+              ) : (
+                <View className="empty-state">
+                  <Empty>
+                    <Empty.Image src="search" />
+                    <Empty.Description>暂无任务数据</Empty.Description>
+                  </Empty>
+                </View>
+              )}
+            </View>
+
+            {/* 列表加载状态 */}
+            <List.Placeholder>
+              {loading && <Loading className="list-loading">加载中...</Loading>}
+              {!loading && !hasMore && currentTasks.length > 0 && (
+                <View className="list-finished">没有更多数据了</View>
+              )}
+            </List.Placeholder>
+          </List>
+        </PullRefresh>
+      </View>
 
       {/* 分类A选择弹出层 */}
       <Popup
@@ -655,14 +744,16 @@ const TaskPage: React.FC = (): JSX.Element => {
           </Text>
         </View>
         <Picker
-          columns={
+          columns={[
             classTreeData.length > 0
-              ? [classTreeData.map((item) => item.name)]
-              : [[]]
-          }
+              ? classTreeData.map((item) => item.name)
+              : ["暂无数据"],
+          ]}
           onCancel={() => setClassAOpen(false)}
           onConfirm={(values) => {
-            if (values[0]) handleClassASelect(values[0]);
+            console.log("选择分类A:", values);
+            if (values[0] && values[0] !== "暂无数据")
+              handleClassASelect(values[0]);
           }}
         />
       </Popup>
@@ -681,14 +772,16 @@ const TaskPage: React.FC = (): JSX.Element => {
           </Text>
         </View>
         <Picker
-          columns={
+          columns={[
             classBOptions.length > 0
-              ? [classBOptions.map((item) => item.name)]
-              : [[]]
-          }
+              ? classBOptions.map((item) => item.name)
+              : ["暂无数据"],
+          ]}
           onCancel={() => setClassBOpen(false)}
           onConfirm={(values) => {
-            if (values[0]) handleClassBSelect(values[0]);
+            console.log("选择分类B:", values);
+            if (values[0] && values[0] !== "暂无数据")
+              handleClassBSelect(values[0]);
           }}
         />
       </Popup>
