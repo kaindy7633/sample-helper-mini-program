@@ -2,8 +2,16 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect, useMemo } from "react";
 import { View, Text, ScrollView, Input, Image } from "@tarojs/components";
-import { Button, Empty, Loading, Popup, Picker } from "@taroify/core";
-import { ArrowDown, Replay } from "@taroify/icons";
+import {
+  Button,
+  Empty,
+  Loading,
+  Popup,
+  Picker,
+  PullRefresh,
+  List,
+} from "@taroify/core";
+import { ArrowDown, Replay, WarningOutlined } from "@taroify/icons";
 import Taro from "@tarojs/taro";
 import SearchIcon from "../../../assets/images/ico_search_grey.png";
 import { taskApi } from "../../../services";
@@ -109,6 +117,11 @@ const TaskPage: React.FC = (): JSX.Element => {
   const [total, setTotal] = useState<number>(0);
   const [pageSize, setPageSize] = useState<number>(5);
 
+  // 加载状态
+  const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [finished, setFinished] = useState<boolean>(false);
+
   /**
    * 获取分类树数据
    */
@@ -124,14 +137,16 @@ const TaskPage: React.FC = (): JSX.Element => {
 
   /**
    * 获取任务列表数据
+   * @param isRefresh 是否是下拉刷新
    */
-  const fetchTaskList = async () => {
+  const fetchTaskList = async (isRefresh: boolean = false) => {
     try {
       const isFinish = activeTab === "pending" ? "0" : "1";
+      const pageNum = isRefresh ? 1 : current;
 
       // 使用taskApi服务获取任务列表
       const result = await taskApi.getPlanTasks({
-        current: Number(current),
+        current: Number(pageNum),
         size: Number(pageSize),
         isFinish,
         classa: filterA === "报送分类A" ? undefined : filterA,
@@ -139,22 +154,49 @@ const TaskPage: React.FC = (): JSX.Element => {
         cate1: keyword || undefined,
       });
 
+      const newRecords = result?.records || [];
+
       if (activeTab === "pending") {
-        setPendingTasks(result?.records || []);
+        if (isRefresh) {
+          setPendingTasks(newRecords);
+        } else {
+          setPendingTasks((prev) => [...prev, ...newRecords]);
+        }
       } else {
-        setCompletedTasks(result?.records || []);
+        if (isRefresh) {
+          setCompletedTasks(newRecords);
+        } else {
+          setCompletedTasks((prev) => [...prev, ...newRecords]);
+        }
       }
 
       setTotal(Number(result?.total || 0));
+
+      // 判断是否加载完毕
+      const isFinishedLoading =
+        !newRecords.length || pageNum * pageSize >= Number(result?.total || 0);
+      setFinished(isFinishedLoading);
+
+      if (isRefresh) {
+        setRefreshing(false);
+        setCurrent(1);
+      } else {
+        setLoading(false);
+      }
     } catch (error) {
       console.error("获取任务列表失败:", error);
       // 发生错误时清空数据
-      if (activeTab === "pending") {
-        setPendingTasks([]);
+      if (isRefresh) {
+        if (activeTab === "pending") {
+          setPendingTasks([]);
+        } else {
+          setCompletedTasks([]);
+        }
+        setTotal(0);
+        setRefreshing(false);
       } else {
-        setCompletedTasks([]);
+        setLoading(false);
       }
-      setTotal(0);
       showToastMessage("error", "获取任务列表失败");
     }
   };
@@ -199,11 +241,34 @@ const TaskPage: React.FC = (): JSX.Element => {
     }
   };
 
+  // 处理下拉刷新
+  const onRefresh = () => {
+    setRefreshing(true);
+    setFinished(false);
+    fetchTaskList(true);
+  };
+
+  // 加载更多数据
+  const onLoad = () => {
+    if (finished) return;
+
+    setLoading(true);
+    setCurrent((prev) => prev + 1);
+    fetchTaskList(false);
+  };
+
   // 初始化加载数据
   useEffect(() => {
     fetchClassTree();
-    fetchTaskList();
-  }, [activeTab, current, pageSize]);
+    onRefresh();
+  }, [activeTab]);
+
+  // 当页码变化时加载数据，但不触发初始化
+  useEffect(() => {
+    if (current > 1) {
+      fetchTaskList(false);
+    }
+  }, [current]);
 
   // 当选择分类A时，更新分类B的选项
   useEffect(() => {
@@ -243,8 +308,7 @@ const TaskPage: React.FC = (): JSX.Element => {
 
   // 处理搜索
   const handleSearch = () => {
-    setCurrent(1); // 搜索时重置页码
-    fetchTaskList();
+    onRefresh();
   };
 
   // 切换排序方式
@@ -257,8 +321,7 @@ const TaskPage: React.FC = (): JSX.Element => {
     setFilterA("报送分类A");
     setFilterB("报送分类B");
     setKeyword("");
-    setCurrent(1);
-    fetchTaskList();
+    onRefresh();
   };
 
   // 处理分类A选择
@@ -447,91 +510,108 @@ const TaskPage: React.FC = (): JSX.Element => {
       </View>
 
       {/* 内容区域 */}
-      <ScrollView className="content" scrollY>
-        <View className="task-list">
-          {currentTasks.length > 0 ? (
-            currentTasks.map((task) => (
-              <View key={task.id} className="task-card">
-                {/* 抽样单号 */}
-                <View className="task-id-row">
-                  <Text className="task-id-label">抽样单编号：</Text>
-                  <Text className="task-id-value">{task.sampleNo}</Text>
-                  <Text className="task-link-tag">{task.sampleLink}</Text>
-                </View>
-
-                {/* 任务名称 */}
-                <View className="task-title-row">
-                  <Text className="task-title">{task.classB}</Text>
-                </View>
-
-                {/* 抽样人员 */}
-                <View className="task-info-row">
-                  <Text className="task-info-label">抽样人员：</Text>
-                  <Text className="task-info-value">{task.sampleTeam}</Text>
-                </View>
-
-                {/* 下达时间 */}
-                <View className="task-info-row">
-                  <Text className="task-info-label">下达时间：</Text>
-                  <Text className="task-info-value">{task.createDate}</Text>
-                </View>
-
-                {/* 食品详情表格 */}
-                <View className="task-details-table">
-                  <View className="table-header">
-                    <View className="table-cell">食品大类</View>
-                    <View className="table-cell">食品亚类</View>
-                    <View className="table-cell">食品品种</View>
-                    <View className="table-cell">食品细类</View>
+      <PullRefresh
+        loading={refreshing}
+        onRefresh={onRefresh}
+        className="content"
+      >
+        <List loading={loading} onLoad={onLoad}>
+          <View className="task-list">
+            {currentTasks.length > 0 ? (
+              currentTasks.map((task) => (
+                <View key={task.id} className="task-card">
+                  {/* 抽样单号 */}
+                  <View className="task-id-row">
+                    <Text className="task-id-label">抽样单编号：</Text>
+                    <Text className="task-id-value">{task.sampleNo}</Text>
+                    <Text className="task-link-tag">{task.sampleLink}</Text>
                   </View>
 
-                  {renderTaskDetails(task).map((detail, index) => (
-                    <View key={index} className="table-row">
-                      {renderTableCell(detail.category, true)}
-                      {renderTableCell(detail.subcategory)}
-                      {renderTableCell(detail.property)}
-                      {renderTableCell(detail.brand)}
-                    </View>
-                  ))}
-                </View>
-
-                {/* 任务操作按钮 - 仅在待执行tab下显示 */}
-                {activeTab === "pending" && (
-                  <View className="task-actions">
-                    {/* 暂时屏蔽取消任务按钮 */}
-                    {/*<View
-                      className="task-action-btn cancel"
-                      onClick={() =>
-                        showConfirmModal("cancel", String(task.id))
-                      }
-                    >
-                      取消任务
-                    </View>*/}
-                    <View
-                      className="task-action-btn complete"
-                      onClick={() =>
-                        showConfirmModal("complete", String(task.id))
-                      }
-                    >
-                      完成任务
-                    </View>
+                  {/* 任务名称 */}
+                  <View className="task-title-row">
+                    <Text className="task-title">{task.classB}</Text>
                   </View>
-                )}
+
+                  {/* 抽样人员 */}
+                  <View className="task-info-row">
+                    <Text className="task-info-label">抽样人员：</Text>
+                    <Text className="task-info-value">{task.sampleTeam}</Text>
+                  </View>
+
+                  {/* 下达时间 */}
+                  <View className="task-info-row">
+                    <Text className="task-info-label">下达时间：</Text>
+                    <Text className="task-info-value">{task.createDate}</Text>
+                  </View>
+
+                  {/* 食品详情表格 */}
+                  <View className="task-details-table">
+                    <View className="table-header">
+                      <View className="table-cell">食品大类</View>
+                      <View className="table-cell">食品亚类</View>
+                      <View className="table-cell">食品品种</View>
+                      <View className="table-cell">食品细类</View>
+                    </View>
+
+                    {renderTaskDetails(task).map((detail, index) => (
+                      <View key={index} className="table-row">
+                        {renderTableCell(detail.category, true)}
+                        {renderTableCell(detail.subcategory)}
+                        {renderTableCell(detail.property)}
+                        {renderTableCell(detail.brand)}
+                      </View>
+                    ))}
+                  </View>
+
+                  {/* 任务操作按钮 - 仅在待执行tab下显示 */}
+                  {activeTab === "pending" && (
+                    <View className="task-actions">
+                      {/* 暂时屏蔽取消任务按钮 */}
+                      {/*<View
+                        className="task-action-btn cancel"
+                        onClick={() =>
+                          showConfirmModal("cancel", String(task.id))
+                        }
+                      >
+                        取消任务
+                      </View>*/}
+                      <View
+                        className="task-action-btn complete"
+                        onClick={() =>
+                          showConfirmModal("complete", String(task.id))
+                        }
+                      >
+                        完成任务
+                      </View>
+                    </View>
+                  )}
+                </View>
+              ))
+            ) : (
+              <View className="empty-state">
+                <Empty>
+                  <Empty.Image src="search" />
+                  <Empty.Description>暂无任务数据</Empty.Description>
+                </Empty>
               </View>
-            ))
-          ) : (
-            <View className="empty-state">
-              <Empty>
-                <Empty.Image src="search" />
-                <Empty.Description>暂无任务数据</Empty.Description>
-              </Empty>
-            </View>
-          )}
-        </View>
+            )}
+          </View>
 
-        {/* 底部空白占位，防止内容被底部导航遮挡 */}
-        <View className="bottom-spacer"></View>
-      </ScrollView>
+          {/* 列表加载状态 */}
+          <List.Placeholder>
+            {loading && <Loading className="list-loading">加载中...</Loading>}
+            {!loading && !finished && currentTasks.length > 0 && (
+              <View className="list-more">上拉加载更多</View>
+            )}
+            {finished && currentTasks.length > 0 && (
+              <View className="list-finished">没有更多数据了</View>
+            )}
+          </List.Placeholder>
+
+          {/* 底部空白占位，防止内容被底部导航遮挡 */}
+          <View className="bottom-spacer"></View>
+        </List>
+      </PullRefresh>
 
       {/* 分类A选择弹出层 */}
       <Popup

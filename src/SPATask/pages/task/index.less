@@ -178,7 +178,8 @@
 
 .content {
   flex: 1;
-  overflow-y: auto;
+  overflow: auto;
+  background-color: #f5f5f5;
 }
 
 .loading-indicator {
@@ -199,6 +200,7 @@
   flex-direction: column;
   gap: 16px;
   margin-top: 16px;
+  // padding: 16px;
 }
 
 .task-card {
@@ -227,8 +229,8 @@
 .task-id-label::before {
   content: "";
   display: block;
-  width: 4px;
-  height: 16px;
+  width: 8px;
+  height: 24px;
   background-color: #3f7efd;
   margin-right: 8px;
   border-radius: 2px;
@@ -503,4 +505,20 @@
   margin-top: 24px;
   width: 160px;
   height: 40px;
+}
+
+/* 添加下拉刷新和列表的样式 */
+.list-loading, .list-finished, .list-more {
+  text-align: center;
+  color: #999;
+  padding: 16px 0;
+  font-size: 14px;
+}
+
+.list-more {
+  color: #666;
+}
+
+.list-finished {
+  color: #bbb;
 }
