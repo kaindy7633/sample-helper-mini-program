@@ -135,3 +135,26 @@ export async function cancelTask(taskId: string) {
     loadingText: "处理中...",
   });
 }
+
+/**
+ * 分类树节点接口
+ */
+export interface ClassTreeNode {
+  /** 分类名称 */
+  name: string;
+  /** 子分类节点 */
+  children: ClassTreeNode[] | null;
+}
+
+/**
+ * 获取分类树数据
+ * @returns 分类树数据
+ */
+export async function getClassTree() {
+  return request<ClassTreeNode[]>({
+    url: API_PATHS.TASK.LIST_CLASS_TREE,
+    method: "GET",
+    showLoading: true,
+    loadingText: "加载中...",
+  });
+}

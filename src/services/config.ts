@@ -54,6 +54,8 @@ export const API_PATHS = {
     COMPLETE_TASK: "/api/planTask/complete",
     // 取消任务
     CANCEL_TASK: "/api/planTask/cancel",
+    // 获取分类树数据
+    LIST_CLASS_TREE: "/api/sampleTask/list-class-tree",
   },
   // 标法查询
   STANDARD: {

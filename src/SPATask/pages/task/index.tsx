@@ -2,7 +2,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect, useMemo } from "react";
 import { View, Text, ScrollView, Input, Image } from "@tarojs/components";
-import { Button, Empty, Loading } from "@taroify/core";
+import { Button, Empty, Loading, Popup, Picker } from "@taroify/core";
 import { ArrowDown, Replay } from "@taroify/icons";
 import Taro from "@tarojs/taro";
 import SearchIcon from "../../../assets/images/ico_search_grey.png";
@@ -79,6 +79,16 @@ const TaskPage: React.FC = (): JSX.Element => {
   const [filterA, setFilterA] = useState<string>("报送分类A");
   const [filterB, setFilterB] = useState<string>("报送分类B");
 
+  // 分类下拉状态
+  const [classAOpen, setClassAOpen] = useState<boolean>(false);
+  const [classBOpen, setClassBOpen] = useState<boolean>(false);
+  const [classTreeData, setClassTreeData] = useState<taskApi.ClassTreeNode[]>(
+    []
+  );
+  const [classBOptions, setClassBOptions] = useState<taskApi.ClassTreeNode[]>(
+    []
+  );
+
   // 是否降序排列
   const [isDescOrder, setIsDescOrder] = useState<boolean>(true);
 
@@ -100,6 +110,19 @@ const TaskPage: React.FC = (): JSX.Element => {
   const [pageSize, setPageSize] = useState<number>(5);
 
   /**
+   * 获取分类树数据
+   */
+  const fetchClassTree = async () => {
+    try {
+      const result = await taskApi.getClassTree();
+      setClassTreeData(result || []);
+    } catch (error) {
+      console.error("获取分类树数据失败:", error);
+      showToastMessage("error", "获取分类树数据失败");
+    }
+  };
+
+  /**
    * 获取任务列表数据
    */
   const fetchTaskList = async () => {
@@ -113,6 +136,7 @@ const TaskPage: React.FC = (): JSX.Element => {
         isFinish,
         classa: filterA === "报送分类A" ? undefined : filterA,
         classb: filterB === "报送分类B" ? undefined : filterB,
+        keyword: keyword || undefined,
       });
 
       if (activeTab === "pending") {
@@ -177,8 +201,39 @@ const TaskPage: React.FC = (): JSX.Element => {
 
   // 初始化加载数据
   useEffect(() => {
+    fetchClassTree();
     fetchTaskList();
   }, [activeTab, current, pageSize]);
+
+  // 当选择分类A时，更新分类B的选项
+  useEffect(() => {
+    if (filterA !== "报送分类A") {
+      // 查找当前选择的分类A节点
+      const selectedNode = classTreeData.find((node) => node.name === filterA);
+      if (selectedNode && selectedNode.children) {
+        setClassBOptions(selectedNode.children);
+      } else {
+        setClassBOptions([]);
+      }
+
+      // 如果切换了分类A，重置分类B的选择
+      setFilterB("报送分类B");
+    } else {
+      setClassBOptions([]);
+    }
+  }, [filterA, classTreeData]);
+
+  // 当选择分类A或分类B时，刷新列表
+  useEffect(() => {
+    if (
+      (filterA !== "报送分类A" || filterB !== "报送分类B") &&
+      // 确保不是初始化时触发
+      classTreeData.length > 0
+    ) {
+      setCurrent(1); // 重置页码
+      fetchTaskList();
+    }
+  }, [filterA, filterB]);
 
   // 切换Tab
   const handleTabChange = (tab: "pending" | "completed") => {
@@ -204,6 +259,18 @@ const TaskPage: React.FC = (): JSX.Element => {
     setKeyword("");
     setCurrent(1);
     fetchTaskList();
+  };
+
+  // 处理分类A选择
+  const handleClassASelect = (value: string) => {
+    setFilterA(value);
+    setClassAOpen(false);
+  };
+
+  // 处理分类B选择
+  const handleClassBSelect = (value: string) => {
+    setFilterB(value);
+    setClassBOpen(false);
   };
 
   // 显示确认Modal
@@ -359,16 +426,13 @@ const TaskPage: React.FC = (): JSX.Element => {
         {/* 筛选器 */}
         <View className="filter-section">
           <View className="filter-left">
-            <View
-              className="filter-item"
-              // onClick={() => setDistancePriorityOpen(true)}
-            >
+            <View className="filter-item" onClick={() => setClassAOpen(true)}>
               <Text style={{ marginRight: 3, fontSize: 16 }}>{filterA}</Text>
               <ArrowDown />
             </View>
             <View
               className="filter-item"
-              // onClick={() => setCompanyTypeOpen(true)}
+              onClick={() => filterA !== "报送分类A" && setClassBOpen(true)}
             >
               <Text style={{ marginRight: 3, fontSize: 16 }}>{filterB}</Text>
               <ArrowDown />
@@ -468,6 +532,46 @@ const TaskPage: React.FC = (): JSX.Element => {
         {/* 底部空白占位，防止内容被底部导航遮挡 */}
         <View className="bottom-spacer"></View>
       </ScrollView>
+
+      {/* 分类A选择弹出层 */}
+      <Popup
+        open={classAOpen}
+        placement="bottom"
+        rounded
+        onClose={() => setClassAOpen(false)}
+      >
+        <Popup.Close />
+        <View style={{ padding: "16px 16px 0" }}>
+          <Text style={{ fontWeight: "bold", fontSize: "16px" }}>
+            选择报送分类A
+          </Text>
+        </View>
+        <Picker
+          columns={[classTreeData.map((item) => item.name)]}
+          onCancel={() => setClassAOpen(false)}
+          onConfirm={(values) => handleClassASelect(values[0])}
+        />
+      </Popup>
+
+      {/* 分类B选择弹出层 */}
+      <Popup
+        open={classBOpen}
+        placement="bottom"
+        rounded
+        onClose={() => setClassBOpen(false)}
+      >
+        <Popup.Close />
+        <View style={{ padding: "16px 16px 0" }}>
+          <Text style={{ fontWeight: "bold", fontSize: "16px" }}>
+            选择报送分类B
+          </Text>
+        </View>
+        <Picker
+          columns={[classBOptions.map((item) => item.name)]}
+          onCancel={() => setClassBOpen(false)}
+          onConfirm={(values) => handleClassBSelect(values[0])}
+        />
+      </Popup>
 
       {/* 确认Modal */}
       {showModal && (
