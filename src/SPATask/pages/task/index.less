@@ -206,7 +206,7 @@
   flex-direction: column;
   gap: 16px;
   margin-top: 16px;
-  padding: 0 16px 16px;
+  padding: 0 16px 40px; /* 增加底部内边距 */
 }
 
 .task-card {
@@ -563,6 +563,12 @@
 
   .taroify-list__placeholder {
     background-color: #f5f5f5;
+    padding-bottom: 40px; /* 增加底部内边距确保加载文本完整显示 */
+  }
+
+  /* 确保底部有足够空间显示加载状态 */
+  .taroify-list__loading {
+    padding: 20px 0 40px; /* 增加底部内边距 */
   }
 }
 

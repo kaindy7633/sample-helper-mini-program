@@ -725,6 +725,8 @@ const TaskPage: React.FC = (): JSX.Element => {
               {!loading && !hasMore && currentTasks.length > 0 && (
                 <View className="list-finished">没有更多数据了</View>
               )}
+              {/* 底部额外空间 */}
+              <View style={{ height: "40px" }}></View>
             </List.Placeholder>
           </List>
         </PullRefresh>
