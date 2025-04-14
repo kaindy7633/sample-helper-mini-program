@@ -51,7 +51,7 @@
 .search-area {
   display: flex;
   align-items: center;
-  padding: 16px 20px;
+  padding: 20px;
   background-color: #fff;
   border-bottom: 1px solid #f5f5f5;
 }
@@ -59,52 +59,49 @@
 .region-selector {
   display: flex;
   align-items: center;
-  background-color: #f5f5f5;
-  padding: 0 16px;
-  height: 76px;
-  border-radius: 38px;
+  padding: 0 10px;
+  height: 60px;
   margin-right: 16px;
+  color: #333;
 }
 
 .region-text {
   font-size: 28px;
   color: #333;
-  margin-right: 8px;
+  margin: 0 4px;
 }
 
 .search-box {
   flex: 1;
-  height: 76px;
+  height: 70px;
   background-color: #f5f5f5;
-  border-radius: 38px;
-  padding: 0 24px;
+  border-radius: 40px;
+  padding: 0 20px;
   display: flex;
   align-items: center;
 }
 
 .search-input {
   flex: 1;
-  height: 76px;
+  height: 70px;
   font-size: 28px;
   color: #333;
+  padding-left: 10px;
 }
 
-.placeholder {
-  color: #999;
+.search-text {
+  display: inline-block;
+  width: 80px;
   font-size: 28px;
-}
-
-.search-btn {
-  width: 120px;
-  height: 76px;
-  background-color: #1677ff;
-  color: #fff;
-  border-radius: 38px;
-  font-size: 28px;
+  color: #1677ff;
   margin-left: 16px;
   font-weight: normal;
-  line-height: 76px;
-  padding: 0;
+  text-align: center;
+}
+
+/* 按钮禁用样式 */
+.search-btn[disabled] {
+  opacity: 0.6;
 }
 
 /* 内容区域 */

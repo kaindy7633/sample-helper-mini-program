@@ -41,6 +41,12 @@ export default defineAppConfig({
         "pages/samplingmethod/index",
       ],
     },
+    // 标法查询分包
+    {
+      root: "SPAStandard",
+      name: "subpackage-standard",
+      pages: ["pages/standard/index", "pages/detail/index"],
+    },
   ],
   window: {
     backgroundTextStyle: "light",

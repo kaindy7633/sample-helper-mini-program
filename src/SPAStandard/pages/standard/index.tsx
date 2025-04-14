@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { View, Text, Input } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import { Button, Picker, Empty, Popup } from "@taroify/core";
-import { ArrowDown } from "@taroify/icons";
+import { ArrowDown, Location, Search } from "@taroify/icons";
 import { standardApi } from "../../../services";
 import type { StandardDetail } from "../../../services/standard";
+import { CHINA_PROVINCES } from "../../../constants";
 import "./index.less";
 
 /**
@@ -36,15 +37,8 @@ const StandardPage: React.FC = (): JSX.Element => {
   // 是否已搜索过
   const [hasSearched, setHasSearched] = useState<boolean>(false);
 
-  // 地区选项列表
-  const regionOptions = [
-    { value: "全国", text: "全国" },
-    { value: "北京", text: "北京" },
-    { value: "上海", text: "上海" },
-    { value: "广东", text: "广东" },
-    { value: "浙江", text: "浙江" },
-    { value: "山西", text: "山西" },
-  ];
+  // 地区选项列表 - 使用公共常量
+  const regionOptions = CHINA_PROVINCES;
 
   /**
    * 处理搜索
@@ -63,14 +57,14 @@ const StandardPage: React.FC = (): JSX.Element => {
 
     try {
       const params = {
-        keyword: keyword.trim(),
-        region: region !== "地区" ? region : undefined,
-        current,
-        size: pageSize,
+        input: keyword.trim(),
+        province: region !== "地区" ? region : "四川省",
+        currentPage: current,
+        pageSize: pageSize,
       };
 
       const result = await standardApi.queryStandards(params);
-      setStandardList(result.records);
+      setStandardList(result.rows);
       setTotal(Number(result.total));
     } catch (error) {
       console.error("查询标准失败:", error);
@@ -94,7 +88,7 @@ const StandardPage: React.FC = (): JSX.Element => {
    * 查看标准详情
    * @param standardId 标准ID
    */
-  const viewStandardDetail = (standardId: string) => {
+  const viewStandardDetail = (standardId: number) => {
     // 保存查询参数到本地缓存
     Taro.setStorageSync("standard_query_params", {
       keyword,
@@ -111,19 +105,13 @@ const StandardPage: React.FC = (): JSX.Element => {
 
   return (
     <View className="container">
-      {/* 顶部栏 */}
-      <View className="header">
-        <View className="back-icon" onClick={handleBack}></View>
-        <Text className="title">标法查询</Text>
-        <View className="placeholder"></View>
-      </View>
-
       {/* 搜索区域 */}
       <View className="search-area">
         {/* 地区选择 */}
         <View className="region-selector" onClick={() => setRegionOpen(true)}>
+          <Location size="18" color="#1677ff" />
           <Text className="region-text">{region}</Text>
-          <ArrowDown size="18" />
+          <ArrowDown size="16" />
         </View>
 
         {/* 搜索框 */}
@@ -133,23 +121,23 @@ const StandardPage: React.FC = (): JSX.Element => {
             value={keyword}
             onInput={(e) => setKeyword(e.detail.value)}
             placeholder="输入标准编号、标准名称"
-            placeholderClass="placeholder"
+            placeholderStyle="color: #999; font-size: 28rpx;"
             confirmType="search"
             onConfirm={handleSearch}
           />
         </View>
 
         {/* 搜索按钮 */}
-        <Button className="search-btn" loading={loading} onClick={handleSearch}>
-          搜索
-        </Button>
+        <Text className="search-text" onClick={handleSearch}>
+          {loading ? "搜索中..." : "搜索"}
+        </Text>
       </View>
 
       {/* 内容区域 */}
       <View className="content">
         {loading ? (
           <View className="loading">加载中...</View>
-        ) : hasSearched && standardList.length === 0 ? (
+        ) : standardList.length === 0 ? (
           <View className="empty-container">
             <Empty>
               <Empty.Image src="search" />
@@ -160,18 +148,21 @@ const StandardPage: React.FC = (): JSX.Element => {
           <View className="standard-list">
             {standardList.map((standard) => (
               <View
-                key={standard.id}
+                key={standard.fileId}
                 className="standard-item"
-                onClick={() => viewStandardDetail(standard.id)}
+                onClick={() => viewStandardDetail(standard.fileId)}
               >
-                <View className="standard-title">{standard.standardName}</View>
-                <View className="standard-code">{standard.standardCode}</View>
+                <View className="standard-title">{standard.name}</View>
+                <View className="standard-code">{standard.number}</View>
                 <View className="standard-date">
-                  发布日期：{standard.publishDate} | 实施日期：
-                  {standard.implementDate}
+                  发布日期：
+                  {new Date(standard.publishDate).toLocaleDateString()} |
+                  实施日期：
+                  {new Date(standard.applyDate).toLocaleDateString()}
                 </View>
                 <View className="standard-info">
-                  {standard.standardType} | {standard.standardStatus}
+                  {standard.standardGrade} |{" "}
+                  {standard.stateNum === 1 ? "现行有效" : "已废止"}
                 </View>
               </View>
             ))}
@@ -191,11 +182,17 @@ const StandardPage: React.FC = (): JSX.Element => {
           title="选择地区"
           cancelText="取消"
           confirmText="确认"
-          columns={[regionOptions]}
+          columns={regionOptions}
           onCancel={() => setRegionOpen(false)}
-          onConfirm={(values) => {
-            const selectedIndex = parseInt(values[0] as string, 10);
-            setRegion(regionOptions[selectedIndex].text);
+          onConfirm={(value) => {
+            console.log("选择的地区:", value);
+            // 在Taroify的Picker中，单列选择时value就是选中项的值
+            const selectedOption = regionOptions.find(
+              (option) => option.value === value[0]
+            );
+            if (selectedOption) {
+              setRegion(selectedOption.value);
+            }
             setRegionOpen(false);
           }}
         />
