@@ -227,7 +227,24 @@ const TaskPage: React.FC = (): JSX.Element => {
    */
   const handleCompleteTask = async (taskId: string) => {
     try {
-      const success = await taskApi.completeTask(taskId);
+      console.log("完成任务 - 接收到的任务ID:", taskId);
+      console.log(
+        "完成任务 - 当前任务详情:",
+        currentTasks.find((task) => String(task.id) === taskId)
+      );
+
+      // 将字符串ID转为数字
+      const numericId = parseInt(taskId, 10);
+      console.log("完成任务 - 转换后的数字ID:", numericId);
+
+      if (Number.isNaN(numericId)) {
+        showToastMessage("error", "任务ID无效");
+        return;
+      }
+
+      // 使用新接口完成任务，传递ID数组
+      console.log("完成任务 - 传递给API的ID数组:", [numericId]);
+      const success = await taskApi.updateFinishTask([numericId]);
 
       if (success) {
         showToastMessage("success", "完成任务");

@@ -121,6 +121,24 @@ export async function completeTask(taskId: string) {
 }
 
 /**
+ * 使用新接口完成任务
+ * @param taskIds 任务ID数组
+ * @returns 操作结果
+ */
+export async function updateFinishTask(taskIds: number[]) {
+  // 注意：微信小程序环境中，传递原始JSON数组可能导致问题
+  // 参考web端成功的请求，直接发送原始数组
+  return request<boolean>({
+    url: "/api/planTaskCode/updateFinish",
+    method: "POST",
+    header: {
+      "Content-Type": "application/json",
+    },
+    data: taskIds,
+  });
+}
+
+/**
  * 取消任务
  * @param taskId 任务ID
  * @returns 操作结果
