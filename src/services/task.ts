@@ -75,6 +75,8 @@ export interface TaskQueryParams {
   isFinish?: string;
   /** 搜索关键词(食品大类) */
   keyword?: string;
+  /** 食品大类 */
+  cate1?: string;
 }
 
 /**

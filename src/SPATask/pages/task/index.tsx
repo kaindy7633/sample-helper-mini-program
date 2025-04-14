@@ -136,7 +136,7 @@ const TaskPage: React.FC = (): JSX.Element => {
         isFinish,
         classa: filterA === "报送分类A" ? undefined : filterA,
         classb: filterB === "报送分类B" ? undefined : filterB,
-        keyword: keyword || undefined,
+        cate1: keyword || undefined,
       });
 
       if (activeTab === "pending") {
@@ -407,7 +407,7 @@ const TaskPage: React.FC = (): JSX.Element => {
               className="search-input"
               value={keyword}
               onInput={(e) => setKeyword(e.detail.value)}
-              placeholder="输入食品大类"
+              placeholder="请输入食品大类名称"
               confirmType="search"
               onConfirm={() => handleSearch()}
             />
