@@ -1,10 +1,17 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { View, Text, Image } from "@tarojs/components";
-import { FC, useEffect, useState } from "react";
-import { Empty, PullRefresh, List, Skeleton } from "@taroify/core";
+import { View, Text } from "@tarojs/components";
+import { useEffect, useState } from "react";
+import {
+  Empty,
+  PullRefresh,
+  List,
+  Skeleton,
+  Button,
+  Dialog,
+  Toast,
+} from "@taroify/core";
 import Taro from "@tarojs/taro";
-import styles from "./index.module.less";
 import { sampleValidationApi } from "../../../services";
 import type { ValidationItem } from "../../../services/sampleValidation";
 import "./index.less";
@@ -86,6 +93,12 @@ const ValidationPage: React.FC = (): JSX.Element => {
 
   // 首次加载标记
   const [isFirstLoad, setIsFirstLoad] = useState<boolean>(true);
+
+  // 文件上传状态
+  const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
+  // 上传选择对话框
+  const [showUploadDialog, setShowUploadDialog] = useState<boolean>(false);
 
   /**
    * 获取验证列表数据
@@ -331,6 +344,123 @@ const ValidationPage: React.FC = (): JSX.Element => {
     );
   };
 
+  /**
+   * 处理文件上传按钮点击
+   */
+  const handleFileUpload = () => {
+    setShowUploadDialog(true);
+  };
+
+  /**
+   * 选择图片或拍照上传
+   * @param sourceType 来源类型: 相机或相册
+   */
+  const chooseImageUpload = async (sourceType: "camera" | "album") => {
+    setShowUploadDialog(false);
+
+    try {
+      // 选择图片
+      const result = await Taro.chooseImage({
+        count: 1,
+        sizeType: ["original", "compressed"],
+        sourceType: sourceType === "camera" ? ["camera"] : ["album"],
+      });
+
+      if (result.tempFilePaths && result.tempFilePaths.length > 0) {
+        const filePath = result.tempFilePaths[0];
+
+        // 文件大小限制: 10MB
+        const maxSize = 10 * 1024 * 1024;
+        if (result.tempFiles && result.tempFiles[0].size > maxSize) {
+          Toast.open({
+            message: "图片大小不能超过10MB",
+            duration: 2000,
+          });
+          return;
+        }
+
+        // 开始上传
+        setIsUploading(true);
+        setUploadProgress(0);
+
+        try {
+          const uploadResult = await sampleValidationApi.uploadValidationFile(
+            filePath
+          );
+
+          setIsUploading(false);
+
+          if (uploadResult.success) {
+            Toast.success({
+              message: "上传成功",
+              duration: 2000,
+            });
+
+            // 上传成功后刷新列表
+            onRefresh();
+          } else {
+            // 根据错误消息显示不同的提示
+            if (uploadResult.message.includes("415")) {
+              Toast.fail({
+                message: "服务器不支持当前文件格式，请联系管理员",
+                duration: 3000,
+              });
+            } else if (
+              uploadResult.message.includes("401") ||
+              uploadResult.message.includes("身份验证")
+            ) {
+              Toast.fail({
+                message: "登录已过期，请重新登录",
+                duration: 3000,
+              });
+
+              // 提示用户需要重新登录
+              setTimeout(() => {
+                Taro.navigateTo({
+                  url: "/SPALogin/pages/login/index",
+                });
+              }, 2000);
+            } else {
+              Toast.fail({
+                message: uploadResult.message || "上传失败，请重试",
+                duration: 2000,
+              });
+            }
+          }
+        } catch (uploadError: any) {
+          setIsUploading(false);
+
+          // 尝试获取更详细的错误信息
+          const errorMsg = uploadError.message || "上传失败，请重试";
+          console.error("文件上传失败:", uploadError);
+
+          if (errorMsg.includes("415")) {
+            Toast.fail({
+              message: "服务器不支持当前文件格式，请联系管理员",
+              duration: 3000,
+            });
+          } else if (errorMsg.includes("401")) {
+            Toast.fail({
+              message: "登录已过期，请重新登录",
+              duration: 3000,
+            });
+          } else {
+            Toast.fail({
+              message: errorMsg,
+              duration: 2000,
+            });
+          }
+        }
+      }
+    } catch (error) {
+      console.error("选择图片失败:", error);
+      Toast.fail({
+        message: "选择图片失败",
+        duration: 2000,
+      });
+    }
+  };
+
   return (
     <View className="container">
       {/* 内容区域 */}
@@ -375,6 +505,77 @@ const ValidationPage: React.FC = (): JSX.Element => {
           </List>
         </PullRefresh>
       </View>
+
+      {/* 文件上传按钮 */}
+      <View className="upload-button-wrapper">
+        <Button
+          className="upload-button"
+          color="primary"
+          onClick={handleFileUpload}
+          loading={isUploading}
+          disabled={isUploading}
+        >
+          {isUploading ? `上传中 ${uploadProgress}%` : "文件上传"}
+        </Button>
+      </View>
+
+      {/* 上传方式选择对话框 */}
+      <Dialog
+        open={showUploadDialog}
+        onClose={() => setShowUploadDialog(false)}
+      >
+        <Dialog.Header>选择上传方式</Dialog.Header>
+        <Dialog.Content>
+          <View style={{ padding: "20px 0" }}>
+            <Text>可以拍照上传抽样单文件图片</Text>
+          </View>
+        </Dialog.Content>
+        <Dialog.Actions>
+          <Button
+            style={{ marginRight: "8px" }}
+            onClick={() => setShowUploadDialog(false)}
+          >
+            取消
+          </Button>
+          <Button onClick={() => chooseImageUpload("album")}>从相册选择</Button>
+          <Button
+            style={{ marginLeft: "8px" }}
+            color="primary"
+            onClick={() => chooseImageUpload("camera")}
+          >
+            拍照上传
+          </Button>
+        </Dialog.Actions>
+      </Dialog>
+
+      {/* 上传进度对话框 */}
+      <Dialog open={isUploading}>
+        <Dialog.Header>文件上传中</Dialog.Header>
+        <Dialog.Content>
+          <View style={{ padding: "20px 0" }}>
+            <View style={{ marginBottom: "10px", textAlign: "center" }}>
+              已上传 {uploadProgress}%
+            </View>
+            <View
+              style={{
+                height: "6px",
+                backgroundColor: "#f2f2f2",
+                borderRadius: "3px",
+                overflow: "hidden",
+              }}
+            >
+              <View
+                style={{
+                  width: `${uploadProgress}%`,
+                  height: "100%",
+                  backgroundColor: "#1989fa",
+                  transition: "width 0.2s",
+                }}
+              />
+            </View>
+          </View>
+        </Dialog.Content>
+      </Dialog>
     </View>
   );
 };
