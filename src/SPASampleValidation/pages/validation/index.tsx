@@ -1,12 +1,67 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React, { useState, useEffect } from "react";
-import { View, Text } from "@tarojs/components";
-import Taro from "@tarojs/taro";
+import { View, Text, Image } from "@tarojs/components";
+import { FC, useEffect, useState } from "react";
 import { Empty, PullRefresh, List, Skeleton } from "@taroify/core";
+import Taro from "@tarojs/taro";
+import styles from "./index.module.less";
 import { sampleValidationApi } from "../../../services";
 import type { ValidationItem } from "../../../services/sampleValidation";
 import "./index.less";
+
+/**
+ * 测试数据生成
+ * @returns 模拟的验证列表数据
+ */
+const generateMockData = (): ValidationItem[] => {
+  return [
+    {
+      id: 1,
+      sampleNo: "DBJ253310000051304321",
+      sampleName: "原味松子（油炸类）",
+      taskName: "抽样单验证2025-03-14 10:56:04",
+      title: "抽样单验证2025-03-14 10:56:04 [测试数据]",
+      createTime: "2025-03-14 10:56:05",
+      status: "0",
+      createUser: "admin",
+      createUserId: "6430",
+      isDel: 0,
+      orgId: "0",
+      isRead: 0,
+      spotNo: null,
+    },
+    {
+      id: 2,
+      sampleNo: "DBJ253310000051304322",
+      sampleName: "原味松子（油炸类）",
+      taskName: "抽样单验证2025-03-14 10:56:04",
+      title: "抽样单验证2025-03-14 10:56:04 [测试数据]",
+      createTime: "2025-03-14 10:56:05",
+      status: "4",
+      createUser: "admin",
+      createUserId: "6430",
+      isDel: 0,
+      orgId: "0",
+      isRead: 0,
+      spotNo: null,
+    },
+    {
+      id: 3,
+      sampleNo: "DBJ253310000051304323",
+      sampleName: "椒盐花生（油炸类）",
+      taskName: "抽样单验证2025-03-15 09:23:17",
+      title: "抽样单验证2025-03-15 09:23:17 [测试数据]",
+      createTime: "2025-03-15 09:23:18",
+      status: "4",
+      createUser: "admin",
+      createUserId: "6430",
+      isDel: 0,
+      orgId: "0",
+      isRead: 0,
+      spotNo: null,
+    },
+  ];
+};
 
 /**
  * 抽样单验证页面组件
@@ -46,6 +101,7 @@ const ValidationPage: React.FC = (): JSX.Element => {
         setLoading(true);
       }
 
+      // 使用API获取数据
       const result = await sampleValidationApi.getValidationList({
         currentPage: pageNum,
         pageSize: pageSize,
@@ -53,20 +109,30 @@ const ValidationPage: React.FC = (): JSX.Element => {
 
       // 添加1秒延迟，让加载效果更明显
       setTimeout(() => {
-        const records = result.records || [];
+        // 获取真实接口返回的数据
+        const apiRecords = result.records || [];
+
+        // 获取测试数据
+        const mockData = generateMockData();
+
+        // 将测试数据添加到真实数据后面
+        const combinedRecords = [...apiRecords, ...mockData];
 
         if (isRefresh) {
-          setValidationList(records);
+          setValidationList(combinedRecords);
           setCurrent(1);
         } else {
-          setValidationList((prev) => [...prev, ...records]);
+          setValidationList((prev) => [...prev, ...combinedRecords]);
         }
 
-        setTotal(Number(result.total || 0));
+        // 更新总数，同时考虑真实数据和测试数据
+        const totalCount = Number(result.total || 0) + mockData.length;
+        setTotal(totalCount);
 
         // 判断是否还有更多数据
         const hasMoreData =
-          records.length > 0 && pageNum * pageSize < Number(result.total || 0);
+          apiRecords.length > 0 &&
+          pageNum * pageSize < Number(result.total || 0);
         setHasMore(hasMoreData);
 
         if (isRefresh) {
@@ -81,8 +147,15 @@ const ValidationPage: React.FC = (): JSX.Element => {
       }, 1000);
     } catch (error) {
       console.error("获取验证列表失败:", error);
+
+      // 使用模拟数据
+      const mockData = generateMockData();
+      setValidationList(mockData);
+      setTotal(mockData.length);
+      setHasMore(false);
+
       Taro.showToast({
-        title: "获取数据失败，请稍后重试",
+        title: "使用测试数据显示",
         icon: "none",
       });
 
@@ -197,6 +270,67 @@ const ValidationPage: React.FC = (): JSX.Element => {
     Taro.navigateBack();
   };
 
+  /**
+   * 处理列表项点击事件
+   * @param item 验证项
+   */
+  const handleItemClick = (item: ValidationItem) => {
+    // 如果是测试数据，提示用户
+    if (item.title?.includes("[测试数据]")) {
+      Taro.showToast({
+        title: "这是测试数据，无法查看详情",
+        icon: "none",
+      });
+      return;
+    }
+
+    Taro.navigateTo({
+      url: `/pages/validation/detail/index?id=${item.id}`,
+    });
+  };
+
+  const renderValidationItem = (item: ValidationItem) => {
+    // 检查状态值，"0"表示正常，非"0"表示异常
+    const isNormal = item.status === "0";
+    const statusText = isNormal ? "正常" : "有异常";
+
+    return (
+      <View
+        className="validation-item"
+        key={item.id}
+        onClick={() => handleItemClick(item)}
+      >
+        <View className="validation-item-title">
+          {item.taskName || item.title}
+        </View>
+        <View className="validation-item-row">
+          <Text className="label">抽样单号</Text>
+          <Text className="value">{item.sampleNo || "暂无数据"}</Text>
+        </View>
+        <View className="validation-item-row">
+          <Text className="label">样品名称</Text>
+          <Text className="value">{item.sampleName || "暂无数据"}</Text>
+        </View>
+        <View className="validation-item-row">
+          <Text className="label">创建时间</Text>
+          <Text className="value">{item.createTime || "暂无数据"}</Text>
+        </View>
+        <View className="validation-status-row">
+          <Text className="label">验证状态</Text>
+          <View className="status-container">
+            <Text
+              className={`validation-status ${
+                isNormal ? "status-normal" : "status-abnormal"
+              }`}
+            >
+              {statusText}
+            </Text>
+          </View>
+        </View>
+      </View>
+    );
+  };
+
   return (
     <View className="container">
       {/* 内容区域 */}
@@ -227,39 +361,7 @@ const ValidationPage: React.FC = (): JSX.Element => {
               </View>
             ) : (
               <View className="validation-list">
-                {validationList.map((item, index) => (
-                  <View key={index} className="validation-item">
-                    <View className="validation-title">{item.title}</View>
-                    <View className="validation-info-row">
-                      <Text className="validation-label">抽样单号</Text>
-                      <Text className="validation-value">{item.sampleNo}</Text>
-                    </View>
-                    <View className="validation-info-row">
-                      <Text className="validation-label">样品名称</Text>
-                      <Text className="validation-value">
-                        {item.sampleName}
-                      </Text>
-                    </View>
-                    <View className="validation-info-row">
-                      <Text className="validation-label">创建时间</Text>
-                      <Text className="validation-value">
-                        {item.createTime}
-                      </Text>
-                    </View>
-                    <View className="validation-info-row">
-                      <Text className="validation-label">验证状态</Text>
-                      <Text
-                        className={`validation-status ${
-                          item.status === 0
-                            ? "status-normal"
-                            : "status-abnormal"
-                        }`}
-                      >
-                        {item.status === 0 ? "正常" : "有异常"}
-                      </Text>
-                    </View>
-                  </View>
-                ))}
+                {validationList.map(renderValidationItem)}
               </View>
             )}
             <List.Placeholder>

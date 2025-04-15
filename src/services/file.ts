@@ -43,8 +43,6 @@ export async function previewStandardFile(fileId: number): Promise<void> {
       data: `fileId=${fileId}&type=${FileOperationType.PREVIEW}`,
     });
 
-    console.log("文件预览URL获取结果:", result);
-
     // 检查返回数据
     if (!result || !result.url) {
       Taro.showToast({
@@ -236,8 +234,6 @@ export async function getPreviewUrl(
       },
       data: `fileId=${fileId}&type=${FileOperationType.PREVIEW}`,
     });
-
-    console.log("文件预览URL获取结果:", result);
 
     // 检查返回数据
     if (!result || !result.url) {

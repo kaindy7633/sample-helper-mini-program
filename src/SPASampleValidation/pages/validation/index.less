@@ -58,7 +58,7 @@
 .content {
   flex: 1;
   position: fixed;
-  top: 80px;
+  top: 10px;
   left: 0;
   right: 0;
   bottom: 0;
@@ -96,30 +96,49 @@
   margin-bottom: 16px;
 }
 
-.validation-title {
+.validation-item-title {
   font-size: 30px;
   color: #333;
   font-weight: 500;
   margin-bottom: 20px;
 }
 
-.validation-info-row {
+.validation-item-row {
   display: flex;
   justify-content: space-between;
   margin-bottom: 12px;
+  align-items: center;
 }
 
-.validation-label {
+.label {
   font-size: 28px;
   color: #666;
-  width: 180px;
 }
 
-.validation-value {
+.value {
   font-size: 28px;
-  color: #333;
-  flex: 1;
+  color: #999;
   text-align: right;
+}
+
+/* 验证状态行样式 */
+.validation-status-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.status-container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.status-icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 8px;
 }
 
 .validation-status {
