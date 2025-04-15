@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { View, Text, Input, Image } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import {
@@ -59,9 +59,23 @@ const StandardPage: React.FC = (): JSX.Element => {
    * @param e 事件对象
    * @param fileId 文件ID
    */
-  const handlePreviewFile = (e: any, fileId: number) => {
+  const handlePreviewFile = async (e: any, fileId: number) => {
     e.stopPropagation();
-    fileApi.previewStandardFile(fileId);
+
+    try {
+      Taro.showLoading({ title: "加载文件中...", mask: true });
+
+      // 直接调用fileApi的预览方法
+      await fileApi.previewStandardFile(fileId);
+    } catch (error) {
+      console.error("预览文件失败:", error);
+      Taro.showToast({
+        title: "文件预览失败",
+        icon: "none",
+      });
+    } finally {
+      Taro.hideLoading();
+    }
   };
 
   /**

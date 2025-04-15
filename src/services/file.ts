@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import Taro from "@tarojs/taro";
 import request from "./request";
 import { API_PATHS } from "./config";
@@ -32,7 +33,7 @@ export async function previewStandardFile(fileId: number): Promise<void> {
     // 显示加载提示
     Taro.showLoading({ title: "文件加载中...", mask: true });
 
-    // 请求文件预览接口
+    // 第一步：获取文件的OSS URL
     const result = await request<any>({
       url: "/api/standardDownLoad/downLoad",
       method: "POST",
@@ -42,9 +43,9 @@ export async function previewStandardFile(fileId: number): Promise<void> {
       data: `fileId=${fileId}&type=${FileOperationType.PREVIEW}`,
     });
 
-    console.log("文件预览接口响应:", result);
+    console.log("文件预览URL获取结果:", result);
 
-    // 检查业务状态码
+    // 检查返回数据
     if (!result || !result.url) {
       Taro.showToast({
         title: "获取文件链接失败",
@@ -53,45 +54,39 @@ export async function previewStandardFile(fileId: number): Promise<void> {
       return;
     }
 
-    // 使用返回的URL直接预览
+    // 获取OSS URL
     const fileUrl = result.url;
 
-    // 使用Taro提供的方法打开网页预览PDF
-    Taro.showLoading({ title: "正在打开文件...", mask: true });
-    await Taro.downloadFile({
+    // 第二步：下载文件内容
+    const downloadResult = await Taro.downloadFile({
       url: fileUrl,
-      success: (res) => {
-        if (res.statusCode === 200) {
-          Taro.openDocument({
-            filePath: res.tempFilePath,
-            showMenu: true,
-            success: () => {
-              console.log("打开文档成功");
-            },
-            fail: (error) => {
-              console.error("打开文档失败:", error);
-              Taro.showToast({
-                title: "文件预览失败",
-                icon: "none",
-              });
-            },
-          });
-        } else {
-          Taro.showToast({
-            title: "文件下载失败",
-            icon: "none",
-          });
-        }
+      timeout: 30000, // 设置超时为30秒
+    });
+
+    if (downloadResult.statusCode !== 200) {
+      Taro.showToast({
+        title: "文件下载失败",
+        icon: "none",
+      });
+      return;
+    }
+
+    // 获取临时文件路径
+    const tempFilePath = downloadResult.tempFilePath;
+
+    // 第三步：打开文档预览
+    await Taro.openDocument({
+      filePath: tempFilePath,
+      showMenu: true,
+      success: () => {
+        console.log("打开文档成功");
       },
       fail: (error) => {
-        console.error("下载文件失败:", error);
+        console.error("打开文档失败:", error);
         Taro.showToast({
-          title: "文件下载失败",
+          title: "文件预览失败",
           icon: "none",
         });
-      },
-      complete: () => {
-        Taro.hideLoading();
       },
     });
   } catch (error) {
@@ -118,7 +113,7 @@ export async function downloadStandardFile(
     // 显示加载提示
     Taro.showLoading({ title: "文件下载中...", mask: true });
 
-    // 请求文件下载接口
+    // 第一步：获取文件的OSS URL
     const result = await request<any>({
       url: "/api/standardDownLoad/downLoad",
       method: "POST",
@@ -128,7 +123,7 @@ export async function downloadStandardFile(
       data: `fileId=${fileId}&type=${FileOperationType.DOWNLOAD}`,
     });
 
-    console.log("文件下载接口响应:", result);
+    console.log("文件下载URL获取结果:", result);
 
     // 检查返回数据
     if (!result || !result.url) {
@@ -139,47 +134,44 @@ export async function downloadStandardFile(
       return;
     }
 
-    // 使用返回的URL直接下载
+    // 获取OSS URL
     const fileUrl = result.url;
 
-    // 使用Taro的文件下载和保存功能
-    Taro.downloadFile({
+    // 第二步：下载文件内容
+    const downloadResult = await Taro.downloadFile({
       url: fileUrl,
-      success: (res) => {
-        if (res.statusCode === 200) {
-          Taro.saveFile({
-            tempFilePath: res.tempFilePath,
-            success: (saveRes) => {
-              const savedFilePath = saveRes.savedFilePath;
-              console.log("文件已保存:", savedFilePath);
-              Taro.showToast({
-                title: "下载成功",
-                icon: "success",
-              });
-            },
-            fail: (error) => {
-              console.error("保存文件失败:", error);
-              Taro.showToast({
-                title: "文件保存失败",
-                icon: "none",
-              });
-            },
-          });
-        } else {
-          Taro.showToast({
-            title: "文件下载失败",
-            icon: "none",
-          });
-        }
-      },
-      fail: (error) => {
-        console.error("下载文件失败:", error);
-        Taro.showToast({
-          title: "文件下载失败",
-          icon: "none",
-        });
-      },
+      timeout: 30000, // 设置超时为30秒
     });
+
+    if (downloadResult.statusCode !== 200) {
+      Taro.showToast({
+        title: "文件下载失败",
+        icon: "none",
+      });
+      return;
+    }
+
+    // 第三步：保存文件到本地
+    try {
+      const saveResult = await Taro.saveFile({
+        tempFilePath: downloadResult.tempFilePath,
+      });
+
+      // 使用类型断言处理savedFilePath
+      const savedPath = (saveResult as Taro.saveFile.SuccessCallbackResult)
+        .savedFilePath;
+      console.log("文件已保存:", savedPath);
+      Taro.showToast({
+        title: "下载成功",
+        icon: "success",
+      });
+    } catch (saveError) {
+      console.error("保存文件失败:", saveError);
+      Taro.showToast({
+        title: "文件保存失败",
+        icon: "none",
+      });
+    }
   } catch (error) {
     console.error("下载文件失败:", error);
     Taro.showToast({
@@ -223,10 +215,57 @@ const saveTemporaryFile = async (
   });
 };
 
+/**
+ * 获取标准文件预览URL
+ * @param fileId 文件ID
+ * @returns 预览URL
+ */
+export async function getPreviewUrl(
+  fileId: number
+): Promise<{ url: string; filePath: string }> {
+  try {
+    // 显示加载提示
+    Taro.showLoading({ title: "获取文件链接...", mask: true });
+
+    // 请求文件预览接口
+    const result = await request<any>({
+      url: "/api/standardDownLoad/downLoad",
+      method: "POST",
+      header: {
+        "content-type": "application/x-www-form-urlencoded",
+      },
+      data: `fileId=${fileId}&type=${FileOperationType.PREVIEW}`,
+    });
+
+    console.log("文件预览URL获取结果:", result);
+
+    // 检查返回数据
+    if (!result || !result.url) {
+      Taro.showToast({
+        title: "获取预览链接失败",
+        icon: "none",
+      });
+      return { url: "", filePath: "" };
+    }
+
+    return result;
+  } catch (error) {
+    console.error("获取预览链接失败:", error);
+    Taro.showToast({
+      title: "获取预览链接失败",
+      icon: "none",
+    });
+    return { url: "", filePath: "" };
+  } finally {
+    Taro.hideLoading();
+  }
+}
+
 // 导出API
 const fileApi = {
   previewStandardFile,
   downloadStandardFile,
+  getPreviewUrl,
   FileOperationType,
 };
 
