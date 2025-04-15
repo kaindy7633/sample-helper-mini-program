@@ -45,7 +45,7 @@ export default defineAppConfig({
     {
       root: "SPAStandard",
       name: "subpackage-standard",
-      pages: ["pages/standard/index", "pages/detail/index"],
+      pages: ["pages/standard/index"],
     },
     // 抽样单验证分包
     {

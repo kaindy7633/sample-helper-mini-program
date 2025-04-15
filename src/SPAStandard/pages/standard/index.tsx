@@ -206,25 +206,6 @@ const StandardPage: React.FC = (): JSX.Element => {
   };
 
   /**
-   * 查看标准详情
-   * @param standardId 标准ID
-   */
-  const viewStandardDetail = (standardId: number) => {
-    // 保存查询参数到本地缓存
-    Taro.setStorageSync("standard_query_params", {
-      keyword,
-      region,
-      current,
-      pageSize,
-    });
-
-    // 跳转到详情页面
-    Taro.navigateTo({
-      url: `/SPAStandard/pages/detail/index?id=${standardId}`,
-    });
-  };
-
-  /**
    * 渲染骨架屏
    */
   const renderSkeleton = () => {
@@ -316,11 +297,7 @@ const StandardPage: React.FC = (): JSX.Element => {
             ) : (
               <View className="standard-list">
                 {standardList.map((standard) => (
-                  <View
-                    key={standard.fileId}
-                    className="standard-item"
-                    onClick={() => viewStandardDetail(standard.fileId)}
-                  >
+                  <View key={standard.fileId} className="standard-item">
                     <View className="standard-title">{standard.name}</View>
                     <View className="standard-code">{standard.number}</View>
                     <View className="standard-date">
