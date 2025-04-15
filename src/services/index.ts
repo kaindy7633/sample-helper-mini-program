@@ -9,6 +9,7 @@ import * as foodClassApi from "./foodclass";
 import * as taskApi from "./task";
 import * as standardApi from "./standard";
 import * as sampleValidationApi from "./sampleValidation";
+import * as fileApi from "./file";
 
 export {
   userApi,
@@ -19,4 +20,5 @@ export {
   taskApi,
   standardApi,
   sampleValidationApi,
+  fileApi,
 };

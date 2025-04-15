@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useMemo, useState } from "react";
-import { View, Text, Input } from "@tarojs/components";
+import { View, Text, Input, Image } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import {
   Button,
@@ -12,9 +12,10 @@ import {
   Skeleton,
 } from "@taroify/core";
 import { ArrowDown, Location, Search } from "@taroify/icons";
-import { standardApi } from "../../../services";
+import { standardApi, fileApi } from "../../../services";
 import type { StandardDetail } from "../../../services/standard";
 import { CHINA_PROVINCES } from "../../../constants";
+import downloadIcon from "../../../assets/images/download-cloud-line.svg";
 import "./index.less";
 
 /**
@@ -52,6 +53,27 @@ const StandardPage: React.FC = (): JSX.Element => {
 
   // 地区选项列表 - 使用公共常量
   const regionOptions = CHINA_PROVINCES;
+
+  /**
+   * 处理标准文件预览
+   * @param e 事件对象
+   * @param fileId 文件ID
+   */
+  const handlePreviewFile = (e: any, fileId: number) => {
+    e.stopPropagation();
+    fileApi.previewStandardFile(fileId);
+  };
+
+  /**
+   * 处理标准文件下载
+   * @param e 事件对象
+   * @param fileId 文件ID
+   * @param fileName 文件名称
+   */
+  const handleDownloadFile = (e: any, fileId: number, fileName: string) => {
+    e.stopPropagation();
+    fileApi.downloadStandardFile(fileId, fileName);
+  };
 
   /**
    * 处理搜索
@@ -299,16 +321,38 @@ const StandardPage: React.FC = (): JSX.Element => {
                 {standardList.map((standard) => (
                   <View key={standard.fileId} className="standard-item">
                     <View className="standard-title">{standard.name}</View>
-                    <View className="standard-code">{standard.number}</View>
+
+                    <View className="standard-file-row">
+                      <Text className="standard-label">标准文件：</Text>
+                      <Text
+                        className="standard-file-name"
+                        onClick={(e) => handlePreviewFile(e, standard.fileId)}
+                      >
+                        {standard.name}.pdf
+                      </Text>
+                      <Image
+                        className="download-icon"
+                        src={downloadIcon}
+                        onClick={(e) =>
+                          handleDownloadFile(
+                            e,
+                            standard.fileId,
+                            `${standard.name}.pdf`
+                          )
+                        }
+                      />
+                    </View>
+
+                    <View className="standard-info-row">
+                      <Text className="standard-label">标准编号：</Text>
+                      <Text className="standard-value">{standard.number}</Text>
+                    </View>
+
                     <View className="standard-date">
                       发布日期：
                       {new Date(standard.publishDate).toLocaleDateString()} |
                       实施日期：
                       {new Date(standard.applyDate).toLocaleDateString()}
-                    </View>
-                    <View className="standard-info">
-                      {standard.standardGrade} |{" "}
-                      {standard.stateNum === 1 ? "现行有效" : "已废止"}
                     </View>
                   </View>
                 ))}

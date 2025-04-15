@@ -114,23 +114,57 @@
   color: #333;
   font-weight: 500;
   margin-bottom: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.standard-code {
+.standard-file-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.standard-info-row {
+  display: flex;
+  margin-bottom: 8px;
+}
+
+.standard-label {
   font-size: 26px;
   color: #666;
-  margin-bottom: 8px;
+  width: 140px;
+}
+
+.standard-value {
+  font-size: 26px;
+  color: #333;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.standard-file-name {
+  font-size: 26px;
+  color: #1677ff;
+  flex: 1;
+  text-decoration: underline;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.download-icon {
+  width: 40px;
+  height: 40px;
+  margin-left: 15px;
 }
 
 .standard-date {
   font-size: 24px;
   color: #999;
   margin-bottom: 8px;
-}
-
-.standard-info {
-  font-size: 24px;
-  color: #666;
 }
 
 /* 骨架屏样式 */
