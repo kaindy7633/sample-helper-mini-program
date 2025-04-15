@@ -108,9 +108,9 @@ export async function getValidationList(params: ValidationQueryParams) {
 }
 
 /**
- * 上传验证文件 (尝试使用 request 手动构建 multipart/form-data)
+ * 上传验证文件
  * @param filePath 文件路径
- * @param onProgress 上传进度回调 (注意: 无法提供真实进度)
+ * @param onProgress 上传进度回调
  * @returns 上传结果
  */
 export async function uploadValidationFile(
@@ -123,18 +123,14 @@ export async function uploadValidationFile(
     const result = await Taro.uploadFile({
       url: API_BASE_URL + "/api/sampleValidation/processed",
       filePath: filePath,
-      name: "files", // 字段名需与服务器一致
+      name: "file", // 这里用 file
       header: {
         ...getRequestHeader(),
-        "Content-Type": "multipart/form-data",
+        // 不要手动加 Content-Type
       },
+      // formData: {}, // 如有需要可加
       success: (res) => {
-        console.log("res", res);
-        if (res.statusCode === 200) {
-          return { success: true, message: "上传成功", fileId: res.data };
-        } else {
-          return { success: false, message: `服务器错误: ${res.statusCode}` };
-        }
+        // 这里的 success 只在小程序端用，实际返回值用 result
       },
       fail: (error) => {
         throw error;
@@ -142,7 +138,11 @@ export async function uploadValidationFile(
     });
 
     Taro.hideLoading();
-    return { success: true, message: "上传成功", fileId: result.data };
+    if (result.statusCode === 200) {
+      return { success: true, message: "上传成功", fileId: result.data };
+    } else {
+      return { success: false, message: `服务器错误: ${result.statusCode}` };
+    }
   } catch (error: any) {
     Taro.hideLoading();
     return { success: false, message: error.errMsg || "上传失败" };
@@ -150,36 +150,46 @@ export async function uploadValidationFile(
 }
 
 /**
- * 根据文件扩展名获取MIME类型
- * @param extension 文件扩展名
- * @returns MIME类型
+ * 使用 request 方法上传验证文件
+ * @param fileBuffer 文件的 ArrayBuffer 或 base64 字符串
+ * @param fileName 文件名
+ * @returns 上传结果
  */
-function getMimeType(extension: string): string {
-  const mimeTypes: Record<string, string> = {
-    jpg: "image/jpeg",
-    jpeg: "image/jpeg",
-    png: "image/png",
-    gif: "image/gif",
-    pdf: "application/pdf",
-    doc: "application/msword",
-    docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    xls: "application/vnd.ms-excel",
-    xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    ppt: "application/vnd.ms-powerpoint",
-    pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-    txt: "text/plain",
-    zip: "application/zip",
-    rar: "application/x-rar-compressed",
-    "7z": "application/x-7z-compressed",
-  };
+export async function uploadValidationFileByRequest(
+  fileBuffer: ArrayBuffer | string
+): Promise<FileUploadResponse> {
+  try {
+    Taro.showLoading({ title: "上传中...", mask: true });
 
-  return mimeTypes[extension.toLowerCase()] || "application/octet-stream";
+    // 构造 formData
+    const formData: Record<string, any> = {
+      files: fileBuffer,
+    };
+
+    const result = await request<FileUploadResponse>({
+      url: "/api/sampleValidation/processed",
+      method: "POST",
+      header: {
+        ...getRequestHeader(),
+        "Content-Type": "multipart/form-data",
+      },
+      data: formData,
+      showLoading: false,
+    });
+
+    Taro.hideLoading();
+    return result;
+  } catch (error: any) {
+    Taro.hideLoading();
+    return { success: false, message: error.message || "上传失败" };
+  }
 }
 
 // 导出API
 const sampleValidationApi = {
   getValidationList,
   uploadValidationFile,
+  uploadValidationFileByRequest,
 };
 
 export default sampleValidationApi;

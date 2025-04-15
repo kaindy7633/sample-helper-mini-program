@@ -13,7 +13,10 @@ import {
 } from "@taroify/core";
 import Taro from "@tarojs/taro";
 import { sampleValidationApi } from "../../../services";
-import type { ValidationItem } from "../../../services/sampleValidation";
+import {
+  uploadValidationFileByRequest,
+  type ValidationItem,
+} from "../../../services/sampleValidation";
 import "./index.less";
 
 /**
@@ -356,109 +359,117 @@ const ValidationPage: React.FC = (): JSX.Element => {
    * @param sourceType 来源类型: 相机或相册
    */
   const chooseImageUpload = async (sourceType: "camera" | "album") => {
-    setShowUploadDialog(false);
+    Taro.chooseImage({
+      success: async (res) => {
+        const filePath = res.tempFilePaths[0];
+        const result = await uploadValidationFileByRequest(filePath);
+        console.log("上传结果:", result);
+      },
+    });
 
-    try {
-      // 选择图片
-      const result = await Taro.chooseImage({
-        count: 1,
-        sizeType: ["original", "compressed"],
-        sourceType: sourceType === "camera" ? ["camera"] : ["album"],
-      });
+    // setShowUploadDialog(false);
 
-      if (result.tempFilePaths && result.tempFilePaths.length > 0) {
-        const filePath = result.tempFilePaths[0];
+    // try {
+    //   // 选择图片
+    //   const result = await Taro.chooseImage({
+    //     count: 1,
+    //     sizeType: ["original", "compressed"],
+    //     sourceType: sourceType === "camera" ? ["camera"] : ["album"],
+    //   });
 
-        // 文件大小限制: 10MB
-        const maxSize = 10 * 1024 * 1024;
-        if (result.tempFiles && result.tempFiles[0].size > maxSize) {
-          Toast.open({
-            message: "图片大小不能超过10MB",
-            duration: 2000,
-          });
-          return;
-        }
+    //   if (result.tempFilePaths && result.tempFilePaths.length > 0) {
+    //     const filePath = result.tempFilePaths[0];
 
-        // 开始上传
-        setIsUploading(true);
-        setUploadProgress(0);
+    //     // 文件大小限制: 10MB
+    //     const maxSize = 10 * 1024 * 1024;
+    //     if (result.tempFiles && result.tempFiles[0].size > maxSize) {
+    //       Toast.open({
+    //         message: "图片大小不能超过10MB",
+    //         duration: 2000,
+    //       });
+    //       return;
+    //     }
 
-        try {
-          const uploadResult = await sampleValidationApi.uploadValidationFile(
-            filePath
-          );
+    //     // 开始上传
+    //     setIsUploading(true);
+    //     setUploadProgress(0);
 
-          setIsUploading(false);
+    //     try {
+    //       const uploadResult = await sampleValidationApi.uploadValidationFile(
+    //         filePath
+    //       );
 
-          if (uploadResult.success) {
-            Toast.success({
-              message: "上传成功",
-              duration: 2000,
-            });
+    //       setIsUploading(false);
 
-            // 上传成功后刷新列表
-            onRefresh();
-          } else {
-            // 根据错误消息显示不同的提示
-            if (uploadResult.message.includes("415")) {
-              Toast.fail({
-                message: "服务器不支持当前文件格式，请联系管理员",
-                duration: 3000,
-              });
-            } else if (
-              uploadResult.message.includes("401") ||
-              uploadResult.message.includes("身份验证")
-            ) {
-              Toast.fail({
-                message: "登录已过期，请重新登录",
-                duration: 3000,
-              });
+    //       if (uploadResult.success) {
+    //         Toast.success({
+    //           message: "上传成功",
+    //           duration: 2000,
+    //         });
 
-              // 提示用户需要重新登录
-              setTimeout(() => {
-                Taro.navigateTo({
-                  url: "/SPALogin/pages/login/index",
-                });
-              }, 2000);
-            } else {
-              Toast.fail({
-                message: uploadResult.message || "上传失败，请重试",
-                duration: 2000,
-              });
-            }
-          }
-        } catch (uploadError: any) {
-          setIsUploading(false);
+    //         // 上传成功后刷新列表
+    //         onRefresh();
+    //       } else {
+    //         // 根据错误消息显示不同的提示
+    //         if (uploadResult.message.includes("415")) {
+    //           Toast.fail({
+    //             message: "服务器不支持当前文件格式，请联系管理员",
+    //             duration: 3000,
+    //           });
+    //         } else if (
+    //           uploadResult.message.includes("401") ||
+    //           uploadResult.message.includes("身份验证")
+    //         ) {
+    //           Toast.fail({
+    //             message: "登录已过期，请重新登录",
+    //             duration: 3000,
+    //           });
 
-          // 尝试获取更详细的错误信息
-          const errorMsg = uploadError.message || "上传失败，请重试";
-          console.error("文件上传失败:", uploadError);
+    //           // 提示用户需要重新登录
+    //           setTimeout(() => {
+    //             Taro.navigateTo({
+    //               url: "/SPALogin/pages/login/index",
+    //             });
+    //           }, 2000);
+    //         } else {
+    //           Toast.fail({
+    //             message: uploadResult.message || "上传失败，请重试",
+    //             duration: 2000,
+    //           });
+    //         }
+    //       }
+    //     } catch (uploadError: any) {
+    //       setIsUploading(false);
 
-          if (errorMsg.includes("415")) {
-            Toast.fail({
-              message: "服务器不支持当前文件格式，请联系管理员",
-              duration: 3000,
-            });
-          } else if (errorMsg.includes("401")) {
-            Toast.fail({
-              message: "登录已过期，请重新登录",
-              duration: 3000,
-            });
-          } else {
-            Toast.fail({
-              message: errorMsg,
-              duration: 2000,
-            });
-          }
-        }
-      }
-    } catch (error) {
-      console.error("选择图片失败:", error);
-      Toast.fail({
-        message: "选择图片失败",
-        duration: 2000,
-      });
-    }
+    //       // 尝试获取更详细的错误信息
+    //       const errorMsg = uploadError.message || "上传失败，请重试";
+    //       console.error("文件上传失败:", uploadError);
+
+    //       if (errorMsg.includes("415")) {
+    //         Toast.fail({
+    //           message: "服务器不支持当前文件格式，请联系管理员",
+    //           duration: 3000,
+    //         });
+    //       } else if (errorMsg.includes("401")) {
+    //         Toast.fail({
+    //           message: "登录已过期，请重新登录",
+    //           duration: 3000,
+    //         });
+    //       } else {
+    //         Toast.fail({
+    //           message: errorMsg,
+    //           duration: 2000,
+    //         });
+    //       }
+    //     }
+    //   }
+    // } catch (error) {
+    //   console.error("选择图片失败:", error);
+    //   Toast.fail({
+    //     message: "选择图片失败",
+    //     duration: 2000,
+    //   });
+    // }
   };
 
   return (
