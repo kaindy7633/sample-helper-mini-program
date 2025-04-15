@@ -71,8 +71,8 @@ const StandardPage: React.FC = (): JSX.Element => {
       return;
     }
 
-    // 如果是首次搜索或刷新，显示骨架屏
-    if (!hasSearched || isRefresh) {
+    // 只在主动搜索时显示骨架屏，下拉刷新时不显示骨架屏
+    if (!hasSearched || (!isRefresh && current === 1)) {
       setInitialLoading(true);
     }
 
@@ -297,7 +297,7 @@ const StandardPage: React.FC = (): JSX.Element => {
             className="standard-list-container"
             style={{ height: "100%" }}
           >
-            {initialLoading && hasSearched ? (
+            {initialLoading ? (
               renderSkeleton()
             ) : !hasSearched ? (
               <View className="empty-container">
