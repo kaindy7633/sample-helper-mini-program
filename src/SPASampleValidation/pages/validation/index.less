@@ -136,9 +136,12 @@
 }
 
 .read-icon {
-  width: 32px;
-  height: 32px;
-  margin-right: 8px;
+  width: 56px;
+  height: 47px; /* 保持原始宽高比例 304:256 => 56:47 */
+  margin-right: 12px;
+  object-fit: contain; /* 确保图片不变形 */
+  vertical-align: middle; /* 确保与状态文本垂直对齐 */
+  flex-shrink: 0; /* 防止图标被压缩 */
 }
 
 .status-icon {
@@ -148,20 +151,23 @@
 }
 
 .validation-status {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   padding: 4px 12px;
   border-radius: 4px;
   font-size: 24px;
-  color: #fff;
-  background-color: #ffcc33;
+  min-height: 32px;
+  line-height: 1.4;
 }
 
 .status-normal {
-  background-color: #4cd964;
+  background-color: #e8f7ee;
+  color: #07c160;
 }
 
 .status-abnormal {
-  background-color: #ffcc33;
+  background-color: #ffeee9;
+  color: #ff4d4f;
 }
 
 /* 骨架屏样式 */

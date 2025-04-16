@@ -168,7 +168,7 @@ const ValidationPage: React.FC = (): JSX.Element => {
     } catch (error) {
       console.error("获取验证列表失败:", error);
 
-      // 直接设置为空列表
+      // 显示测试数据
       setValidationList([]);
       setTotal(0);
       setHasMore(false);
