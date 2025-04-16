@@ -154,25 +154,31 @@ const TaskPage: React.FC = (): JSX.Element => {
       const isFinish = activeTab === "pending" ? "0" : "1";
       const pageNum = isRefresh ? 1 : current;
 
-      // 如果是刷新，同时设置initialLoading为true
       if (isRefresh) {
         setInitialLoading(true);
       }
 
-      // 使用taskApi服务获取任务列表
-      const result = await taskApi.getPlanTasks({
+      // 动态组装参数对象
+      const params: Record<string, any> = {
         current: Number(pageNum),
         size: Number(pageSize),
         isFinish,
-        classa: filterA === "报送分类A" ? undefined : filterA,
-        classb: filterB === "报送分类B" ? undefined : filterB,
-        cate1: keyword || undefined,
-      });
+      };
+      if (filterA !== "报送分类A") {
+        params.classa = filterA;
+      }
+      if (filterB !== "报送分类B") {
+        params.classb = filterB;
+      }
+      if (keyword && keyword.trim() !== "") {
+        params.cate1 = keyword;
+      }
+
+      const result = await taskApi.getPlanTasks(params);
 
       const newRecords = result?.records || [];
       const totalCount = Number(result?.total || 0);
 
-      // 添加1秒延迟，让加载效果更明显
       setTimeout(() => {
         if (activeTab === "pending") {
           if (isRefresh) {
@@ -189,26 +195,19 @@ const TaskPage: React.FC = (): JSX.Element => {
         }
 
         setTotal(totalCount);
-
-        // 判断是否还有更多数据可加载
         const hasMoreData =
           newRecords.length > 0 && pageNum * pageSize < totalCount;
-
         setHasMore(hasMoreData);
-
         if (isRefresh) {
           setRefreshing(false);
           setCurrent(1);
         } else {
           setLoading(false);
         }
-
-        // 首次加载完成后，关闭骨架屏显示
         setInitialLoading(false);
-      }, 1000); // 延迟1秒更新状态
+      }, 1000);
     } catch (error) {
       console.error("获取任务列表失败:", error);
-      // 发生错误时延迟1秒清空数据，保持统一的加载时间感
       setTimeout(() => {
         if (isRefresh) {
           if (activeTab === "pending") {
@@ -221,7 +220,6 @@ const TaskPage: React.FC = (): JSX.Element => {
         } else {
           setLoading(false);
         }
-        // 出错时也需要关闭骨架屏
         setInitialLoading(false);
         showToastMessage("error", "获取任务列表失败");
       }, 1000);
@@ -323,25 +321,24 @@ const TaskPage: React.FC = (): JSX.Element => {
 
   // 重置筛选条件
   const handleReset = () => {
-    // 重置筛选条件
     setFilterA("报送分类A");
     setFilterB("报送分类B");
     setKeyword("");
-
-    // 显示骨架屏加载
     setInitialLoading(true);
-
-    // 标记为首次加载，避免触发额外的加载
     setIsFirstLoad(true);
-
-    // 重置分页状态
     setCurrent(1);
     setHasMore(true);
-
-    // 刷新数据
     setRefreshing(true);
-    fetchTaskList(true);
+    // 这里不直接调用 fetchTaskList(true)，而是依赖 keyword 的 useEffect 触发刷新
   };
+
+  // 新增 useEffect 监听 keyword 变化后刷新数据（仅在重置时）
+  useEffect(() => {
+    if (refreshing && keyword === "") {
+      fetchTaskList(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [keyword]);
 
   // 处理分类A选择
   const handleClassASelect = (value: string) => {
