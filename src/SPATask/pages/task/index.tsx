@@ -154,6 +154,11 @@ const TaskPage: React.FC = (): JSX.Element => {
       const isFinish = activeTab === "pending" ? "0" : "1";
       const pageNum = isRefresh ? 1 : current;
 
+      // 如果是刷新，同时设置initialLoading为true
+      if (isRefresh) {
+        setInitialLoading(true);
+      }
+
       // 使用taskApi服务获取任务列表
       const result = await taskApi.getPlanTasks({
         current: Number(pageNum),
@@ -297,6 +302,8 @@ const TaskPage: React.FC = (): JSX.Element => {
   // 切换Tab
   const handleTabChange = (tab: "pending" | "completed") => {
     setActiveTab(tab);
+    // 设置初始加载状态，显示骨架屏
+    setInitialLoading(true);
     // 标记为首次加载，避免触发额外的加载
     setIsFirstLoad(true);
     // 重置其他状态
@@ -321,6 +328,9 @@ const TaskPage: React.FC = (): JSX.Element => {
     setFilterB("报送分类B");
     setKeyword("");
 
+    // 显示骨架屏加载
+    setInitialLoading(true);
+
     // 标记为首次加载，避免触发额外的加载
     setIsFirstLoad(true);
 
@@ -337,12 +347,16 @@ const TaskPage: React.FC = (): JSX.Element => {
   const handleClassASelect = (value: string) => {
     setFilterA(value);
     setClassAOpen(false);
+    // 筛选条件改变时显示骨架屏
+    setInitialLoading(true);
   };
 
   // 处理分类B选择
   const handleClassBSelect = (value: string) => {
     setFilterB(value);
     setClassBOpen(false);
+    // 筛选条件改变时显示骨架屏
+    setInitialLoading(true);
   };
 
   // 显示确认Modal
@@ -721,15 +735,6 @@ const TaskPage: React.FC = (): JSX.Element => {
                     {/* 任务操作按钮 - 仅在待执行tab下显示 */}
                     {activeTab === "pending" && (
                       <View className="task-actions">
-                        {/* 暂时屏蔽取消任务按钮 */}
-                        {/*<View
-                          className="task-action-btn cancel"
-                          onClick={() =>
-                            showConfirmModal("cancel", String(task.id))
-                          }
-                        >
-                          取消任务
-                        </View>*/}
                         <View
                           className="task-action-btn complete"
                           onClick={() =>
@@ -742,7 +747,7 @@ const TaskPage: React.FC = (): JSX.Element => {
                     )}
                   </View>
                 ))
-              ) : (
+              ) : refreshing ? null : ( // 下拉刷新状态 - 不显示任何内容，因为PullRefresh已经有加载指示器
                 <View className="empty-state">
                   <Empty>
                     <Empty.Image src="search" />
@@ -752,12 +757,20 @@ const TaskPage: React.FC = (): JSX.Element => {
               )}
             </View>
 
-            {/* 列表加载状态 */}
+            {/* 列表加载状态 - 只在非刷新状态且列表有数据时才可能显示 */}
             <List.Placeholder>
-              {loading && <Loading className="list-loading">加载中...</Loading>}
-              {!loading && !hasMore && currentTasks.length > 0 && (
-                <View className="list-finished">没有更多数据了</View>
-              )}
+              {loading &&
+                !refreshing &&
+                !initialLoading &&
+                currentTasks.length > 0 && (
+                  <Loading className="list-loading">加载中...</Loading>
+                )}
+              {!loading &&
+                !refreshing &&
+                !hasMore &&
+                currentTasks.length > 0 && (
+                  <View className="list-finished">没有更多数据了</View>
+                )}
               {/* 底部额外空间 */}
               <View style={{ height: "40px" }}></View>
             </List.Placeholder>
