@@ -51,7 +51,11 @@ export default defineAppConfig({
     {
       root: "SPASampleValidation",
       name: "subpackage-validation",
-      pages: ["pages/validation/index"],
+      pages: [
+        "pages/validation/index",
+        "pages/validation/list/index",
+        "pages/validation/details/index",
+      ],
     },
   ],
   window: {

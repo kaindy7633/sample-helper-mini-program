@@ -355,12 +355,26 @@ export async function uploadValidationFileByRequest(
   }
 }
 
+/**
+ * 获取验证详情
+ * @param taskId 任务ID
+ * @returns 验证详情数据
+ */
+export async function getValidationDetail(taskId: number) {
+  return request({
+    url: "/api/sampleValidation/detail",
+    method: "GET",
+    data: { taskId },
+  });
+}
+
 // 导出API
 const sampleValidationApi = {
   getValidationList,
   uploadValidationFile,
   uploadValidationFiles,
   uploadValidationFileByRequest,
+  getValidationDetail,
 };
 
 export default sampleValidationApi;

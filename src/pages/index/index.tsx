@@ -262,7 +262,7 @@ const Index: React.FC = (): JSX.Element => {
                     });
                   } else if (item.appName === "抽样单验证") {
                     Taro.navigateTo({
-                      url: "/SPASampleValidation/pages/validation/index",
+                      url: "/SPASampleValidation/pages/validation/list/index",
                     });
                   } else {
                     // 其他应用暂时没有实现，可以显示提示
