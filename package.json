@@ -40,7 +40,7 @@
   "author": "",
   "dependencies": {
     "@babel/runtime": "^7.24.4",
-    "@taroify/core": "0.6.4-alpha.0",
+    "@taroify/core": "0.7.0",
     "@taroify/icons": "0.6.4-alpha.0",
     "@tarojs/components": "4.0.9",
     "@tarojs/helper": "4.0.9",
@@ -78,8 +78,6 @@
     "less": "^4.2.0",
     "postcss": "^8.5.3",
     "react-refresh": "^0.14.0",
-    "sass": "^1.44.0",
-    "sass-migrator": "^2.3.1",
     "stylelint": "^16.4.0",
     "terser": "^5.30.4",
     "typescript": "^5.4.5",

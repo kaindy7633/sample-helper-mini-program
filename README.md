@@ -61,7 +61,7 @@ pnpm dev:weapp
 ### 生产构建
 
 ```bash
-pnpm build:weapp
+pnpm run build:weapp -- --mode production
 ```
 
 ## 项目结构
