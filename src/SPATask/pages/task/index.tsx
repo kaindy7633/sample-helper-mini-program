@@ -779,18 +779,31 @@ const TaskPage: React.FC = (): JSX.Element => {
           </Text>
         </View>
         <Picker
-          columns={[
-            classTreeData.length > 0
-              ? classTreeData.map((item) => item.name)
-              : ["暂无数据"],
-          ]}
           onCancel={() => setClassAOpen(false)}
-          onConfirm={(values) => {
-            console.log("选择分类A:", values);
-            if (values[0] && values[0] !== "暂无数据")
-              handleClassASelect(values[0]);
+          onConfirm={(val) => {
+            console.log("选择分类A:", val);
+            if (val && val !== "暂无数据") {
+              handleClassASelect(val.toString());
+            }
           }}
-        />
+        >
+          <Picker.Toolbar>
+            <Picker.Button>取消</Picker.Button>
+            <Picker.Title>选择报送分类A</Picker.Title>
+            <Picker.Button>确认</Picker.Button>
+          </Picker.Toolbar>
+          <Picker.Column>
+            {classTreeData.length > 0 ? (
+              classTreeData.map((item) => (
+                <Picker.Option key={item.name} value={item.name}>
+                  {item.name}
+                </Picker.Option>
+              ))
+            ) : (
+              <Picker.Option value="暂无数据">暂无数据</Picker.Option>
+            )}
+          </Picker.Column>
+        </Picker>
       </Popup>
 
       {/* 分类B选择弹出层 */}
@@ -807,18 +820,31 @@ const TaskPage: React.FC = (): JSX.Element => {
           </Text>
         </View>
         <Picker
-          columns={[
-            classBOptions.length > 0
-              ? classBOptions.map((item) => item.name)
-              : ["暂无数据"],
-          ]}
           onCancel={() => setClassBOpen(false)}
-          onConfirm={(values) => {
-            console.log("选择分类B:", values);
-            if (values[0] && values[0] !== "暂无数据")
-              handleClassBSelect(values[0]);
+          onConfirm={(val) => {
+            console.log("选择分类B:", val);
+            if (val && val !== "暂无数据") {
+              handleClassBSelect(val.toString());
+            }
           }}
-        />
+        >
+          <Picker.Toolbar>
+            <Picker.Button>取消</Picker.Button>
+            <Picker.Title>选择报送分类B</Picker.Title>
+            <Picker.Button>确认</Picker.Button>
+          </Picker.Toolbar>
+          <Picker.Column>
+            {classBOptions.length > 0 ? (
+              classBOptions.map((item) => (
+                <Picker.Option key={item.name} value={item.name}>
+                  {item.name}
+                </Picker.Option>
+              ))
+            ) : (
+              <Picker.Option value="暂无数据">暂无数据</Picker.Option>
+            )}
+          </Picker.Column>
+        </Picker>
       </Popup>
 
       {/* 确认Modal */}
