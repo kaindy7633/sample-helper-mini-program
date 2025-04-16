@@ -104,4 +104,6 @@ export default defineAppConfig({
       desc: "你的位置信息将用于获取附近的场所信息",
     },
   },
+  // 启用组件按需注入
+  lazyCodeLoading: "requiredComponents",
 });

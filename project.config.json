@@ -2,7 +2,7 @@
   "miniprogramRoot": "./dist",
   "projectname": "sample-helper-mini-program",
   "description": "抽样助手小程序",
-  "appid": "touristappid",
+  "appid": "wxd4dd1c9748f2d5e7",
   "setting": {
     "urlCheck": true,
     "es6": false,
