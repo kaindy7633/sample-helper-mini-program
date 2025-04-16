@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { View, Text, ScrollView, Input, Image } from "@tarojs/components";
 import {
   Button,
@@ -130,6 +130,9 @@ const TaskPage: React.FC = (): JSX.Element => {
   // 初始加载状态 - 用于显示骨架屏
   const [initialLoading, setInitialLoading] = useState<boolean>(true);
 
+  // 新增 resetFlag 用于重置后统一请求
+  const [resetFlag, setResetFlag] = useState<number>(0);
+
   /**
    * 获取分类树数据
    */
@@ -149,32 +152,42 @@ const TaskPage: React.FC = (): JSX.Element => {
    * 获取任务列表数据
    * @param isRefresh 是否是下拉刷新
    */
+  // 用 useRef 管理请求参数
+  const paramsRef = useRef<any>({
+    current: 1,
+    size: 5,
+    isFinish: "0",
+  });
   const fetchTaskList = async (isRefresh: boolean = false) => {
     try {
       const isFinish = activeTab === "pending" ? "0" : "1";
       const pageNum = isRefresh ? 1 : current;
-
       if (isRefresh) {
         setInitialLoading(true);
       }
-
-      // 动态组装参数对象
-      const params: Record<string, any> = {
-        current: Number(pageNum),
-        size: Number(pageSize),
-        isFinish,
-      };
-      if (filterA !== "报送分类A") {
-        params.classa = filterA;
+      // 直接操作 paramsRef.current
+      paramsRef.current.current = Number(pageNum);
+      paramsRef.current.size = Number(pageSize);
+      paramsRef.current.isFinish = isFinish;
+      if (filterA && filterA !== "报送分类A") {
+        paramsRef.current.classa = filterA;
+      } else {
+        delete paramsRef.current.classa;
       }
-      if (filterB !== "报送分类B") {
-        params.classb = filterB;
+      if (filterB && filterB !== "报送分类B") {
+        paramsRef.current.classb = filterB;
+      } else {
+        delete paramsRef.current.classb;
       }
       if (keyword && keyword.trim() !== "") {
-        params.cate1 = keyword;
+        paramsRef.current.cate1 = keyword;
+      } else {
+        delete paramsRef.current.cate1;
       }
 
-      const result = await taskApi.getPlanTasks(params);
+      console.log("获取任务列表开始 - 参数:", paramsRef.current);
+
+      const result = await taskApi.getPlanTasks(paramsRef.current);
 
       const newRecords = result?.records || [];
       const totalCount = Number(result?.total || 0);
@@ -329,7 +342,14 @@ const TaskPage: React.FC = (): JSX.Element => {
     setCurrent(1);
     setHasMore(true);
     setRefreshing(true);
-    // 这里不直接调用 fetchTaskList(true)，而是依赖 keyword 的 useEffect 触发刷新
+    // 彻底重置 paramsRef.current 为初始对象
+    paramsRef.current = {
+      current: 1,
+      size: pageSize,
+      isFinish: activeTab === "pending" ? "0" : "1",
+    };
+    setResetFlag((prev) => prev + 1); // 标记重置
+    // 不在这里直接请求数据
   };
 
   // 新增 useEffect 监听 keyword 变化后刷新数据（仅在重置时）
@@ -492,6 +512,20 @@ const TaskPage: React.FC = (): JSX.Element => {
     }
   }, [current, isFirstLoad]);
 
+  // 监听筛选条件和 resetFlag，全部为初始值时再请求数据
+  useEffect(() => {
+    if (
+      filterA === "报送分类A" &&
+      filterB === "报送分类B" &&
+      keyword === "" &&
+      refreshing &&
+      resetFlag > 0
+    ) {
+      fetchTaskList(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterA, filterB, keyword, resetFlag]);
+
   // 初始化加载数据
   useEffect(() => {
     // 加载分类树数据
@@ -527,14 +561,28 @@ const TaskPage: React.FC = (): JSX.Element => {
 
   // 当选择分类A或分类B时，刷新列表
   useEffect(() => {
+    // 只有当筛选条件有效时才刷新
     if (
       (filterA !== "报送分类A" || filterB !== "报送分类B") &&
-      // 确保不是初始化时触发
       classTreeData.length > 0
     ) {
       setCurrent(1); // 重置页码
       onRefresh(); // 使用onRefresh代替fetchTaskList
     }
+    // 如果都为默认值，且不是初始化，则清空列表（去除清空，重置时直接请求数据）
+    // if (
+    //   filterA === "报送分类A" &&
+    //   filterB === "报送分类B" &&
+    //   classTreeData.length > 0
+    // ) {
+    //   setPendingTasks([]);
+    //   setCompletedTasks([]);
+    //   setTotal(0);
+    //   setHasMore(true);
+    //   setLoading(false);
+    //   setRefreshing(false);
+    //   setInitialLoading(false);
+    // }
   }, [filterA, filterB]);
 
   // 在点击分类A和分类B时记录值
