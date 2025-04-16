@@ -21,57 +21,58 @@ import {
 import "./index.less";
 
 /**
- * 测试数据生成
- * @returns 模拟的验证列表数据
+ * 验证状态枚举
  */
-const generateMockData = (): ValidationItem[] => {
-  return [
-    {
-      id: 1,
-      sampleNo: "DBJ253310000051304321",
-      sampleName: "原味松子（油炸类）",
-      taskName: "抽样单验证2025-03-14 10:56:04",
-      title: "抽样单验证2025-03-14 10:56:04 [测试数据]",
-      createTime: "2025-03-14 10:56:05",
-      status: "0",
-      createUser: "admin",
-      createUserId: "6430",
-      isDel: 0,
-      orgId: "0",
-      isRead: 0,
-      spotNo: null,
-    },
-    {
-      id: 2,
-      sampleNo: "DBJ253310000051304322",
-      sampleName: "原味松子（油炸类）",
-      taskName: "抽样单验证2025-03-14 10:56:04",
-      title: "抽样单验证2025-03-14 10:56:04 [测试数据]",
-      createTime: "2025-03-14 10:56:05",
-      status: "4",
-      createUser: "admin",
-      createUserId: "6430",
-      isDel: 0,
-      orgId: "0",
-      isRead: 0,
-      spotNo: null,
-    },
-    {
-      id: 3,
-      sampleNo: "DBJ253310000051304323",
-      sampleName: "椒盐花生（油炸类）",
-      taskName: "抽样单验证2025-03-15 09:23:17",
-      title: "抽样单验证2025-03-15 09:23:17 [测试数据]",
-      createTime: "2025-03-15 09:23:18",
-      status: "4",
-      createUser: "admin",
-      createUserId: "6430",
-      isDel: 0,
-      orgId: "0",
-      isRead: 0,
-      spotNo: null,
-    },
-  ];
+enum ValidationStatus {
+  INSPECTING = "0", // 检验中
+  VALIDATING = "1", // 验证中
+  ABNORMAL = "2", // 有异常
+  NORMAL = "3", // 无异常
+  FAILED = "4", // 验证失败
+}
+
+/**
+ * 获取验证状态文本
+ * @param status 状态码
+ * @returns 状态文本
+ */
+const getStatusText = (status: string): string => {
+  switch (status) {
+    case ValidationStatus.INSPECTING:
+      return "检验中";
+    case ValidationStatus.VALIDATING:
+      return "验证中";
+    case ValidationStatus.ABNORMAL:
+      return "有异常";
+    case ValidationStatus.NORMAL:
+      return "无异常";
+    case ValidationStatus.FAILED:
+      return "验证失败";
+    default:
+      return "未知状态";
+  }
+};
+
+/**
+ * 获取验证状态样式类名
+ * @param status 状态码
+ * @returns 样式类名
+ */
+const getStatusClassName = (status: string): string => {
+  switch (status) {
+    case ValidationStatus.INSPECTING:
+      return "status-pending";
+    case ValidationStatus.VALIDATING:
+      return "status-pending";
+    case ValidationStatus.ABNORMAL:
+      return "status-abnormal";
+    case ValidationStatus.NORMAL:
+      return "status-normal";
+    case ValidationStatus.FAILED:
+      return "status-failed";
+    default:
+      return "status-unknown";
+  }
 };
 
 /**
@@ -126,30 +127,23 @@ const ValidationPage: React.FC = (): JSX.Element => {
 
       // 添加1秒延迟，让加载效果更明显
       setTimeout(() => {
-        // 获取真实接口返回的数据
-        const apiRecords = result.records || [];
-
-        // 获取测试数据
-        const mockData = generateMockData();
-
-        // 将测试数据添加到真实数据后面
-        const combinedRecords = [...apiRecords, ...mockData];
+        // 获取API返回的数据
+        const records = result.records || [];
 
         if (isRefresh) {
-          setValidationList(combinedRecords);
+          setValidationList(records);
           setCurrent(1);
         } else {
-          setValidationList((prev) => [...prev, ...combinedRecords]);
+          setValidationList((prev) => [...prev, ...records]);
         }
 
-        // 更新总数，同时考虑真实数据和测试数据
-        const totalCount = Number(result.total || 0) + mockData.length;
+        // 更新总数
+        const totalCount = Number(result.total || 0);
         setTotal(totalCount);
 
         // 判断是否还有更多数据
         const hasMoreData =
-          apiRecords.length > 0 &&
-          pageNum * pageSize < Number(result.total || 0);
+          records.length > 0 && pageNum * pageSize < Number(result.total || 0);
         setHasMore(hasMoreData);
 
         if (isRefresh) {
@@ -165,14 +159,13 @@ const ValidationPage: React.FC = (): JSX.Element => {
     } catch (error) {
       console.error("获取验证列表失败:", error);
 
-      // 使用模拟数据
-      const mockData = generateMockData();
-      setValidationList(mockData);
-      setTotal(mockData.length);
+      // 直接设置为空列表
+      setValidationList([]);
+      setTotal(0);
       setHasMore(false);
 
       Taro.showToast({
-        title: "使用测试数据显示",
+        title: "获取列表数据失败",
         icon: "none",
       });
 
@@ -292,24 +285,15 @@ const ValidationPage: React.FC = (): JSX.Element => {
    * @param item 验证项
    */
   const handleItemClick = (item: ValidationItem) => {
-    // 如果是测试数据，提示用户
-    if (item.title?.includes("[测试数据]")) {
-      Taro.showToast({
-        title: "这是测试数据，无法查看详情",
-        icon: "none",
-      });
-      return;
-    }
-
     Taro.navigateTo({
       url: `/pages/validation/detail/index?id=${item.id}`,
     });
   };
 
   const renderValidationItem = (item: ValidationItem) => {
-    // 检查状态值，"0"表示正常，非"0"表示异常
-    const isNormal = item.status === "0";
-    const statusText = isNormal ? "正常" : "有异常";
+    // 获取状态文本和样式
+    const statusText = getStatusText(item.status);
+    const statusClassName = getStatusClassName(item.status);
 
     return (
       <View
@@ -335,11 +319,7 @@ const ValidationPage: React.FC = (): JSX.Element => {
         <View className="validation-status-row">
           <Text className="label">验证状态</Text>
           <View className="status-container">
-            <Text
-              className={`validation-status ${
-                isNormal ? "status-normal" : "status-abnormal"
-              }`}
-            >
+            <Text className={`validation-status ${statusClassName}`}>
               {statusText}
             </Text>
           </View>
