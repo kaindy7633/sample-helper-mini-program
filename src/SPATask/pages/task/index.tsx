@@ -138,9 +138,7 @@ const TaskPage: React.FC = (): JSX.Element => {
    */
   const fetchClassTree = async () => {
     try {
-      console.log("获取分类树数据开始");
       const result = await taskApi.getClassTree();
-      console.log("获取到分类树数据:", result);
       setClassTreeData(result || []);
     } catch (error) {
       console.error("获取分类树数据失败:", error);
@@ -184,8 +182,6 @@ const TaskPage: React.FC = (): JSX.Element => {
       } else {
         delete paramsRef.current.cate1;
       }
-
-      console.log("获取任务列表开始 - 参数:", paramsRef.current);
 
       const result = await taskApi.getPlanTasks(paramsRef.current);
 
@@ -245,13 +241,10 @@ const TaskPage: React.FC = (): JSX.Element => {
    */
   const handleCompleteTask = async (taskId: string) => {
     try {
-      console.log("完成任务 - 接收到的任务ID:", taskId);
-
       // 根据ID找到当前任务对象
       const currentTask = currentTasks.find(
         (task) => String(task.id) === taskId
       );
-      console.log("完成任务 - 当前任务详情:", currentTask);
 
       // 检查任务是否存在
       if (!currentTask) {
@@ -267,7 +260,6 @@ const TaskPage: React.FC = (): JSX.Element => {
 
       // 将字符串ID转为数字
       const numericId = parseInt(currentTask.planTaskCodeId, 10);
-      console.log("完成任务 - 转换后的planTaskCodeId:", numericId);
 
       if (Number.isNaN(numericId)) {
         showToastMessage("error", "任务代码ID无效");
@@ -275,15 +267,9 @@ const TaskPage: React.FC = (): JSX.Element => {
       }
 
       // 使用新接口完成任务，传递ID数组
-      console.log("完成任务 - 传递给API的ID数组:", [numericId]);
-      const success = await taskApi.updateFinishTask([numericId]);
-
-      if (success) {
-        showToastMessage("success", "完成任务");
-        onRefresh();
-      } else {
-        showToastMessage("error", "操作失败");
-      }
+      await taskApi.updateFinishTask([numericId]);
+      showToastMessage("success", "完成任务");
+      onRefresh();
     } catch (error) {
       console.error("完成任务失败:", error);
       showToastMessage("error", "完成任务失败");
