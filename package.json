@@ -1,6 +1,6 @@
 {
   "name": "sample-helper-mini-program",
-  "version": "1.0.0",
+  "version": "0.1.0_alpha",
   "private": true,
   "description": "抽样助手小程序",
   "templateInfo": {
