@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { View, Text } from "@tarojs/components";
+import { View, Text, Image } from "@tarojs/components";
 import { useEffect, useState } from "react";
 import {
   Empty,
@@ -18,6 +18,7 @@ import {
   type ValidationItem,
   FileUploadResponse,
 } from "../../../services/sampleValidation";
+import readIcon from "../../../assets/images/icon_isread.png";
 import "./index.less";
 
 /**
@@ -29,6 +30,14 @@ enum ValidationStatus {
   ABNORMAL = "2", // 有异常
   NORMAL = "3", // 无异常
   FAILED = "4", // 验证失败
+}
+
+/**
+ * 阅读状态枚举
+ */
+enum ReadStatus {
+  UNREAD = 0, // 未读
+  READ = 1, // 已读
 }
 
 /**
@@ -295,6 +304,9 @@ const ValidationPage: React.FC = (): JSX.Element => {
     const statusText = getStatusText(item.status);
     const statusClassName = getStatusClassName(item.status);
 
+    // 是否已读
+    const isRead = item.isRead === ReadStatus.READ;
+
     return (
       <View
         className="validation-item"
@@ -319,6 +331,7 @@ const ValidationPage: React.FC = (): JSX.Element => {
         <View className="validation-status-row">
           <Text className="label">验证状态</Text>
           <View className="status-container">
+            {isRead && <Image src={readIcon} className="read-icon" />}
             <Text className={`validation-status ${statusClassName}`}>
               {statusText}
             </Text>
