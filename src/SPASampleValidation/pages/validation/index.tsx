@@ -356,82 +356,47 @@ const ValidationPage: React.FC = (): JSX.Element => {
   };
 
   /**
-   * 上传文件到后端（使用 Taro.uploadFile）
-   * @param filePaths 文件路径数组
-   */
-  const uploadFiles = async (filePaths: string[]) => {
-    setIsUploading(true);
-    setUploadProgress(0);
-
-    let successCount = 0;
-    let failCount = 0;
-
-    // 检查文件类型
-    const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
-    for (let i = 0; i < filePaths.length; i++) {
-      try {
-        // 获取文件信息
-        const fileInfo = await Taro.getFileInfo({
-          filePath: filePaths[i],
-        });
-
-        const res = await Taro.uploadFile({
-          url: "https://cloud.cyznzs.com/api/sampleValidation/upload",
-          filePath: filePaths[i],
-          name: "file",
-          formData: {
-            type: "image",
-            fileName: filePaths[i].split("/").pop() || "image.jpg",
-          },
-          header: {
-            "Content-Type": "application/x-www-form-urlencoded",
-            Authorization: Taro.getStorageSync("user_token") || "",
-            Accept: "application/json",
-          },
-        });
-        // 这里可以根据后端返回的数据判断是否上传成功
-        const data =
-          typeof res.data === "string" ? JSON.parse(res.data) : res.data;
-        if (res.statusCode === 200 && data.success) {
-          successCount++;
-        } else {
-          failCount++;
-          console.error("上传失败:", data);
-          Taro.showToast({
-            title: data.message || `第${i + 1}个文件上传失败`,
-            icon: "none",
-          });
-        }
-      } catch (error) {
-        console.error("文件上传失败:", error);
-        failCount++;
-        Taro.showToast({
-          title: `第${i + 1}个文件上传失败`,
-          icon: "none",
-        });
-      }
-      setUploadProgress(Math.round(((i + 1) / filePaths.length) * 100));
-    }
-
-    setIsUploading(false);
-
-    if (successCount > 0) {
-      Taro.showToast({ title: "上传成功", icon: "success" });
-      onRefresh();
-    } else {
-      Taro.showToast({ title: "上传失败", icon: "none" });
-    }
-  };
-
-  /**
-   * 选择图片或拍照上传
+   * 选择图片上传
    * @param sourceType 来源类型: 相机或相册
    */
   const chooseImageUpload = async (sourceType: "camera" | "album") => {
     Taro.chooseImage({
+      count: 9, // 最多可以选择9张图片
+      sourceType: sourceType === "camera" ? ["camera"] : ["album"],
       success: async (res) => {
         const filePaths = res.tempFilePaths;
-        await uploadFiles(filePaths); // 调用新的上传方法
+        setIsUploading(true);
+        setUploadProgress(0);
+
+        try {
+          // 使用服务中的方法上传文件
+          const result = await sampleValidationApi.uploadValidationFiles(
+            filePaths,
+            (percent) => {
+              setUploadProgress(percent);
+            }
+          );
+
+          // 显示上传结果
+          Taro.showToast({
+            title: result.message,
+            icon: result.success ? "success" : "none",
+            duration: 2000,
+          });
+
+          // 如果成功上传了至少一个文件，刷新列表
+          if (result.success) {
+            onRefresh();
+          }
+        } catch (error) {
+          Taro.showToast({
+            title: "上传过程发生错误",
+            icon: "none",
+            duration: 2000,
+          });
+        } finally {
+          setIsUploading(false);
+        }
       },
     });
   };

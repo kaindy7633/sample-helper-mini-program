@@ -176,9 +176,10 @@ export async function uploadValidationFiles(
   for (let i = 0; i < filePaths.length; i++) {
     try {
       // 获取文件信息并进行基本检查
-      const fileInfo: any = await Taro.getFileInfo({ filePath: filePaths[i] });
+      const fileInfo = await Taro.getFileInfo({ filePath: filePaths[i] });
 
       // 检查文件大小 (限制为 5MB)
+      //@ts-ignore
       if (fileInfo.size > 5 * 1024 * 1024) {
         failCount++;
         continue;
