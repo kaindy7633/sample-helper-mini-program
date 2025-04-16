@@ -121,25 +121,31 @@ export async function uploadValidationFile(
     Taro.showLoading({ title: "上传中...", mask: true });
 
     const result = await Taro.uploadFile({
-      url: API_BASE_URL + "/api/sampleValidation/processed",
+      url: API_BASE_URL + "/api/sampleValidation/upload",
       filePath: filePath,
-      name: "file", // 这里用 file
+      name: "files", // 后端接收参数为 files
       header: {
         ...getRequestHeader(),
-        // 不要手动加 Content-Type
-      },
-      // formData: {}, // 如有需要可加
-      success: (res) => {
-        // 这里的 success 只在小程序端用，实际返回值用 result
-      },
-      fail: (error) => {
-        throw error;
       },
     });
 
     Taro.hideLoading();
     if (result.statusCode === 200) {
-      return { success: true, message: "上传成功", fileId: result.data };
+      let data;
+      try {
+        data =
+          typeof result.data === "string"
+            ? JSON.parse(result.data)
+            : result.data;
+      } catch (e) {
+        return { success: false, message: "响应数据解析失败" };
+      }
+
+      if (data.success || data.code === 200) {
+        return { success: true, message: "上传成功", fileId: data.data };
+      } else {
+        return { success: false, message: data.msg || "上传失败" };
+      }
     } else {
       return { success: false, message: `服务器错误: ${result.statusCode}` };
     }
@@ -148,6 +154,81 @@ export async function uploadValidationFile(
     return { success: false, message: error.errMsg || "上传失败" };
   }
 }
+
+/**
+ * 上传多个验证文件
+ * @param filePaths 文件路径数组
+ * @param onProgress 上传进度回调
+ * @returns 上传结果
+ */
+export async function uploadValidationFiles(
+  filePaths: string[],
+  onProgress?: (percent: number) => void
+): Promise<{
+  success: boolean;
+  successCount: number;
+  failCount: number;
+  message: string;
+}> {
+  let successCount = 0;
+  let failCount = 0;
+
+  for (let i = 0; i < filePaths.length; i++) {
+    try {
+      // 获取文件信息并进行基本检查
+      const fileInfo: any = await Taro.getFileInfo({ filePath: filePaths[i] });
+
+      // 检查文件大小 (限制为 5MB)
+      if (fileInfo.size > 5 * 1024 * 1024) {
+        failCount++;
+        continue;
+      }
+
+      // 上传单个文件
+      const result = await uploadValidationFile(filePaths[i]);
+
+      if (result.success) {
+        successCount++;
+      } else {
+        failCount++;
+      }
+    } catch (error) {
+      failCount++;
+    }
+
+    // 更新进度
+    if (onProgress) {
+      onProgress(Math.round(((i + 1) / filePaths.length) * 100));
+    }
+  }
+
+  // 返回总体结果
+  if (successCount > 0) {
+    if (failCount > 0) {
+      return {
+        success: true,
+        successCount,
+        failCount,
+        message: `上传完成：${successCount}个成功，${failCount}个失败`,
+      };
+    } else {
+      return {
+        success: true,
+        successCount,
+        failCount,
+        message: "全部上传成功",
+      };
+    }
+  } else {
+    return {
+      success: false,
+      successCount: 0,
+      failCount,
+      message: "上传失败",
+    };
+  }
+}
+
 /**
  * Base64编码函数（替代btoa）
  * @param str 需要编码的字符串
@@ -248,7 +329,7 @@ export async function uploadValidationFileByRequest(
 
     // 构建请求数据
     const formData = {
-      files: base64Data,
+      file: base64Data,
     };
 
     // 发送请求
@@ -258,7 +339,6 @@ export async function uploadValidationFileByRequest(
       data: formData,
       header: {
         ...getRequestHeader(),
-        "Content-Type": "application/json", // 使用JSON格式
       },
     });
 
@@ -278,6 +358,7 @@ export async function uploadValidationFileByRequest(
 const sampleValidationApi = {
   getValidationList,
   uploadValidationFile,
+  uploadValidationFiles,
   uploadValidationFileByRequest,
 };
 

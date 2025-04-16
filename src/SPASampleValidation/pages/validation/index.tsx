@@ -16,6 +16,7 @@ import { sampleValidationApi } from "../../../services";
 import {
   uploadValidationFileByRequest,
   type ValidationItem,
+  FileUploadResponse,
 } from "../../../services/sampleValidation";
 import "./index.less";
 
@@ -355,121 +356,84 @@ const ValidationPage: React.FC = (): JSX.Element => {
   };
 
   /**
+   * 上传文件到后端（使用 Taro.uploadFile）
+   * @param filePaths 文件路径数组
+   */
+  const uploadFiles = async (filePaths: string[]) => {
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    let successCount = 0;
+    let failCount = 0;
+
+    // 检查文件类型
+    const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
+    for (let i = 0; i < filePaths.length; i++) {
+      try {
+        // 获取文件信息
+        const fileInfo = await Taro.getFileInfo({
+          filePath: filePaths[i],
+        });
+
+        const res = await Taro.uploadFile({
+          url: "https://cloud.cyznzs.com/api/sampleValidation/upload",
+          filePath: filePaths[i],
+          name: "file",
+          formData: {
+            type: "image",
+            fileName: filePaths[i].split("/").pop() || "image.jpg",
+          },
+          header: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            Authorization: Taro.getStorageSync("user_token") || "",
+            Accept: "application/json",
+          },
+        });
+        // 这里可以根据后端返回的数据判断是否上传成功
+        const data =
+          typeof res.data === "string" ? JSON.parse(res.data) : res.data;
+        if (res.statusCode === 200 && data.success) {
+          successCount++;
+        } else {
+          failCount++;
+          console.error("上传失败:", data);
+          Taro.showToast({
+            title: data.message || `第${i + 1}个文件上传失败`,
+            icon: "none",
+          });
+        }
+      } catch (error) {
+        console.error("文件上传失败:", error);
+        failCount++;
+        Taro.showToast({
+          title: `第${i + 1}个文件上传失败`,
+          icon: "none",
+        });
+      }
+      setUploadProgress(Math.round(((i + 1) / filePaths.length) * 100));
+    }
+
+    setIsUploading(false);
+
+    if (successCount > 0) {
+      Taro.showToast({ title: "上传成功", icon: "success" });
+      onRefresh();
+    } else {
+      Taro.showToast({ title: "上传失败", icon: "none" });
+    }
+  };
+
+  /**
    * 选择图片或拍照上传
    * @param sourceType 来源类型: 相机或相册
    */
   const chooseImageUpload = async (sourceType: "camera" | "album") => {
     Taro.chooseImage({
       success: async (res) => {
-        const filePath = res.tempFilePaths[0];
-        const result = await uploadValidationFileByRequest(filePath);
-        console.log("上传结果:", result);
+        const filePaths = res.tempFilePaths;
+        await uploadFiles(filePaths); // 调用新的上传方法
       },
     });
-
-    // setShowUploadDialog(false);
-
-    // try {
-    //   // 选择图片
-    //   const result = await Taro.chooseImage({
-    //     count: 1,
-    //     sizeType: ["original", "compressed"],
-    //     sourceType: sourceType === "camera" ? ["camera"] : ["album"],
-    //   });
-
-    //   if (result.tempFilePaths && result.tempFilePaths.length > 0) {
-    //     const filePath = result.tempFilePaths[0];
-
-    //     // 文件大小限制: 10MB
-    //     const maxSize = 10 * 1024 * 1024;
-    //     if (result.tempFiles && result.tempFiles[0].size > maxSize) {
-    //       Toast.open({
-    //         message: "图片大小不能超过10MB",
-    //         duration: 2000,
-    //       });
-    //       return;
-    //     }
-
-    //     // 开始上传
-    //     setIsUploading(true);
-    //     setUploadProgress(0);
-
-    //     try {
-    //       const uploadResult = await sampleValidationApi.uploadValidationFile(
-    //         filePath
-    //       );
-
-    //       setIsUploading(false);
-
-    //       if (uploadResult.success) {
-    //         Toast.success({
-    //           message: "上传成功",
-    //           duration: 2000,
-    //         });
-
-    //         // 上传成功后刷新列表
-    //         onRefresh();
-    //       } else {
-    //         // 根据错误消息显示不同的提示
-    //         if (uploadResult.message.includes("415")) {
-    //           Toast.fail({
-    //             message: "服务器不支持当前文件格式，请联系管理员",
-    //             duration: 3000,
-    //           });
-    //         } else if (
-    //           uploadResult.message.includes("401") ||
-    //           uploadResult.message.includes("身份验证")
-    //         ) {
-    //           Toast.fail({
-    //             message: "登录已过期，请重新登录",
-    //             duration: 3000,
-    //           });
-
-    //           // 提示用户需要重新登录
-    //           setTimeout(() => {
-    //             Taro.navigateTo({
-    //               url: "/SPALogin/pages/login/index",
-    //             });
-    //           }, 2000);
-    //         } else {
-    //           Toast.fail({
-    //             message: uploadResult.message || "上传失败，请重试",
-    //             duration: 2000,
-    //           });
-    //         }
-    //       }
-    //     } catch (uploadError: any) {
-    //       setIsUploading(false);
-
-    //       // 尝试获取更详细的错误信息
-    //       const errorMsg = uploadError.message || "上传失败，请重试";
-    //       console.error("文件上传失败:", uploadError);
-
-    //       if (errorMsg.includes("415")) {
-    //         Toast.fail({
-    //           message: "服务器不支持当前文件格式，请联系管理员",
-    //           duration: 3000,
-    //         });
-    //       } else if (errorMsg.includes("401")) {
-    //         Toast.fail({
-    //           message: "登录已过期，请重新登录",
-    //           duration: 3000,
-    //         });
-    //       } else {
-    //         Toast.fail({
-    //           message: errorMsg,
-    //           duration: 2000,
-    //         });
-    //       }
-    //     }
-    //   }
-    // } catch (error) {
-    //   console.error("选择图片失败:", error);
-    //   Toast.fail({
-    //     message: "选择图片失败",
-    //     duration: 2000,
-    //   });
-    // }
   };
 
   return (
@@ -522,7 +486,8 @@ const ValidationPage: React.FC = (): JSX.Element => {
         <Button
           className="upload-button"
           color="primary"
-          onClick={handleFileUpload}
+          // onClick={handleFileUpload}
+          onClick={() => chooseImageUpload("album")}
           loading={isUploading}
           disabled={isUploading}
         >
