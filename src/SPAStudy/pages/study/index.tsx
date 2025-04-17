@@ -1,7 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useEffect } from "react";
-import { View, Text, Image } from "@tarojs/components";
+import React, { useState, useEffect, useRef } from "react";
+import { View, Text, Image, ScrollView } from "@tarojs/components";
 import Taro from "@tarojs/taro";
+import { Skeleton, PullRefresh, List } from "@taroify/core";
 import { messageApi } from "../../../services";
 import icoNew from "../../../assets/images/ico_new.png";
 import "./index.less";
@@ -148,10 +149,17 @@ const StudyPage: React.FC = () => {
   const [newsItems, setNewsItems] = useState<Record<string, any>[]>([]);
   // 加载状态
   const [loading, setLoading] = useState<boolean>(false);
+  // 初始加载状态 - 用于显示骨架屏
+  const [initialNewsLoading, setInitialNewsLoading] = useState<boolean>(true);
+  // 下拉刷新状态
+  const [refreshing, setRefreshing] = useState<boolean>(false);
+
   // 常见问题数据状态
   const [faqItems, setFaqItems] = useState<Record<string, any>[]>([]);
   // 常见问题加载状态
   const [faqLoading, setFaqLoading] = useState<boolean>(false);
+  // 常见问题初始加载状态
+  const [initialFaqLoading, setInitialFaqLoading] = useState<boolean>(true);
   // 常见问题分页状态
   const [faqPagination, setFaqPagination] = useState({
     current: 1,
@@ -159,6 +167,12 @@ const StudyPage: React.FC = () => {
     total: 0,
     hasMore: false,
   });
+
+  // 滚动容器ref
+  const scrollRef = useRef<any>(null);
+
+  // 主滚动区域高度
+  const [scrollViewHeight, setScrollViewHeight] = useState<string>("100vh");
 
   /**
    * 获取学习专题数据
@@ -186,6 +200,14 @@ const StudyPage: React.FC = () => {
 
   // 获取所有数据
   useEffect(() => {
+    // 计算ScrollView的高度，减去Tab栏高度
+    const systemInfo = Taro.getSystemInfoSync();
+    const tabBarHeight = 100; // 预估标签栏高度，单位rpx
+    const pixelRatio = 750 / systemInfo.windowWidth;
+    const tabBarHeightPx = tabBarHeight / pixelRatio;
+    const scrollHeight = `${systemInfo.windowHeight - tabBarHeightPx}px`;
+    setScrollViewHeight(scrollHeight);
+
     // 获取学习专题数据
     fetchStudyTopics();
     // 获取最新动态数据
@@ -200,8 +222,8 @@ const StudyPage: React.FC = () => {
   const fetchNewsMessages = async () => {
     try {
       setLoading(true);
+      setInitialNewsLoading(true);
       const response = await messageApi.getNewsMessages();
-      console.log("获取到的最新动态数据:", response);
 
       // 处理数据并更新状态
       if (response && response.length > 0) {
@@ -243,6 +265,8 @@ const StudyPage: React.FC = () => {
       ]);
     } finally {
       setLoading(false);
+      setInitialNewsLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -253,14 +277,16 @@ const StudyPage: React.FC = () => {
   const fetchCommonProblems = async (refresh = true) => {
     try {
       setFaqLoading(true);
+      if (refresh) {
+        setInitialFaqLoading(true);
+      }
+
       const currentPage = refresh ? 1 : faqPagination.current + 1;
 
       const response = await messageApi.getCommonProblems({
         current: currentPage,
         size: faqPagination.size,
       });
-
-      console.log("获取到的常见问题数据:", response);
 
       // 处理数据并更新状态
       if (response && response.records && response.records.length > 0) {
@@ -316,95 +342,158 @@ const StudyPage: React.FC = () => {
       }
     } finally {
       setFaqLoading(false);
+      if (refresh) {
+        setInitialFaqLoading(false);
+      }
     }
   };
 
-  /**
-   * 加载更多常见问题
-   */
-  const loadMoreFaq = () => {
-    fetchCommonProblems(false);
+  // 处理下拉刷新
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await Promise.all([
+      fetchStudyTopics(),
+      fetchNewsMessages(),
+      fetchCommonProblems(true),
+    ]);
+    setRefreshing(false);
+  };
+
+  // 加载更多问题
+  const onLoadMore = () => {
+    if (faqPagination.hasMore && !faqLoading) {
+      fetchCommonProblems(false);
+    }
+  };
+
+  // 渲染骨架屏
+  const renderSkeleton = (type: "news" | "faq") => {
+    const count = type === "news" ? 3 : 4;
+    return (
+      <View className="skeleton-container">
+        {Array.from({ length: count }).map((_, index) => (
+          <View key={index} className={`skeleton-card ${type}-skeleton`}>
+            {type === "news" ? (
+              <>
+                <Skeleton
+                  style={{ width: "90%", height: "32px", marginBottom: "16px" }}
+                />
+                <Skeleton style={{ width: "40%", height: "24px" }} />
+              </>
+            ) : (
+              <>
+                <View style={{ display: "flex", alignItems: "flex-start" }}>
+                  <Skeleton
+                    style={{
+                      width: "40px",
+                      height: "40px",
+                      marginRight: "16px",
+                    }}
+                  />
+                  <View style={{ flex: 1 }}>
+                    <Skeleton
+                      style={{
+                        width: "80%",
+                        height: "28px",
+                        marginBottom: "12px",
+                      }}
+                    />
+                    <Skeleton style={{ width: "95%", height: "24px" }} />
+                    <Skeleton
+                      style={{ width: "70%", height: "24px", marginTop: "8px" }}
+                    />
+                  </View>
+                </View>
+              </>
+            )}
+          </View>
+        ))}
+      </View>
+    );
   };
 
   return (
     <View className="container">
-      {/* 学习专题部分 */}
-      <View className="section">
-        <View className="section-title">学习专题</View>
-        <View className="topics-grid">
-          {studyTopics.map((topic, index) => (
-            <View className="topic-item" key={topic.id}>
-              {topic.appIcon ? (
-                <Image
-                  className="topic-icon-image"
-                  src={topic.appIcon}
-                  mode="aspectFit"
-                />
-              ) : (
-                <View className={`topic-icon-bg ${getColorClass(index)}`}>
-                  <Text className="topic-icon-text">{topic.icon}</Text>
+      <PullRefresh loading={refreshing} onRefresh={onRefresh}>
+        <List
+          loading={faqLoading && !initialFaqLoading}
+          hasMore={faqPagination.hasMore}
+          offset={100}
+          immediateCheck={false}
+          onLoad={onLoadMore}
+          style={{ minHeight: scrollViewHeight }}
+        >
+          {/* 学习专题部分 */}
+          <View className="section">
+            <View className="section-title">学习专题</View>
+            <View className="topics-grid">
+              {studyTopics.map((topic, index) => (
+                <View className="topic-item" key={topic.id}>
+                  {topic.appIcon ? (
+                    <Image
+                      className="topic-icon-image"
+                      src={topic.appIcon}
+                      mode="aspectFit"
+                    />
+                  ) : (
+                    <View className={`topic-icon-bg ${getColorClass(index)}`}>
+                      <Text className="topic-icon-text">{topic.icon}</Text>
+                    </View>
+                  )}
+                  <Text className="topic-title">{topic.title}</Text>
                 </View>
-              )}
-              <Text className="topic-title">{topic.title}</Text>
-            </View>
-          ))}
-        </View>
-      </View>
-
-      {/* 最新动态部分 */}
-      <View className="section">
-        <View className="section-header">
-          <View className="section-title-container">
-            <Image className="now-badge" src={icoNew} mode="aspectFit" />
-            <Text className="section-title">最新动态</Text>
-          </View>
-        </View>
-        <View className="news-list">
-          {loading ? (
-            <View className="loading-text">加载中...</View>
-          ) : newsItems.length > 0 ? (
-            newsItems.map((item) => (
-              <NewsCard
-                key={item.id}
-                title={item.title}
-                date={item.publishDate || ""}
-                fileUrl={item.fileUrl}
-              />
-            ))
-          ) : (
-            <View className="empty-text">暂无最新动态</View>
-          )}
-        </View>
-      </View>
-
-      {/* 常见问题部分 */}
-      <View className="section">
-        <View className="section-title">常见问题</View>
-        <View className="faq-list">
-          {faqLoading && faqItems.length === 0 ? (
-            <View className="loading-text">加载中...</View>
-          ) : faqItems.length > 0 ? (
-            <>
-              {faqItems.map((item) => (
-                <QuestionCard
-                  key={item.id}
-                  icon={item.icon}
-                  question={item.question}
-                  answer={item.answer}
-                />
               ))}
+            </View>
+          </View>
 
-              {faqPagination.hasMore && (
-                <View className="load-more-btn" onClick={loadMoreFaq}>
-                  {faqLoading ? "加载中..." : "加载更多"}
-                </View>
+          {/* 最新动态部分 */}
+          <View className="section">
+            <View className="section-header">
+              <View className="section-title-container">
+                <Image className="now-badge" src={icoNew} mode="aspectFit" />
+                <Text className="section-title">最新动态</Text>
+              </View>
+            </View>
+            <View className="news-list">
+              {initialNewsLoading ? (
+                renderSkeleton("news")
+              ) : newsItems.length > 0 ? (
+                newsItems.map((item) => (
+                  <NewsCard
+                    key={item.id}
+                    title={item.title}
+                    date={item.publishDate || ""}
+                    fileUrl={item.fileUrl}
+                  />
+                ))
+              ) : (
+                <View className="empty-text">暂无最新动态</View>
               )}
-            </>
-          ) : (
-            <View className="empty-text">暂无常见问题</View>
-          )}
-        </View>
-      </View>
+            </View>
+          </View>
+
+          {/* 常见问题部分 */}
+          <View className="section">
+            <View className="section-title">常见问题</View>
+            <View className="faq-list">
+              {initialFaqLoading ? (
+                renderSkeleton("faq")
+              ) : faqItems.length > 0 ? (
+                faqItems.map((item) => (
+                  <QuestionCard
+                    key={item.id}
+                    icon={item.icon}
+                    question={item.question}
+                    answer={item.answer}
+                  />
+                ))
+              ) : (
+                <View className="empty-text">暂无常见问题</View>
+              )}
+            </View>
+          </View>
+        </List>
+      </PullRefresh>
     </View>
   );
 };
