@@ -128,6 +128,7 @@ const StudyPage: React.FC = () => {
       id: 2,
       icon: "范",
       title: "抽样规范",
+      path: "/SPASamplingSpecification/pages/specification/index",
     },
     {
       id: 3,
@@ -190,10 +191,12 @@ const StudyPage: React.FC = () => {
           appIcon: item.appIcon, // 服务器返回的图标URL
           icon: item.appName?.substring(0, 1) || "?", // 取名称第一个字作为图标
           title: item.appName || item.name || "未命名",
-          // 保持抽样细则的路径
+          // 添加路径映射
           path:
             item.appName === "抽样细则"
               ? "/SPASamplingRegulation/pages/regulation/index"
+              : item.appName === "抽样规范"
+              ? "/SPASamplingSpecification/pages/specification/index"
               : undefined,
         }));
 

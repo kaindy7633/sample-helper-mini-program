@@ -5,6 +5,32 @@ import request from "./request";
 import { API_PATHS } from "./config";
 
 /**
+ * 分页查询参数
+ */
+export interface PageParams {
+  /** 页码 */
+  current?: number;
+  /** 每页条数 */
+  size?: number;
+}
+
+/**
+ * 分页结果类型
+ */
+export interface PageResult<T> {
+  /** 数据列表 */
+  records: T[];
+  /** 总数 */
+  total: number | string;
+  /** 当前页码 */
+  current: number | string;
+  /** 每页条数 */
+  size: number | string;
+  /** 总页数 */
+  pages: number | string;
+}
+
+/**
  * 最新动态消息项类型
  */
 export interface NewsItem {
@@ -44,32 +70,6 @@ export interface CommonProblemItem {
   problemTypeName?: string;
   /** 答案 */
   answer: string;
-}
-
-/**
- * 分页查询参数
- */
-export interface PageParams {
-  /** 页码 */
-  current?: number;
-  /** 每页条数 */
-  size?: number;
-}
-
-/**
- * 分页结果类型
- */
-export interface PageResult<T> {
-  /** 数据列表 */
-  records: T[];
-  /** 总数 */
-  total: number | string;
-  /** 当前页码 */
-  current: number | string;
-  /** 每页条数 */
-  size: number | string;
-  /** 总页数 */
-  pages: number | string;
 }
 
 /**
@@ -125,6 +125,36 @@ export interface SamplingRegulationItem {
 }
 
 /**
+ * 抽样规范项类型
+ */
+export interface SamplingSpecificationItem {
+  /** ID */
+  id?: string;
+  /** 删除标记 */
+  delFlag?: number;
+  /** 创建人 */
+  createBy?: string | null;
+  /** 创建时间 */
+  createTime?: string;
+  /** 更新人 */
+  updateBy?: string | null;
+  /** 更新时间 */
+  updateTime?: string;
+  /** 规范名称 */
+  specificationName: string;
+  /** 发布时间 */
+  publishTime: string;
+  /** 文件URL */
+  fileUrl?: string;
+  /** 文件名 */
+  fileName?: string;
+  /** 原始文件URL */
+  originalFileUrl?: string;
+  /** 原始文件名 */
+  originalFileName?: string;
+}
+
+/**
  * 获取最新动态消息
  * @returns 消息列表
  */
@@ -165,11 +195,27 @@ export function getSamplingRegulations(
   });
 }
 
+/**
+ * 获取抽样规范列表
+ * @param params 分页参数
+ * @returns 抽样规范分页列表
+ */
+export function getSamplingSpecifications(
+  params?: PageParams
+): Promise<PageResult<SamplingSpecificationItem>> {
+  return request<PageResult<SamplingSpecificationItem>>({
+    url: API_PATHS.LEARN.SAMPLING_SPECIFICATION,
+    method: "GET",
+    data: params || { current: 1, size: 10 },
+  });
+}
+
 // 导出消息模块的API
 const messageApi = {
   getNewsMessages,
   getCommonProblems,
   getSamplingRegulations,
+  getSamplingSpecifications,
 };
 
 export default messageApi;

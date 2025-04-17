@@ -167,7 +167,7 @@ export async function downloadStandardFile(
         if (res.confirm) {
           try {
             // 尝试确定文件类型
-            let fileType: keyof Taro.openDocument.FileType | undefined = "pdf";
+            let fileType: keyof Taro.openDocument.FileType | undefined;
             if (fileName) {
               const extension = fileName.split(".").pop()?.toLowerCase();
               if (

@@ -38,8 +38,12 @@ export const API_PATHS = {
   LEARN: {
     // 常见问题列表
     COMMON_PROBLEM: "/api/learnPublish/commonProblem/pageList",
+    // 标准法规列表
+    STANDARD_REGULATION: "/api/learnPublish/standardRegulation/pageList",
     // 抽样细则列表
     SAMPLING_REGULATION: "/api/learnPublish/samplingRegulation/pageList",
+    // 规范规程列表
+    SAMPLING_SPECIFICATION: "/api/learnPublish/samplingSpecification/pageList",
   },
   // 食品分类查询
   FOOD_CLASS: {
