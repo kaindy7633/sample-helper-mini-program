@@ -91,7 +91,6 @@ const FoodClassPage: React.FC = () => {
   const handleScan = () => {
     Taro.scanCode({
       success: (res) => {
-        console.log("扫码结果:", res);
         if (res.result) {
           // 设置关键词（用于显示）
           setKeyword(res.result);

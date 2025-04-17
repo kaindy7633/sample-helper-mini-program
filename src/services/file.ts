@@ -118,16 +118,16 @@ export async function downloadStandardFile(
       header: {
         "content-type": "application/x-www-form-urlencoded",
       },
-      data: `fileId=${fileId}&type=${FileOperationType.DOWNLOAD}`,
+      data: `fileId=${fileId}&type=${FileOperationType.PREVIEW}`,
     });
-
-    console.log("文件下载URL获取结果:", result);
 
     // 检查返回数据
     if (!result || !result.url) {
-      Taro.showToast({
-        title: "获取文件链接失败",
-        icon: "none",
+      Taro.hideLoading();
+      Taro.showModal({
+        title: "下载失败",
+        content: "获取文件链接失败，请稍后重试",
+        showCancel: false,
       });
       return;
     }
@@ -135,49 +135,91 @@ export async function downloadStandardFile(
     // 获取OSS URL
     const fileUrl = result.url;
 
-    // 第二步：下载文件内容
+    // 第二步：下载文件
     const downloadResult = await Taro.downloadFile({
       url: fileUrl,
-      timeout: 30000, // 设置超时为30秒
+      timeout: 60000, // 超时时间60秒
     });
 
     if (downloadResult.statusCode !== 200) {
-      Taro.showToast({
-        title: "文件下载失败",
-        icon: "none",
+      Taro.hideLoading();
+      Taro.showModal({
+        title: "下载失败",
+        content: "文件下载失败，请检查网络后重试",
+        showCancel: false,
       });
       return;
     }
 
-    // 第三步：保存文件到本地
-    try {
-      const saveResult = await Taro.saveFile({
-        tempFilePath: downloadResult.tempFilePath,
-      });
+    // 获取临时文件路径
+    const tempFilePath = downloadResult.tempFilePath;
 
-      // 使用类型断言处理savedFilePath
-      const savedPath = (saveResult as Taro.saveFile.SuccessCallbackResult)
-        .savedFilePath;
-      console.log("文件已保存:", savedPath);
-      Taro.showToast({
-        title: "下载成功",
-        icon: "success",
-      });
-    } catch (saveError) {
-      console.error("保存文件失败:", saveError);
-      Taro.showToast({
-        title: "文件保存失败",
-        icon: "none",
-      });
-    }
-  } catch (error) {
-    console.error("下载文件失败:", error);
-    Taro.showToast({
-      title: "文件下载失败",
-      icon: "none",
-    });
-  } finally {
+    // 隐藏下载loading
     Taro.hideLoading();
+
+    // 第三步：使用openDocument打开文件，并显示右上角菜单，允许用户保存文件
+    Taro.showModal({
+      title: "下载成功",
+      content:
+        "文件已下载完成，点击确定打开文件，然后点击右上角「...」菜单选择「保存到手机」",
+      showCancel: false,
+      success: async (res) => {
+        if (res.confirm) {
+          try {
+            // 尝试确定文件类型
+            let fileType: keyof Taro.openDocument.FileType | undefined = "pdf";
+            if (fileName) {
+              const extension = fileName.split(".").pop()?.toLowerCase();
+              if (
+                extension === "pdf" ||
+                extension === "doc" ||
+                extension === "docx" ||
+                extension === "xls" ||
+                extension === "xlsx" ||
+                extension === "ppt" ||
+                extension === "pptx" ||
+                extension === "txt"
+              ) {
+                fileType = extension as keyof Taro.openDocument.FileType;
+              }
+            }
+
+            // 打开文档预览，显示菜单让用户可以保存
+            await Taro.openDocument({
+              filePath: tempFilePath,
+              fileType,
+              showMenu: true,
+              success: () => {
+                console.log("文件预览成功，用户可以从右上角菜单保存");
+              },
+              fail: (openError) => {
+                console.error("打开文件失败:", openError);
+                Taro.showModal({
+                  title: "打开失败",
+                  content: "文件无法打开，请重试",
+                  showCancel: false,
+                });
+              },
+            });
+          } catch (error) {
+            console.error("打开文档失败:", error);
+            Taro.showModal({
+              title: "打开失败",
+              content: "文件无法打开，请重试",
+              showCancel: false,
+            });
+          }
+        }
+      },
+    });
+  } catch (error) {
+    console.error("下载文件过程中发生错误:", error);
+    Taro.hideLoading();
+    Taro.showModal({
+      title: "下载失败",
+      content: "未知错误，请稍后重试",
+      showCancel: false,
+    });
   }
 }
 
