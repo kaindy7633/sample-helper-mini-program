@@ -122,6 +122,7 @@ const StudyPage: React.FC = () => {
       id: 1,
       icon: "细",
       title: "抽样细则",
+      path: "/SPASamplingRegulation/pages/regulation/index",
     },
     {
       id: 2,
@@ -189,6 +190,11 @@ const StudyPage: React.FC = () => {
           appIcon: item.appIcon, // 服务器返回的图标URL
           icon: item.appName?.substring(0, 1) || "?", // 取名称第一个字作为图标
           title: item.appName || item.name || "未命名",
+          // 保持抽样细则的路径
+          path:
+            item.appName === "抽样细则"
+              ? "/SPASamplingRegulation/pages/regulation/index"
+              : undefined,
         }));
 
         setStudyTopics(formattedTopics);
@@ -415,6 +421,61 @@ const StudyPage: React.FC = () => {
     );
   };
 
+  /**
+   * 处理专题项点击
+   * @param topic 专题数据
+   */
+  const handleTopicClick = (topic: Record<string, any>) => {
+    // 添加调试日志
+    console.log("点击了专题：", topic);
+
+    // 对抽样细则特殊处理
+    if (topic.title === "抽样细则") {
+      const path = "/SPASamplingRegulation/pages/regulation/index";
+      console.log("准备导航到抽样细则页面:", path);
+      Taro.navigateTo({
+        url: path,
+        success: () => {
+          console.log("导航成功!");
+        },
+        fail: (err) => {
+          console.error("导航失败:", err);
+          Taro.showToast({
+            title: "页面跳转失败: " + JSON.stringify(err),
+            icon: "none",
+            duration: 3000,
+          });
+        },
+      });
+      return;
+    }
+
+    // 检查是否有路径配置
+    if (topic.path) {
+      // 使用Taro导航到指定页面
+      console.log("准备导航到页面:", topic.path);
+      Taro.navigateTo({
+        url: topic.path,
+        success: () => {
+          console.log("导航成功!");
+        },
+        fail: (err) => {
+          console.error("导航失败:", err);
+          Taro.showToast({
+            title: "页面跳转失败",
+            icon: "none",
+          });
+        },
+      });
+    } else {
+      // TODO: 处理其他专题的点击事件
+      Taro.showToast({
+        title: "功能开发中",
+        icon: "none",
+      });
+    }
+  };
+
   return (
     <View className="container">
       <PullRefresh loading={refreshing} onRefresh={onRefresh}>
@@ -431,7 +492,11 @@ const StudyPage: React.FC = () => {
             <View className="section-title">学习专题</View>
             <View className="topics-grid">
               {studyTopics.map((topic, index) => (
-                <View className="topic-item" key={topic.id}>
+                <View
+                  className="topic-item"
+                  key={topic.id}
+                  onClick={() => handleTopicClick(topic)}
+                >
                   {topic.appIcon ? (
                     <Image
                       className="topic-icon-image"

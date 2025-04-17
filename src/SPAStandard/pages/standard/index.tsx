@@ -344,7 +344,8 @@ const StandardPage: React.FC = (): JSX.Element => {
                       >
                         {standard.name}.pdf
                       </Text>
-                      <Image
+                      {/* TODO：暂时屏蔽下载按钮 */}
+                      {/* <Image
                         className="download-icon"
                         src={downloadIcon}
                         onClick={(e) =>
@@ -354,7 +355,7 @@ const StandardPage: React.FC = (): JSX.Element => {
                             `${standard.name}.pdf`
                           )
                         }
-                      />
+                      /> */}
                     </View>
 
                     <View className="standard-info-row">

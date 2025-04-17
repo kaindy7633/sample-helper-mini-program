@@ -31,6 +31,12 @@ export default defineAppConfig({
       name: "subpackage-sampling",
       pages: ["pages/sampling/index"],
     },
+    // 抽样细则分包
+    {
+      root: "SPASamplingRegulation",
+      name: "subpackage-sampling-regulation",
+      pages: ["pages/regulation/index"],
+    },
     // 食品分类查询分包
     {
       root: "SPAFoodClass",
