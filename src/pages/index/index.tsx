@@ -289,7 +289,23 @@ const Index: React.FC = (): JSX.Element => {
           <View className="section-title">便捷工具</View>
           <View className="items-grid">
             {convenientToolsItems.map((item) => (
-              <View key={item.id} className="grid-item">
+              <View
+                key={item.id}
+                className="grid-item"
+                onClick={() => {
+                  if (item.appName === "企业证照查询") {
+                    Taro.navigateTo({
+                      url: "/SPALicense/pages/license/index",
+                    });
+                  } else {
+                    // 其他工具暂未实现，显示提示
+                    Taro.showToast({
+                      title: `${item.appName}功能开发中`,
+                      icon: "none",
+                    });
+                  }
+                }}
+              >
                 <Image
                   className="item-icon"
                   src={item.appIcon}

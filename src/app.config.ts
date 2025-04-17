@@ -57,6 +57,12 @@ export default defineAppConfig({
         "pages/validation/details/index",
       ],
     },
+    // 企业证照查询分包
+    {
+      root: "SPALicense",
+      name: "subpackage-license",
+      pages: ["pages/license/index", "pages/webview/index"],
+    },
   ],
   window: {
     backgroundTextStyle: "light",
