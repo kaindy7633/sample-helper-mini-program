@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { View, Text, Image, ScrollView } from "@tarojs/components";
 import Taro from "@tarojs/taro";
-import { Skeleton, PullRefresh, List } from "@taroify/core";
+import { Skeleton, PullRefresh, List, Loading } from "@taroify/core";
 import { messageApi } from "../../../services";
 import icoNew from "../../../assets/images/ico_new.png";
 import "./index.less";
@@ -283,6 +283,9 @@ const StudyPage: React.FC = () => {
 
       const currentPage = refresh ? 1 : faqPagination.current + 1;
 
+      // 添加模拟加载延迟效果
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       const response = await messageApi.getCommonProblems({
         current: currentPage,
         size: faqPagination.size,
@@ -492,6 +495,16 @@ const StudyPage: React.FC = () => {
               )}
             </View>
           </View>
+
+          {/* 列表加载状态 */}
+          <List.Placeholder>
+            {faqLoading && !initialFaqLoading && (
+              <Loading className="list-loading">加载中...</Loading>
+            )}
+            {!faqLoading && !faqPagination.hasMore && faqItems.length > 0 && (
+              <View className="list-loading">没有更多数据了</View>
+            )}
+          </List.Placeholder>
         </List>
       </PullRefresh>
     </View>
