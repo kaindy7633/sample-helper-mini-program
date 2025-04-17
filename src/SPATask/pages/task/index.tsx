@@ -168,14 +168,14 @@ const TaskPage: React.FC = (): JSX.Element => {
       paramsRef.current.size = Number(pageSize);
       paramsRef.current.isFinish = isFinish;
       if (filterA && filterA !== "报送分类A") {
-        paramsRef.current.classa = filterA;
+        paramsRef.current.classA = filterA;
       } else {
-        delete paramsRef.current.classa;
+        delete paramsRef.current.classA;
       }
       if (filterB && filterB !== "报送分类B") {
-        paramsRef.current.classb = filterB;
+        paramsRef.current.classB = filterB;
       } else {
-        delete paramsRef.current.classb;
+        delete paramsRef.current.classB;
       }
       if (keyword && keyword.trim() !== "") {
         paramsRef.current.cate1 = keyword;
