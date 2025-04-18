@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, ScrollView } from "@tarojs/components";
+import { View, Text, ScrollView, Image } from "@tarojs/components";
 import Taro, { useRouter } from "@tarojs/taro";
-import { Empty, Loading } from "@taroify/core";
+import { Empty, Loading, Divider } from "@taroify/core";
+import { ArrowLeft } from "@taroify/icons";
+import QrcodeImg from "../../../assets/images/qrcode_manager.jpg";
 import "./index.less";
 
 import { useCategoryList, useQuestionList } from "./hooks";
@@ -45,6 +47,7 @@ const CommonProblemPage: React.FC = () => {
   const [current, setCurrent] = useState<number>(1);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
+  const [showQrcodeModal, setShowQrcodeModal] = useState(false);
 
   // 获取分类列表和问题列表
   const { categoryList, loading: categoryLoading } = useCategoryList();
@@ -137,14 +140,38 @@ const CommonProblemPage: React.FC = () => {
 
   return (
     <View className="common-problem-container">
+      {/* 顶部信息区域 */}
+      <View className="top-info">
+        <Text className="top-info-text">更多问题请加入</Text>
+        <Text
+          className="top-info-link"
+          onClick={() => setShowQrcodeModal(true)}
+        >
+          全国食品问题交流群
+        </Text>
+      </View>
+
+      {/* 二维码弹窗 */}
+      {showQrcodeModal && (
+        <View className="qrcode-modal-mask">
+          <View className="qrcode-modal">
+            <View className="qrcode-modal-title">扫描二维码管理员邀请入群</View>
+            <Image className="qrcode-img" src={QrcodeImg} mode="aspectFit" />
+            <View className="qrcode-modal-desc">
+              北京信睿-全国食品企业标准服务交流群
+            </View>
+            <View
+              className="qrcode-modal-close"
+              onClick={() => setShowQrcodeModal(false)}
+            >
+              关闭
+            </View>
+          </View>
+        </View>
+      )}
+
       {/* 固定区域 */}
       <View className="fixed-area">
-        {/* 顶部信息区域 */}
-        <View className="top-info">
-          <Text className="top-info-text">更多问题请加入</Text>
-          <Text className="top-info-link">全国食品问题交流群</Text>
-        </View>
-
         {/* 分类标签栏 */}
         <ScrollView className="category-scroll" scrollX scrollWithAnimation>
           <View className="category-list">
