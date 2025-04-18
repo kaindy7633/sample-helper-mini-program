@@ -8,4 +8,5 @@ node_modules/
 *.local
 
 .cursor
+package-lock.json
 pnpm-lock.yaml
