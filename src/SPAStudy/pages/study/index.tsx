@@ -159,6 +159,7 @@ const StudyPage: React.FC = () => {
       id: 4,
       icon: "食",
       title: "食安云学堂",
+      path: "/SPAFoodSchool/pages/course/index",
     },
     {
       id: 5,
@@ -206,21 +207,32 @@ const StudyPage: React.FC = () => {
         console.log("从storage获取到学习模块菜单数据", studyMenuList);
 
         // 转换数据格式
-        const formattedTopics = studyMenuList.map((item, index) => ({
-          id: item.id || index + 1,
-          appIcon: item.appIcon, // 服务器返回的图标URL
-          icon: item.appName?.substring(0, 1) || "?", // 取名称第一个字作为图标
-          title: item.appName || item.name || "未命名",
-          // 添加路径映射
-          path:
-            item.appName === "抽样细则"
-              ? "/SPASamplingRegulation/pages/regulation/index"
-              : item.appName === "抽样规范"
-              ? "/SPASamplingSpecification/pages/specification/index"
-              : item.appName === "常见问题"
-              ? "/SPACommonProblem/pages/problem/index"
-              : undefined,
-        }));
+        const formattedTopics = studyMenuList.map((item, index) => {
+          let path;
+          switch (item.appName) {
+            case "抽样细则":
+              path = "/SPASamplingRegulation/pages/regulation/index";
+              break;
+            case "抽样规范":
+              path = "/SPASamplingSpecification/pages/specification/index";
+              break;
+            case "常见问题":
+              path = "/SPACommonProblem/pages/problem/index";
+              break;
+            case "食安云学堂":
+              path = "/SPAFoodSchool/pages/course/index";
+              break;
+            default:
+              path = undefined;
+          }
+          return {
+            id: item.id || index + 1,
+            appIcon: item.appIcon,
+            icon: item.appName?.substring(0, 1) || "?",
+            title: item.appName || item.name || "未命名",
+            path: path, // 使用计算出的path
+          };
+        });
 
         setStudyTopics(formattedTopics);
       }

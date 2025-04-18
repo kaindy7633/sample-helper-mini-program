@@ -81,6 +81,12 @@ export default defineAppConfig({
       name: "subpackage-license",
       pages: ["pages/license/index", "pages/webview/index"],
     },
+    // 食安云学堂分包
+    {
+      root: "SPAFoodSchool",
+      name: "subpackage-foodschool",
+      pages: ["pages/course/index"],
+    },
   ],
   window: {
     backgroundTextStyle: "light",
