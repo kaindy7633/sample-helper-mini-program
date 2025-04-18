@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React from "react";
 import { View, Text, Image } from "@tarojs/components";
+import Taro from "@tarojs/taro"; // 引入Taro
 import "./index.less";
 
 // 导入图片资源
@@ -19,23 +20,27 @@ import rightArrowIcon from "../../../assets/images/ico_right_grey.png";
  * @param {React.ReactNode} props.icon - 图标组件
  * @param {string} props.title - 菜单标题
  * @param {string} props.rightText - 右侧文本（可选）
+ * @param {() => void} props.onClick - 点击事件处理函数（可选）
  * @returns {JSX.Element} 菜单项组件
  */
 const MenuItem: React.FC<{
   icon: React.ReactNode;
   title: string;
   rightText?: string;
+  onClick?: () => void;
 }> = ({
   icon,
   title,
   rightText,
+  onClick,
 }: {
   icon: React.ReactNode;
   title: string;
   rightText?: string;
+  onClick?: () => void;
 }): JSX.Element => {
   return (
-    <View className="menu-item">
+    <View className="menu-item" onClick={onClick}>
       <View className="menu-left">
         <View className="menu-icon">{icon}</View>
         <Text className="menu-title">{title}</Text>
@@ -55,6 +60,11 @@ const MenuItem: React.FC<{
  * @returns {JSX.Element} 我的页面
  */
 const MinePage: React.FC = (): JSX.Element => {
+  // 跳转到设置页面
+  const goToSettings = () => {
+    Taro.navigateTo({ url: "/SPASettings/pages/settings/index" });
+  };
+
   return (
     <View className="container">
       {/* 右上角聊天图标 */}
@@ -95,6 +105,7 @@ const MinePage: React.FC = (): JSX.Element => {
           icon={<Image className="icon-image" src={settingIcon} />}
           title="设置"
           rightText="个人信息"
+          onClick={goToSettings}
         />
 
         <View className="menu-divider"></View>

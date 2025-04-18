@@ -1,0 +1,51 @@
+.settings-page {
+  height: 100vh;
+  background-color: #f7f8fa;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* 修复 Cell 默认左右边距 */
+:global {
+  .taroify-cell-group {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    background: #fff;
+  }
+
+  .taroify-cell {
+    padding-top: 48px !important;
+    padding-bottom: 48px !important;
+    font-size: 32px !important;
+    color: #323233 !important;
+
+    &::after {
+      left: 32px !important;
+      right: 32px !important;
+      border-bottom: 1px solid #f0f0f0 !important;
+    }
+
+    &:last-child::after {
+      border-bottom: none !important;
+    }
+  }
+
+  .taroify-cell__right-icon {
+    color: #c8c9cc !important;
+    font-size: 28px !important;
+  }
+}
+
+.logout-button-container {
+  padding: 64px 32px;
+  background-color: #f7f8fa;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.logout-button {
+  height: 96px !important;
+  font-size: 32px !important;
+  font-weight: 500;
+}

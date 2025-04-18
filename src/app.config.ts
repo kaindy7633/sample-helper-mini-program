@@ -87,6 +87,12 @@ export default defineAppConfig({
       name: "subpackage-foodschool",
       pages: ["pages/course/index"],
     },
+    // 设置模块分包
+    {
+      root: "SPASettings",
+      name: "subpackage-settings",
+      pages: ["pages/settings/index"],
+    },
   ],
   window: {
     backgroundTextStyle: "light",
