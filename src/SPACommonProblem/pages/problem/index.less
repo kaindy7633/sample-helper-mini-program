@@ -1,0 +1,148 @@
+/* 页面容器 */
+.common-problem-container {
+  background-color: #fff;
+  min-height: 100vh;
+  box-sizing: border-box;
+
+  /* 导航栏样式 */
+  .nav-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 88px;
+    padding: 0 30px;
+    position: relative;
+
+    &-left {
+      font-size: 40px;
+      display: flex;
+      align-items: center;
+    }
+
+    &-title {
+      font-size: 36px;
+      font-weight: 500;
+      color: #333;
+    }
+
+    &-right {
+      .qa-button {
+        font-size: 30px;
+        color: #576B95;
+        font-weight: 500;
+      }
+    }
+  }
+
+  .top-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 0;
+
+    &-text {
+      font-size: 28px;
+      color: #666;
+    }
+
+    &-link {
+      font-size: 28px;
+      color: #576B95;
+      margin-left: 8px;
+    }
+  }
+
+  .category-scroll {
+    white-space: nowrap;
+    padding: 0 30px;
+    border-bottom: 1px solid #f5f5f5;
+  }
+
+  .category-list {
+    display: inline-flex;
+    padding: 20px 0;
+  }
+
+  .category-item {
+    padding: 10px 24px;
+    margin-right: 24px;
+    font-size: 28px;
+    color: #666;
+    position: relative;
+
+    &-active {
+      color: #333;
+      font-weight: bold;
+
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 40px;
+        height: 6px;
+        background-color: #576B95;
+        border-radius: 3px;
+      }
+    }
+
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+
+  .question-container {
+    padding: 30px;
+  }
+
+  .question-list {
+    .question-item {
+      display: flex;
+      padding: 20px 0;
+
+      .question-icon {
+        width: 48px;
+        height: 48px;
+        background-color: #E8F3FF;
+        color: #576B95;
+        border-radius: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        font-weight: bold;
+        margin-right: 20px;
+        flex-shrink: 0;
+      }
+
+      .question-content {
+        flex: 1;
+
+        .question-title {
+          font-size: 32px;
+          color: #333;
+          line-height: 1.5;
+        }
+      }
+    }
+  }
+
+  .empty-container {
+    padding: 100px 0;
+  }
+
+  .loading-container {
+    display: flex;
+    justify-content: center;
+    padding: 100px 0;
+  }
+
+  .list-loading,
+  .list-finished {
+    text-align: center;
+    padding: 20px 0;
+    color: #999;
+    font-size: 24px;
+  }
+}

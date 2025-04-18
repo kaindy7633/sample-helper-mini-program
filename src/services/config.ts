@@ -38,6 +38,8 @@ export const API_PATHS = {
   LEARN: {
     // 常见问题列表
     COMMON_PROBLEM: "/api/learnPublish/commonProblem/pageList",
+    // 常见问题类型列表
+    COMMON_PROBLEM_TYPES: "/api/learnPublish/commonProblem/typeList",
     // 标准法规列表
     STANDARD_REGULATION: "/api/learnPublish/standardRegulation/pageList",
     // 抽样细则列表

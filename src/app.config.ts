@@ -43,6 +43,12 @@ export default defineAppConfig({
       name: "subpackage-sampling-specification",
       pages: ["pages/specification/index"],
     },
+    // 常见问题分包
+    {
+      root: "SPACommonProblem",
+      name: "subpackage-common-problem",
+      pages: ["pages/problem/index"],
+    },
     // 食品分类查询分包
     {
       root: "SPAFoodClass",

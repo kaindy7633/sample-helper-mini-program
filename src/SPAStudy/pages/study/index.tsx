@@ -10,7 +10,7 @@ import "./index.less";
 /**
  * 问题卡片组件
  * @param {Object} props - 组件属性
- * @param {string} props.icon - 图标路径
+ * @param {string} props.icon - 图标内容
  * @param {string} props.question - 问题标题
  * @param {string} props.answer - 问题答案
  * @returns {JSX.Element} 问题卡片组件
@@ -20,8 +20,27 @@ const QuestionCard: React.FC<{
   question: string;
   answer: string;
 }> = ({ icon, question, answer }) => {
+  /**
+   * 处理点击问题卡片事件，跳转到常见问题页面
+   */
+  const handleQuestionClick = () => {
+    Taro.navigateTo({
+      url: "/SPACommonProblem/pages/problem/index",
+      success: () => {
+        console.log("导航到常见问题页面成功");
+      },
+      fail: (err) => {
+        console.error("导航到常见问题页面失败:", err);
+        Taro.showToast({
+          title: "页面跳转失败",
+          icon: "none",
+        });
+      },
+    });
+  };
+
   return (
-    <View className="faq-card">
+    <View className="faq-card" onClick={handleQuestionClick}>
       <View className="faq-icon-container">
         <View className="faq-icon">{icon}</View>
       </View>
@@ -134,6 +153,7 @@ const StudyPage: React.FC = () => {
       id: 3,
       icon: "?",
       title: "常见问题",
+      path: "/SPACommonProblem/pages/problem/index",
     },
     {
       id: 4,
@@ -197,6 +217,8 @@ const StudyPage: React.FC = () => {
               ? "/SPASamplingRegulation/pages/regulation/index"
               : item.appName === "抽样规范"
               ? "/SPASamplingSpecification/pages/specification/index"
+              : item.appName === "常见问题"
+              ? "/SPACommonProblem/pages/problem/index"
               : undefined,
         }));
 
@@ -290,14 +312,10 @@ const StudyPage: React.FC = () => {
         setInitialFaqLoading(true);
       }
 
-      const currentPage = refresh ? 1 : faqPagination.current + 1;
-
-      // 添加模拟加载延迟效果
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
+      // 只获取5条数据
       const response = await messageApi.getCommonProblems({
-        current: currentPage,
-        size: faqPagination.size,
+        current: 1,
+        size: 5,
       });
 
       // 处理数据并更新状态
@@ -315,48 +333,38 @@ const StudyPage: React.FC = () => {
           };
         });
 
-        // 更新分页信息
-        const total = Number(response.total) || 0;
-        const current = Number(response.current) || 1;
-        const size = Number(response.size) || 10;
-        const hasMore = total > current * size;
+        // 更新状态
+        setFaqItems(formattedFaqs);
 
-        // 更新状态 - 如果是加载更多则追加数据，否则替换数据
-        setFaqItems(refresh ? formattedFaqs : [...faqItems, ...formattedFaqs]);
+        // 添加"查看更多"按钮状态
         setFaqPagination({
-          current: current,
-          size: size,
-          total: total,
-          hasMore: hasMore,
+          current: 1,
+          size: 5,
+          total: Number(response.total) || 0,
+          hasMore: false, // 不再支持加载更多
         });
       } else {
         // 如果没有数据，则清空列表
-        if (refresh) {
-          setFaqItems([]);
-          setFaqPagination({
-            current: 1,
-            size: 10,
-            total: 0,
-            hasMore: false,
-          });
-        }
-      }
-    } catch (error) {
-      console.error("获取常见问题数据失败:", error);
-      if (refresh) {
         setFaqItems([]);
         setFaqPagination({
           current: 1,
-          size: 10,
+          size: 5,
           total: 0,
           hasMore: false,
         });
       }
+    } catch (error) {
+      console.error("获取常见问题数据失败:", error);
+      setFaqItems([]);
+      setFaqPagination({
+        current: 1,
+        size: 5,
+        total: 0,
+        hasMore: false,
+      });
     } finally {
       setFaqLoading(false);
-      if (refresh) {
-        setInitialFaqLoading(false);
-      }
+      setInitialFaqLoading(false);
     }
   };
 
@@ -369,13 +377,6 @@ const StudyPage: React.FC = () => {
       fetchCommonProblems(true),
     ]);
     setRefreshing(false);
-  };
-
-  // 加载更多问题
-  const onLoadMore = () => {
-    if (faqPagination.hasMore && !faqLoading) {
-      fetchCommonProblems(false);
-    }
   };
 
   // 渲染骨架屏
@@ -483,11 +484,10 @@ const StudyPage: React.FC = () => {
     <View className="container">
       <PullRefresh loading={refreshing} onRefresh={onRefresh}>
         <List
-          loading={faqLoading && !initialFaqLoading}
-          hasMore={faqPagination.hasMore}
+          loading={false}
+          hasMore={false}
           offset={100}
           immediateCheck={false}
-          onLoad={onLoadMore}
           style={{ minHeight: scrollViewHeight }}
         >
           {/* 学习专题部分 */}
@@ -545,7 +545,11 @@ const StudyPage: React.FC = () => {
 
           {/* 常见问题部分 */}
           <View className="section">
-            <View className="section-title">常见问题</View>
+            <View className="section-header">
+              <View className="section-title-container">
+                <Text className="section-title">常见问题</Text>
+              </View>
+            </View>
             <View className="faq-list">
               {initialFaqLoading ? (
                 renderSkeleton("faq")
@@ -563,16 +567,6 @@ const StudyPage: React.FC = () => {
               )}
             </View>
           </View>
-
-          {/* 列表加载状态 */}
-          <List.Placeholder>
-            {faqLoading && !initialFaqLoading && (
-              <Loading className="list-loading">加载中...</Loading>
-            )}
-            {!faqLoading && !faqPagination.hasMore && faqItems.length > 0 && (
-              <View className="list-loading">没有更多数据了</View>
-            )}
-          </List.Placeholder>
         </List>
       </PullRefresh>
     </View>

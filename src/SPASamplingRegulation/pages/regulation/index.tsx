@@ -14,7 +14,7 @@ import "./index.less";
  */
 const RegulationItem: React.FC<{
   item: SamplingRegulationItem;
-}> = ({ item }) => {
+}> = ({ item }: { item: SamplingRegulationItem }): JSX.Element => {
   /**
    * 处理点击条目事件
    */
@@ -113,7 +113,7 @@ const RegulationItem: React.FC<{
  * 抽样细则页面组件
  * @returns {JSX.Element} 抽样细则页面组件
  */
-const SamplingRegulationPage: React.FC = () => {
+const SamplingRegulationPage: React.FC = (): JSX.Element => {
   // 抽样细则列表数据
   const [regulationList, setRegulationList] = useState<
     SamplingRegulationItem[]
@@ -242,7 +242,12 @@ const SamplingRegulationPage: React.FC = () => {
     return (
       <View className="skeleton-container">
         {Array.from({ length: 4 }).map((_, index) => (
-          <View key={index} className="skeleton-item">
+          <View
+            key={index}
+            className={`skeleton-item ${
+              index === 3 ? "skeleton-item-last" : ""
+            }`}
+          >
             <Skeleton
               style={{ width: "90%", height: "32px", marginBottom: "16px" }}
             />
