@@ -486,7 +486,7 @@ const StudyPage: React.FC = () => {
     } else {
       // TODO: 处理其他专题的点击事件
       Taro.showToast({
-        title: "功能开发中",
+        title: "不确定业务模块或功能开发中",
         icon: "none",
       });
     }
