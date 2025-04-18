@@ -40,7 +40,7 @@
   width: 100%;
   height: 120px;
   font-size: 32px;
-  padding: 0 50px;
+  padding: 0 80px 0 50px;
   border-radius: 999px;
   background-color: #F6F6F6;
   color: #333;
@@ -65,10 +65,21 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>');
   background-size: 36px 36px;
   background-position: center;
   background-repeat: no-repeat;
+  cursor: pointer;
+  z-index: 10;
+}
+
+/* 默认状态：密码隐藏，显示睁开的眼睛 */
+.eye-icon.hidden {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>');
+}
+
+/* 密码可见状态：显示带斜杠的眼睛 */
+.eye-icon.visible {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>');
 }
 
 /* 协议文本 */

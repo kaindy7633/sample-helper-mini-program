@@ -133,16 +133,29 @@ const LoginPage: React.FC = (): JSX.Element => {
 
         <View className="form-item">
           <View className="password-input-container">
-            <Input
-              className="form-input"
-              type={showPassword ? "text" : ("password" as InputProps["type"])}
-              placeholder="密码"
-              value={password}
-              onInput={(e) => setPassword(e.detail.value)}
+            {showPassword ? (
+              <Input
+                key="password-input-text"
+                className="form-input"
+                type={"text" as InputProps["type"]}
+                placeholder="密码"
+                value={password}
+                onInput={(e) => setPassword(e.detail.value)}
+              />
+            ) : (
+              <Input
+                key="password-input-password"
+                className="form-input"
+                type={"password" as InputProps["type"]}
+                placeholder="密码"
+                value={password}
+                onInput={(e) => setPassword(e.detail.value)}
+              />
+            )}
+            <View
+              className={`eye-icon ${showPassword ? "visible" : "hidden"}`}
+              onClick={togglePasswordVisibility}
             />
-            <View className="eye-icon" onClick={togglePasswordVisibility}>
-              {/* 眼睛图标 */}
-            </View>
           </View>
         </View>
       </View>
