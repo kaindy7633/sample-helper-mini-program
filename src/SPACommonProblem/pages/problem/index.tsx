@@ -95,12 +95,11 @@ const CommonProblemPage: React.FC = () => {
     if (!finished && !questionLoading && !isLoadingMore) {
       setIsLoadingMore(true);
       const nextPage = current + 1;
-      setCurrent(nextPage);
-
-      // 添加1秒延迟
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      await loadMore(nextPage);
-      setIsLoadingMore(false);
+      setTimeout(async () => {
+        setCurrent(nextPage);
+        await loadMore(nextPage);
+        setIsLoadingMore(false);
+      }, 1000);
     }
   };
 
@@ -205,6 +204,10 @@ const CommonProblemPage: React.FC = () => {
               {isLoadingMore ? (
                 <View className="list-loading">
                   <Loading size="24px">加载中...</Loading>
+                </View>
+              ) : !finished && questionList.length > 0 ? (
+                <View className="list-more-btn" onClick={handleScrollToLower}>
+                  加载更多
                 </View>
               ) : (
                 finished && (
