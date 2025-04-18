@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Taro from "@tarojs/taro";
 import request from "../../../services/request";
 import { API_PATHS } from "../../../services/config";
@@ -6,7 +6,11 @@ import { API_PATHS } from "../../../services/config";
 // 分类数据接口
 export interface Category {
   id: string;
-  name: string;
+  problemTypeName: string;
+  createTime?: string;
+  updateTime?: string;
+  delFlag?: number;
+  orderNum?: number;
 }
 
 // 问题数据接口
@@ -36,32 +40,32 @@ export const useCategoryList = () => {
         });
 
         if (response && Array.isArray(response)) {
-          // 处理接口返回的数据
-          const formattedCategories = [
-            { id: "0", name: "全部" }, // 添加"全部"选项
-            ...response.map((item) => ({
-              id:
-                String(item.id) || String(item.typeId) || String(Math.random()),
-              name: item.typeName || "未命名分类",
-            })),
-          ];
-          setCategoryList(formattedCategories);
+          setCategoryList(response);
         } else {
           // 如果接口没有返回预期数据，使用默认数据
           setCategoryList([
-            { id: "0", name: "全部" },
-            { id: "1", name: "新国抽使用问题" },
-            { id: "2", name: "农产品抽检" },
-            { id: "3", name: "食品安全问题" },
+            {
+              id: "1",
+              problemTypeName: "新国抽使用问题",
+              createTime: "2025-03-04 15:44:19",
+              updateTime: "2025-03-04 15:44:19",
+              delFlag: 0,
+              orderNum: 0,
+            },
           ]);
         }
       } catch (error) {
         console.error("获取问题分类失败:", error);
         // 接口调用失败时使用默认数据
         setCategoryList([
-          { id: "0", name: "全部" },
-          { id: "1", name: "新国抽使用问题" },
-          { id: "2", name: "农产品抽检" },
+          {
+            id: "1",
+            problemTypeName: "新国抽使用问题",
+            createTime: "2025-03-04 15:44:19",
+            updateTime: "2025-03-04 15:44:19",
+            delFlag: 0,
+            orderNum: 0,
+          },
         ]);
       } finally {
         setLoading(false);
@@ -77,30 +81,33 @@ export const useCategoryList = () => {
 /**
  * 获取问题列表的hook
  * @param {string} categoryId 分类ID
+ * @param {number} currentPage 当前页码
  * @returns {Object} 问题列表数据、加载状态和是否加载完成
  */
-export const useQuestionList = (categoryId: string) => {
+export const useQuestionList = (categoryId: string, currentPage: number) => {
   const [questionList, setQuestionList] = useState<Question[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [finished, setFinished] = useState<boolean>(false);
-  const [pageSize] = useState<number>(20);
+  const [total, setTotal] = useState<number>(0);
+  const pageSize = 5; // 每页显示5条数据
 
-  useEffect(() => {
-    // 重置状态
-    setQuestionList([]);
-    setLoading(true);
-    setFinished(false);
-
-    const fetchQuestions = async () => {
+  /**
+   * 获取问题列表数据
+   * @param {number} page 页码
+   * @param {boolean} isLoadMore 是否为加载更多
+   */
+  const fetchQuestions = useCallback(
+    async (page: number, isLoadMore = false) => {
       try {
+        setLoading(true);
         // 构建查询参数
         const params: Record<string, any> = {
-          current: 1,
+          current: page,
           size: pageSize,
         };
 
         // 如果选择了特定分类，添加分类ID参数
-        if (categoryId !== "0") {
+        if (categoryId) {
           params.typeId = categoryId;
         }
 
@@ -117,29 +124,80 @@ export const useQuestionList = (categoryId: string) => {
             id: item.id || String(Math.random()),
             title: item.problemName || "未命名问题",
             content: item.answer?.replace(/<\/?[^>]+(>|$)/g, "") || "暂无答案",
-            categoryId: String(item.typeId || "0"),
+            categoryId: String(item.typeId || ""),
           }));
 
-          setQuestionList(formattedQuestions);
+          // 更新列表数据
+          setQuestionList((prev) =>
+            isLoadMore ? [...prev, ...formattedQuestions] : formattedQuestions
+          );
+
+          // 更新总数
+          setTotal(Number(response.total) || 0);
 
           // 判断是否还有更多数据
-          const total = Number(response.total) || 0;
-          setFinished(total <= pageSize);
+          setFinished(page * pageSize >= (Number(response.total) || 0));
         } else {
-          setQuestionList([]);
+          if (!isLoadMore) {
+            setQuestionList([]);
+          }
           setFinished(true);
         }
       } catch (error) {
         console.error("获取问题列表失败:", error);
-        setQuestionList([]);
+        if (!isLoadMore) {
+          setQuestionList([]);
+        }
         setFinished(true);
       } finally {
         setLoading(false);
       }
-    };
+    },
+    [categoryId, pageSize]
+  );
 
-    fetchQuestions();
-  }, [categoryId, pageSize]);
+  // 监听分类ID变化，重置列表
+  useEffect(() => {
+    setQuestionList([]);
+    setFinished(false);
+    fetchQuestions(1, false);
+  }, [categoryId]);
 
-  return { questionList, loading, finished };
+  // 监听页码变化，加载更多数据
+  useEffect(() => {
+    if (currentPage > 1) {
+      fetchQuestions(currentPage, true);
+    }
+  }, [currentPage]);
+
+  /**
+   * 刷新列表
+   */
+  const refresh = useCallback(async () => {
+    setQuestionList([]);
+    setFinished(false);
+    await fetchQuestions(1, false);
+  }, [fetchQuestions]);
+
+  /**
+   * 加载更多
+   * @param {number} page 页码
+   */
+  const loadMore = useCallback(
+    async (page: number) => {
+      if (!finished && !loading) {
+        await fetchQuestions(page, true);
+      }
+    },
+    [fetchQuestions, finished, loading]
+  );
+
+  return {
+    questionList,
+    loading,
+    finished,
+    refresh,
+    loadMore,
+    total,
+  };
 };

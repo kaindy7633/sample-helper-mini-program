@@ -1,11 +1,36 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, ScrollView } from "@tarojs/components";
 import Taro, { useRouter } from "@tarojs/taro";
-import { Empty, Loading, Divider } from "@taroify/core";
-import { ArrowLeft } from "@taroify/icons";
+import { Empty, Loading } from "@taroify/core";
 import "./index.less";
 
 import { useCategoryList, useQuestionList } from "./hooks";
+import type { Category, Question } from "./hooks";
+
+/**
+ * 骨架屏组件
+ */
+const Skeleton: React.FC = () => {
+  return (
+    <View className="skeleton-container">
+      {[1, 2, 3].map((item) => (
+        <View key={item} className="skeleton-item">
+          <View className="skeleton-question">
+            <View className="skeleton-icon" />
+            <View className="skeleton-title" />
+          </View>
+          <View className="skeleton-answer">
+            <View className="skeleton-icon" />
+            <View className="skeleton-content">
+              <View className="skeleton-line" />
+              <View className="skeleton-line" />
+            </View>
+          </View>
+        </View>
+      ))}
+    </View>
+  );
+};
 
 /**
  * 常见问题页面组件
@@ -13,10 +38,13 @@ import { useCategoryList, useQuestionList } from "./hooks";
  */
 const CommonProblemPage: React.FC = () => {
   const router = useRouter();
-  const { category = "0" } = router.params;
+  const { typeId = "" } = router.params;
 
   // 当前选中的分类ID
-  const [activeCategory, setActiveCategory] = useState<string>(category);
+  const [activeCategory, setActiveCategory] = useState<string>(typeId);
+  const [current, setCurrent] = useState<number>(1);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
 
   // 获取分类列表和问题列表
   const { categoryList, loading: categoryLoading } = useCategoryList();
@@ -24,7 +52,15 @@ const CommonProblemPage: React.FC = () => {
     questionList,
     loading: questionLoading,
     finished,
-  } = useQuestionList(activeCategory);
+    refresh,
+    loadMore,
+    total,
+  } = useQuestionList(activeCategory, current);
+
+  // 设置页面标题
+  useEffect(() => {
+    Taro.setNavigationBarTitle({ title: "常见问题" });
+  }, []);
 
   /**
    * 处理标签点击
@@ -33,15 +69,46 @@ const CommonProblemPage: React.FC = () => {
   const handleTabClick = (id: string) => {
     if (id !== activeCategory) {
       setActiveCategory(id);
+      setCurrent(1);
+    }
+  };
+
+  /**
+   * 处理下拉刷新
+   */
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    setCurrent(1);
+    await refresh();
+    setRefreshing(false);
+    Taro.showToast({
+      title: "刷新成功",
+      icon: "success",
+      duration: 2000,
+    });
+  };
+
+  /**
+   * 处理滚动加载
+   */
+  const handleScrollToLower = async () => {
+    if (!finished && !questionLoading && !isLoadingMore) {
+      setIsLoadingMore(true);
+      const nextPage = current + 1;
+      setCurrent(nextPage);
+
+      // 添加1秒延迟
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await loadMore(nextPage);
+      setIsLoadingMore(false);
     }
   };
 
   /**
    * 查看问题详情
-   * @param {Object} question 问题对象
+   * @param {Question} question 问题对象
    */
-  const handleQuestionClick = (question) => {
-    // 详情页还未创建，直接显示弹窗
+  const handleQuestionClick = (question: Question) => {
     Taro.showModal({
       title: question.title,
       content: question.content,
@@ -71,87 +138,92 @@ const CommonProblemPage: React.FC = () => {
 
   return (
     <View className="common-problem-container">
-      {/* 导航栏 */}
-      <View className="nav-bar">
-        <View className="nav-bar-left" onClick={handleBackClick}>
-          <ArrowLeft />
+      {/* 固定区域 */}
+      <View className="fixed-area">
+        {/* 顶部信息区域 */}
+        <View className="top-info">
+          <Text className="top-info-text">更多问题请加入</Text>
+          <Text className="top-info-link">全国食品问题交流群</Text>
         </View>
-        <View className="nav-bar-title">常见问题</View>
-        <View className="nav-bar-right">
-          <Text className="qa-button" onClick={handleQAClick}>
-            问答
-          </Text>
-        </View>
-      </View>
 
-      {/* 顶部信息区域 */}
-      <View className="top-info">
-        <Text className="top-info-text">更多问题请加入</Text>
-        <Text className="top-info-link">全国食品问题交流群</Text>
-      </View>
-
-      {/* 分类标签栏 */}
-      <ScrollView className="category-scroll" scrollX scrollWithAnimation>
-        <View className="category-list">
-          {!categoryLoading &&
-            categoryList.map((item) => (
-              <View
-                key={item.id}
-                className={`category-item ${
-                  activeCategory === item.id ? "category-item-active" : ""
-                }`}
-                onClick={() => handleTabClick(item.id)}
-              >
-                {item.name}
-              </View>
-            ))}
-        </View>
-      </ScrollView>
-
-      {/* 问题列表 */}
-      <View className="question-container">
-        {questionLoading ? (
-          <View className="loading-container">
-            <Loading type="spinner" />
-          </View>
-        ) : questionList.length > 0 ? (
-          <View className="question-list">
-            {questionList.map((item, index) => (
-              <View key={item.id}>
+        {/* 分类标签栏 */}
+        <ScrollView className="category-scroll" scrollX scrollWithAnimation>
+          <View className="category-list">
+            <View
+              className={`category-item ${
+                !activeCategory ? "category-item-active" : ""
+              }`}
+              onClick={() => handleTabClick("")}
+            >
+              全部
+            </View>
+            {!categoryLoading &&
+              categoryList.map((item: Category) => (
                 <View
-                  className="question-item"
-                  onClick={() => handleQuestionClick(item)}
+                  key={item.id}
+                  className={`category-item ${
+                    activeCategory === item.id ? "category-item-active" : ""
+                  }`}
+                  onClick={() => handleTabClick(item.id)}
                 >
-                  <View className="question-icon">Q</View>
-                  <View className="question-content">
+                  {item.problemTypeName}
+                </View>
+              ))}
+            <View className="category-list-gap" />
+          </View>
+        </ScrollView>
+      </View>
+
+      {/* 可滚动的问题列表区域 */}
+      <ScrollView
+        className="scrollable-area"
+        scrollY
+        refresherEnabled
+        refresherTriggered={refreshing}
+        onRefresherRefresh={handleRefresh}
+        onScrollToLower={handleScrollToLower}
+        enableBackToTop
+      >
+        <View className="question-container">
+          {questionLoading && current === 1 ? (
+            <Skeleton />
+          ) : questionList.length > 0 ? (
+            <View className="question-list">
+              {questionList.map((item) => (
+                <View key={item.id} className="question-item">
+                  <View className="question-section">
+                    <View className="question-icon">Q</View>
                     <View className="question-title">{item.title}</View>
                   </View>
+                  <View className="answer-section">
+                    <View className="answer-icon">A</View>
+                    <View className="answer-content">{item.content}</View>
+                  </View>
                 </View>
-                {index < questionList.length - 1 && <Divider />}
-              </View>
-            ))}
-            {/* 加载状态或底部提示 */}
-            {questionLoading ? (
-              <View className="list-loading">
-                <Loading size="24px">加载中...</Loading>
-              </View>
-            ) : (
-              finished && (
-                <View className="list-finished">
-                  {questionList.length >= 10 ? "没有更多了" : ""}
+              ))}
+              {/* 加载状态或底部提示 */}
+              {isLoadingMore ? (
+                <View className="list-loading">
+                  <Loading size="24px">加载中...</Loading>
                 </View>
-              )
-            )}
-          </View>
-        ) : (
-          <View className="empty-container">
-            <Empty>
-              <Empty.Image />
-              <Empty.Description>暂无相关问题</Empty.Description>
-            </Empty>
-          </View>
-        )}
-      </View>
+              ) : (
+                finished && (
+                  <View className="list-finished">
+                    {total > 0 ? "没有更多了" : ""}
+                  </View>
+                )
+              )}
+            </View>
+          ) : (
+            <View className="empty-container">
+              <Empty>
+                <Empty.Image />
+                <Empty.Description>暂无相关问题</Empty.Description>
+              </Empty>
+            </View>
+          )}
+        </View>
+      </ScrollView>
     </View>
   );
 };
