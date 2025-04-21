@@ -305,7 +305,7 @@ const ValidationPage: React.FC = (): JSX.Element => {
    */
   const handleItemClick = (item: ValidationItem) => {
     Taro.navigateTo({
-      url: `/SPASampleValidation/pages/validation/details/index?id=${item.id}`,
+      url: `/SPASampleValidation/pages/validation/details/index?id=${item.id}&isRead=${item.isRead}`,
     });
   };
 

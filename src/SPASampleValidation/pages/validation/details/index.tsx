@@ -112,6 +112,8 @@ interface ValidationDetailData {
 const ValidationDetailPage = () => {
   const router = useRouter();
   const taskId = useRef<number>();
+  // 从路由参数中获取isRead状态
+  const [isReadFromList, setIsReadFromList] = useState<number>(0);
 
   // 详情数据
   const [detailData, setDetailData] = useState<ValidationDetailData | null>(
@@ -136,13 +138,21 @@ const ValidationDetailPage = () => {
     { title: "抽检样品信息", badge: 0 },
   ];
 
-  // 初始化任务ID
+  // 初始化任务ID和isRead状态
   useEffect(() => {
     const id = router.params.id;
+    const isRead = router.params.isRead;
+
+    console.log("路由参数:", router.params);
+
     if (id) {
       taskId.current = Number(id);
     }
-  }, [router]);
+
+    if (isRead) {
+      setIsReadFromList(Number(isRead));
+    }
+  }, [router.params]);
 
   /**
    * 获取详情数据
@@ -159,6 +169,16 @@ const ValidationDetailPage = () => {
       const response = await sampleValidationApi.getValidationDetail(
         Number(taskId.current)
       );
+
+      // 确保isRead字段存在且类型正确
+      console.log("获取到的详情数据:", response);
+
+      // 确保response中的isRead是数字类型
+      if (response && typeof response.isRead !== "undefined") {
+        // 强制转换为数字类型
+        response.isRead = Number(response.isRead);
+      }
+
       setDetailData(response);
       setLoading(false);
     } catch (err) {
@@ -187,6 +207,9 @@ const ValidationDetailPage = () => {
         };
       });
 
+      // 同时更新列表页传过来的状态
+      setIsReadFromList(ReadStatus.READ);
+
       Toast.success("确认阅读成功");
     } catch (error) {
       console.error("确认阅读失败", error);
@@ -198,8 +221,10 @@ const ValidationDetailPage = () => {
 
   // 初始化加载数据
   useEffect(() => {
-    fetchDetailData();
-  }, [taskId]);
+    if (taskId.current) {
+      fetchDetailData();
+    }
+  }, [taskId.current]);
 
   // 处理标签切换
   const handleTabChange = (index: number) => {
@@ -431,34 +456,52 @@ const ValidationDetailPage = () => {
 
   // 渲染确认阅读按钮
   const renderConfirmButton = () => {
-    if (detailData) {
-      if (detailData.isRead === ReadStatus.READ) {
-        // 已阅读状态显示灰色背景的已阅按钮
-        return (
-          <View className="confirm-button-wrapper">
-            <Button className="readed-button" disabled>
-              已阅
-            </Button>
-          </View>
-        );
-      }
+    console.log(
+      "isReadFromList:",
+      isReadFromList,
+      "类型:",
+      typeof isReadFromList
+    );
 
-      // 未阅读状态显示确认阅读按钮
+    // 使用列表页传递过来的isRead状态
+    const isReadStatus = isReadFromList === ReadStatus.READ;
+
+    // 更新后的本地状态也需要考虑
+    if (detailData && detailData.isRead === ReadStatus.READ) {
       return (
         <View className="confirm-button-wrapper">
-          <Button
-            className="confirm-button"
-            color="primary"
-            loading={confirming}
-            disabled={confirming}
-            onClick={confirmRead}
-          >
-            确认阅读
+          <Button className="readed-button" disabled>
+            已阅
           </Button>
         </View>
       );
     }
-    return null;
+
+    if (isReadStatus) {
+      // 已阅读状态显示灰色背景的已阅按钮
+      return (
+        <View className="confirm-button-wrapper">
+          <Button className="readed-button" disabled>
+            已阅
+          </Button>
+        </View>
+      );
+    }
+
+    // 未阅读状态显示确认阅读按钮
+    return (
+      <View className="confirm-button-wrapper">
+        <Button
+          className="confirm-button"
+          color="primary"
+          loading={confirming}
+          disabled={confirming}
+          onClick={confirmRead}
+        >
+          确认阅读
+        </Button>
+      </View>
+    );
   };
 
   // 根据loading和error状态渲染不同内容
