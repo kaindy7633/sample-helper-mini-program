@@ -363,24 +363,18 @@ const ValidationPage: React.FC = (): JSX.Element => {
   };
 
   /**
-   * 处理文件上传按钮点击
-   */
-  const handleFileUpload = () => {
-    setShowUploadDialog(true);
-  };
-
-  /**
    * 选择图片上传
    * @param sourceType 来源类型: 相机或相册
    */
   const chooseImageUpload = async (sourceType: "camera" | "album") => {
+    setIsUploading(true);
+    setUploadProgress(0);
+
     Taro.chooseImage({
-      count: 9, // 最多可以选择9张图片
+      count: sourceType === "camera" ? 1 : 9, // 拍照只选1张，相册可以9张
       sourceType: sourceType === "camera" ? ["camera"] : ["album"],
       success: async (res) => {
         const filePaths = res.tempFilePaths;
-        setIsUploading(true);
-        setUploadProgress(0);
 
         try {
           // 使用服务中的方法上传文件
@@ -412,7 +406,29 @@ const ValidationPage: React.FC = (): JSX.Element => {
           setIsUploading(false);
         }
       },
+      fail: () => {
+        setIsUploading(false);
+        Taro.showToast({
+          title: "已取消选择",
+          icon: "none",
+          duration: 1500,
+        });
+      },
     });
+  };
+
+  /**
+   * 拍照上传处理函数
+   */
+  const handleCameraUpload = () => {
+    chooseImageUpload("camera");
+  };
+
+  /**
+   * 文件上传处理函数
+   */
+  const handleFileUpload = () => {
+    chooseImageUpload("album");
   };
 
   /**
@@ -486,48 +502,27 @@ const ValidationPage: React.FC = (): JSX.Element => {
         </PullRefresh>
       </View>
 
-      {/* 文件上传按钮 */}
-      <View className="upload-button-wrapper">
+      {/* 底部上传按钮区域 */}
+      <View className="upload-buttons-wrapper">
         <Button
-          className="upload-button"
+          className="upload-button camera-button"
           color="primary"
-          // onClick={handleFileUpload}
-          onClick={() => chooseImageUpload("album")}
+          onClick={handleCameraUpload}
           loading={isUploading}
           disabled={isUploading}
         >
-          {isUploading ? `上传中 ${uploadProgress}%` : "文件上传"}
+          拍照上传
+        </Button>
+        <Button
+          className="upload-button file-button"
+          color="primary"
+          onClick={handleFileUpload}
+          loading={isUploading}
+          disabled={isUploading}
+        >
+          文件上传
         </Button>
       </View>
-
-      {/* 上传方式选择对话框 */}
-      <Dialog
-        open={showUploadDialog}
-        onClose={() => setShowUploadDialog(false)}
-      >
-        <Dialog.Header>选择上传方式</Dialog.Header>
-        <Dialog.Content>
-          <View style={{ padding: "20px 0" }}>
-            <Text>可以拍照上传抽样单文件图片</Text>
-          </View>
-        </Dialog.Content>
-        <Dialog.Actions>
-          <Button
-            style={{ marginRight: "8px" }}
-            onClick={() => setShowUploadDialog(false)}
-          >
-            取消
-          </Button>
-          <Button onClick={() => chooseImageUpload("album")}>从相册选择</Button>
-          <Button
-            style={{ marginLeft: "8px" }}
-            color="primary"
-            onClick={() => chooseImageUpload("camera")}
-          >
-            拍照上传
-          </Button>
-        </Dialog.Actions>
-      </Dialog>
 
       {/* 上传进度对话框 */}
       <Dialog open={isUploading}>
@@ -537,21 +532,10 @@ const ValidationPage: React.FC = (): JSX.Element => {
             <View style={{ marginBottom: "10px", textAlign: "center" }}>
               已上传 {uploadProgress}%
             </View>
-            <View
-              style={{
-                height: "6px",
-                backgroundColor: "#f2f2f2",
-                borderRadius: "3px",
-                overflow: "hidden",
-              }}
-            >
+            <View className="upload-progress-bar">
               <View
-                style={{
-                  width: `${uploadProgress}%`,
-                  height: "100%",
-                  backgroundColor: "#1989fa",
-                  transition: "width 0.2s",
-                }}
+                className="upload-progress-fill"
+                style={{ width: `${uploadProgress}%` }}
               />
             </View>
           </View>
