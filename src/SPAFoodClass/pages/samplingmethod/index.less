@@ -48,6 +48,124 @@
   padding: 10px 0 20px;
 }
 
+/* 让步骤条完全透明 */
+.transparent-steps {
+  background-color: transparent !important;
+}
+
+.transparent-step {
+  background-color: transparent !important;
+}
+
+:global(.taroify-steps),
+:global(.taroify-step),
+:global(.taroify-step__title),
+:global(.taroify-step__content),
+:global(.taroify-step__circle-container),
+:global(.taroify-step__wrapper),
+:global(.taroify-steps-vertical) {
+  background-color: transparent !important;
+  background: transparent !important;
+}
+
+:global(.taroify-steps-vertical) :global(.taroify-step) {
+  background-color: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+:global(.taroify-step__title) {
+  box-shadow: none !important;
+  background-color: transparent !important;
+}
+
+:global(.taroify-step__line) {
+  background-color: #3f7efd !important;
+}
+
+/* 通用标题样式 */
+.section-title {
+  font-size: 32px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 16px;
+  display: block;
+  padding: 0 20px;
+}
+
+/* 生产企业信息部分 */
+.company-info-section {
+  margin: 20px 0;
+  padding-top: 20px;
+  background-color: #fff;
+}
+
+/* 抽备样数量部分 */
+.sample-quantity-section {
+  margin: 20px 0;
+  padding-top: 20px;
+  background-color: #fff;
+}
+
+/* 特殊类别抽备样数量部分 */
+.special-sample-section {
+  margin: 20px 0;
+  padding-top: 20px;
+  background-color: #fff;
+}
+
+/* 表格样式 */
+.company-table,
+.sample-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.table-row {
+  display: flex;
+  border-bottom: 1px solid #eee;
+}
+
+.table-header {
+  background-color: #f2f2f2;
+  font-weight: 500;
+}
+
+.table-cell {
+  flex: 1;
+  padding: 16px;
+  font-size: 28px;
+  text-align: center;
+  color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  word-break: break-all;
+}
+
+/* 特殊类别标识 */
+.special-category-tag {
+  display: flex;
+  align-items: center;
+  margin: 0 20px 16px;
+}
+
+.dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: #3f7efd;
+  margin-right: 10px;
+}
+
+.special-category-text {
+  font-size: 28px;
+  color: #333;
+}
+
 .content {
   flex: 1;
   padding: 20px;

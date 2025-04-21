@@ -68,6 +68,7 @@ const FoodDetailPage: React.FC = () => {
       secondCategory,
       thirdCategory,
       fourthCategory,
+      ordinarySample,
     } = foodItem;
 
     // 构建批次信息
@@ -88,7 +89,11 @@ const FoodDetailPage: React.FC = () => {
         samplingMethod
       )}&ratio=${encodeURIComponent(ratio || "0%")}&batch=${encodeURIComponent(
         batch
-      )}&categories=${encodeURIComponent(JSON.stringify(categories))}`,
+      )}&categories=${encodeURIComponent(
+        JSON.stringify(categories)
+      )}&ordinarySample=${encodeURIComponent(
+        JSON.stringify(ordinarySample || [])
+      )}`,
     });
   };
 
@@ -261,13 +266,6 @@ const FoodDetailPage: React.FC = () => {
             查看抽样方法及数量
           </Button>
         </View>
-
-        {/* 易混淆提示 */}
-        {/* {foodItem.confusable && (
-          <View className="confusion-tip">
-            <Text className="confusion-text">{foodItem.confusable}</Text>
-          </View>
-        )} */}
       </View>
     );
   };
