@@ -10,17 +10,13 @@
 
 .header {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  padding: 20px;
-  background-color: #fff;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 20;
-  height: 80px;
-  box-sizing: border-box;
+  height: 90px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #f0f0f0;
+  position: relative;
+  z-index: 11;
 }
 
 .back-icon {
@@ -45,8 +41,6 @@
   font-size: 36px;
   font-weight: 500;
   color: #333;
-  text-align: center;
-  flex: 1;
 }
 
 .placeholder {
@@ -54,11 +48,38 @@
   height: 40px;
 }
 
+/* Tab样式 */
+.tabs-container {
+  background-color: #ffffff;
+  position: relative;
+  z-index: 11;
+}
+
+.custom-tabs {
+  width: 100%;
+}
+
+:global(.taroify-tabs__tab) {
+  font-size: 32px !important;
+  padding: 24px 0 !important;
+}
+
+:global(.taroify-tabs__line) {
+  background-color: #3f7efd !important;
+  height: 6px !important;
+  border-radius: 3px !important;
+}
+
+:global(.taroify-tab--active) {
+  color: #3f7efd !important;
+  font-weight: 500 !important;
+}
+
 /* 内容区域 */
 .content {
   flex: 1;
   position: fixed;
-  top: 10px;
+  top: 100px;
   left: 0;
   right: 0;
   bottom: 0;

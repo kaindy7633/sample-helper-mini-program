@@ -10,6 +10,7 @@ import {
   Button,
   Dialog,
   Toast,
+  Tabs,
 } from "@taroify/core";
 import Taro from "@tarojs/taro";
 import { sampleValidationApi } from "../../../../services";
@@ -19,7 +20,15 @@ import {
   FileUploadResponse,
 } from "../../../../services/sampleValidation";
 import readIcon from "../../../../assets/images/icon_isread.png";
+import "@taroify/core/tabs/style";
 import "./index.less";
+
+// 扩展API接口参数类型，添加isRead参数
+interface ValidationQueryParams {
+  currentPage: number;
+  pageSize: number;
+  isRead?: number; // 阅读状态：0-未读，1-已读
+}
 
 /**
  * 验证状态枚举
@@ -89,6 +98,9 @@ const getStatusClassName = (status: string): string => {
  * @returns {JSX.Element} 抽样单验证页面
  */
 const ValidationPage: React.FC = (): JSX.Element => {
+  // 当前选中的Tab
+  const [activeTab, setActiveTab] = useState<number>(0);
+
   // 验证列表
   const [validationList, setValidationList] = useState<ValidationItem[]>([]);
 
@@ -121,6 +133,7 @@ const ValidationPage: React.FC = (): JSX.Element => {
   const fetchValidationList = async (isRefresh: boolean = false) => {
     try {
       const pageNum = isRefresh ? 1 : current;
+      const isReadValue = activeTab === 0 ? ReadStatus.UNREAD : ReadStatus.READ;
 
       if (isRefresh) {
         setRefreshing(true);
@@ -128,11 +141,14 @@ const ValidationPage: React.FC = (): JSX.Element => {
         setLoading(true);
       }
 
-      // 使用API获取数据
-      const result = await sampleValidationApi.getValidationList({
+      // 使用API获取数据，使用自定义的请求参数类型
+      const params: ValidationQueryParams = {
         currentPage: pageNum,
         pageSize: pageSize,
-      });
+        isRead: isReadValue,
+      };
+
+      const result = await sampleValidationApi.getValidationList(params);
 
       // 添加1秒延迟，让加载效果更明显
       setTimeout(() => {
@@ -218,11 +234,16 @@ const ValidationPage: React.FC = (): JSX.Element => {
   const handleLoadWithPage = async (pageNum: number) => {
     try {
       setLoading(true);
+      const isReadValue = activeTab === 0 ? ReadStatus.UNREAD : ReadStatus.READ;
 
-      const result = await sampleValidationApi.getValidationList({
+      // 使用自定义的请求参数类型
+      const params: ValidationQueryParams = {
         currentPage: pageNum,
         pageSize: pageSize,
-      });
+        isRead: isReadValue,
+      };
+
+      const result = await sampleValidationApi.getValidationList(params);
 
       setTimeout(() => {
         const records = result.records || [];
@@ -282,7 +303,7 @@ const ValidationPage: React.FC = (): JSX.Element => {
   // 初始化加载数据
   useEffect(() => {
     fetchValidationList(true);
-  }, []);
+  }, [activeTab]);
 
   // 返回上一页
   const handleBack = () => {
@@ -394,8 +415,32 @@ const ValidationPage: React.FC = (): JSX.Element => {
     });
   };
 
+  /**
+   * 处理Tab切换事件
+   */
+  const handleTabChange = (tabIndex: number) => {
+    if (tabIndex !== activeTab) {
+      setActiveTab(tabIndex);
+      setInitialLoading(true);
+      setValidationList([]);
+      setCurrent(1);
+    }
+  };
+
   return (
     <View className="container">
+      {/* Tab栏 */}
+      <View className="tabs-container">
+        <Tabs
+          value={activeTab}
+          onChange={handleTabChange}
+          className="custom-tabs"
+        >
+          <Tabs.TabPane title="待确认" />
+          <Tabs.TabPane title="已确认" />
+        </Tabs>
+      </View>
+
       {/* 内容区域 */}
       <View className="content">
         <PullRefresh
@@ -419,7 +464,9 @@ const ValidationPage: React.FC = (): JSX.Element => {
               <View className="empty-container">
                 <Empty>
                   <Empty.Image src="search" />
-                  <Empty.Description>暂无验证数据</Empty.Description>
+                  <Empty.Description>
+                    {activeTab === 0 ? "暂无待确认数据" : "暂无已确认数据"}
+                  </Empty.Description>
                 </Empty>
               </View>
             ) : (
