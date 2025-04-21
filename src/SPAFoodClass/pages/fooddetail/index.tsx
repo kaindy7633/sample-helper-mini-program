@@ -165,41 +165,89 @@ const FoodDetailPage: React.FC = () => {
         <View className="food-content">
           {/* 使用Steps组件显示分类层级 */}
           <View className="classification-steps">
-            <Steps value={4} direction="vertical">
+            <Steps className="transparent-steps" value={4} direction="vertical">
               {foodItem.firstCategory && (
-                <Steps.Step>{foodItem.firstCategory}</Steps.Step>
+                <Steps.Step className="transparent-step">
+                  {foodItem.firstCategory}
+                </Steps.Step>
               )}
               {foodItem.secondCategory && (
-                <Steps.Step>{foodItem.secondCategory}</Steps.Step>
+                <Steps.Step className="transparent-step">
+                  {foodItem.secondCategory}
+                </Steps.Step>
               )}
               {foodItem.thirdCategory && (
-                <Steps.Step>{foodItem.thirdCategory}</Steps.Step>
+                <Steps.Step className="transparent-step">
+                  {foodItem.thirdCategory}
+                </Steps.Step>
               )}
               {foodItem.fourthCategory && (
-                <Steps.Step>{foodItem.fourthCategory}</Steps.Step>
+                <Steps.Step className="transparent-step">
+                  {foodItem.fourthCategory}
+                </Steps.Step>
               )}
-              {foodItem.ordinarySample &&
-                foodItem.ordinarySample.length > 0 && (
-                  <Steps.Step>
-                    <View className="sample-info">
-                      <View className="sample-item">
-                        <Text className="sample-label">抽样数量:</Text>
-                        <Text className="sample-value">
-                          {foodItem.ordinarySample[0].minSampleQuantity || "-"}
-                        </Text>
-                      </View>
-                      <View className="sample-item">
-                        <Text className="sample-label">备样数量:</Text>
-                        <Text className="sample-value">
-                          {foodItem.ordinarySample[0].minBackupWeight || "-"}
-                        </Text>
-                      </View>
-                    </View>
-                  </Steps.Step>
-                )}
             </Steps>
           </View>
         </View>
+
+        {/* 抽样和备样数量信息（作为独立模块） */}
+        {foodItem.ordinarySample && foodItem.ordinarySample.length > 0 && (
+          <View className="sample-quantity-container">
+            <View className="sample-quantity-box">
+              <View className="sample-quantity-item">
+                <Text className="sample-quantity-label">抽样数量:</Text>
+                <View className="sample-quantity-value-box">
+                  <Text className="sample-quantity-value">
+                    {foodItem.ordinarySample[0].minSampleQuantity || "-"}
+                  </Text>
+                </View>
+              </View>
+              <View className="sample-quantity-item">
+                <Text className="sample-quantity-label">备样数量:</Text>
+                <View className="sample-quantity-value-box">
+                  <Text className="sample-quantity-value">
+                    {foodItem.ordinarySample[0].minBackupWeight || "-"}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          </View>
+        )}
+
+        {/* 特殊类别 */}
+        {foodItem.special && foodItem.special.length > 0 && (
+          <View className="special-category-container">
+            <Text className="special-category-title">特殊类别</Text>
+            <View className="special-category-steps">
+              <Steps
+                className="transparent-steps"
+                value={foodItem.special.length}
+                direction="vertical"
+              >
+                {foodItem.special.map((item, idx) => (
+                  <Steps.Step
+                    className="transparent-step"
+                    key={`special-${idx}`}
+                  >
+                    <View className="special-item">
+                      <Text className="special-text">{item}</Text>
+                    </View>
+                  </Steps.Step>
+                ))}
+              </Steps>
+            </View>
+          </View>
+        )}
+
+        {/* 常见易混 */}
+        {foodItem.confusable && (
+          <View className="confusable-container">
+            <Text className="confusable-title">常见易混:</Text>
+            <View className="confusable-content">
+              <Text className="confusable-text">{foodItem.confusable}</Text>
+            </View>
+          </View>
+        )}
 
         {/* 查看抽样方法按钮 */}
         <View className="sampling-button-container">

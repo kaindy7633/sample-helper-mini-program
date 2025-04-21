@@ -119,10 +119,58 @@
 .food-content {
   padding: 10px 0;
   display: flex;
+  background-color: transparent;
 }
 
+/* 让步骤条完全透明 */
+.transparent-steps {
+  background-color: transparent !important;
+}
+
+.transparent-step {
+  background-color: transparent !important;
+}
+
+/* 去除步骤条容器背景 */
 .classification-steps {
   flex: 1;
+  background-color: transparent !important;
+}
+
+.special-category-steps {
+  padding-left: 8px;
+  background-color: transparent !important;
+}
+
+/* 覆盖Taroify步骤条所有可能的背景 */
+:global(.taroify-steps),
+:global(.taroify-step),
+:global(.taroify-step__title),
+:global(.taroify-step__content),
+:global(.taroify-step__circle-container),
+:global(.taroify-step__wrapper),
+:global(.taroify-steps-vertical) {
+  background-color: transparent !important;
+  background: transparent !important;
+}
+
+/* 白色背景覆盖 */
+:global(.taroify-steps-vertical) :global(.taroify-step) {
+  background-color: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+:global(.taroify-step__title) {
+  box-shadow: none !important;
+  background-color: transparent !important;
+}
+
+/* 适应圆圈和线条颜色 */
+:global(.taroify-step__line) {
+  background-color: #3f7efd !important;
 }
 
 .step-content {
@@ -211,4 +259,92 @@
   margin: 0 10px;
   color: #3f7efd;
   font-size: 24px;
+}
+
+/* 抽样和备样数量信息样式 */
+.sample-quantity-container {
+  margin: 12px 0;
+  padding: 0;
+}
+
+.sample-quantity-box {
+  background-color: transparent;
+  border-radius: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sample-quantity-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-size: 14px;
+}
+
+.sample-quantity-label {
+  color: #646566;
+  font-weight: normal;
+  margin-bottom: 8px;
+  font-size: 28px;
+}
+
+.sample-quantity-value-box {
+  width: 100%;
+}
+
+.sample-quantity-value {
+  color: #323233;
+  font-weight: 500;
+  font-size: 28px;
+  word-break: break-all;
+  text-align: left;
+}
+
+/* 特殊类别样式 */
+.special-category-container {
+  margin: 12px 0;
+  padding: 0;
+}
+
+.special-category-title {
+  font-size: 28px;
+  font-weight: normal;
+  color: #646566;
+  margin-bottom: 8px;
+}
+
+.special-item {
+  padding: 4px 0;
+}
+
+.special-text {
+  font-size: 28px;
+  color: #323233;
+  word-break: break-all;
+}
+
+/* 常见易混样式 */
+.confusable-container {
+  margin: 12px 0;
+  padding: 0;
+}
+
+.confusable-title {
+  font-size: 28px;
+  font-weight: normal;
+  color: #646566;
+  margin-bottom: 8px;
+}
+
+.confusable-content {
+  padding: 4px 0;
+}
+
+.confusable-text {
+  font-size: 28px;
+  color: #323233;
+  line-height: 1.5;
+  word-break: break-all;
 }
