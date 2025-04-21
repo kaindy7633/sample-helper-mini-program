@@ -11,6 +11,7 @@ import { sampleValidationApi } from "../../../../services";
 import readIcon from "../../../../assets/images/icon_isread.png";
 import "./index.less";
 import styles from "./index.module.less";
+import { API_BASE_URL } from "../../../../services/config";
 
 // 验证状态枚举
 enum ValidationStatus {
@@ -175,7 +176,7 @@ const ValidationDetailPage = () => {
 
     try {
       setConfirming(true);
-      await sampleValidationApi.markProcessed(String(taskId.current));
+      await sampleValidationApi.markProcessed([String(taskId.current)]);
 
       // 更新本地状态
       setDetailData((prev) => {
@@ -434,23 +435,27 @@ const ValidationDetailPage = () => {
       if (detailData.isRead === ReadStatus.READ) {
         // 已阅读状态显示灰色背景的已阅按钮
         return (
-          <Button className={styles.readedButton} disabled>
-            已阅
-          </Button>
+          <View className="confirm-button-wrapper">
+            <Button className="readed-button" disabled>
+              已阅
+            </Button>
+          </View>
         );
       }
 
       // 未阅读状态显示确认阅读按钮
       return (
-        <Button
-          className={styles.confirmButton}
-          color="primary"
-          loading={confirming}
-          disabled={confirming}
-          onClick={confirmRead}
-        >
-          确认阅读
-        </Button>
+        <View className="confirm-button-wrapper">
+          <Button
+            className="confirm-button"
+            color="primary"
+            loading={confirming}
+            disabled={confirming}
+            onClick={confirmRead}
+          >
+            确认阅读
+          </Button>
+        </View>
       );
     }
     return null;
@@ -496,15 +501,16 @@ const ValidationDetailPage = () => {
   }
 
   return (
-    <View className={styles.detailsPage}>
-      <View className={styles.tabs}>{renderTabs()}</View>
+    <View className="detail-container">
+      <View className="tabs-container">{renderTabs()}</View>
 
-      <View className={styles.content}>
+      <View className="content">
         {/* 标签页内容 */}
         <View className="tab-content">{renderTabContent()}</View>
       </View>
 
-      <View className={styles.footer}>{renderConfirmButton()}</View>
+      {/* 渲染确认按钮 */}
+      {renderConfirmButton()}
     </View>
   );
 };

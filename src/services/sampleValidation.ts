@@ -370,14 +370,29 @@ export async function getValidationDetail(taskId: number) {
 
 /**
  * 标记抽样单为已处理（已阅读）
- * @param taskId 任务ID
+ * @param ids 任务ID数组
  * @returns 处理结果
  */
-export async function markProcessed(taskId: string) {
-  return request({
-    url: "/api/sampleValidation/processed",
-    method: "POST",
-    data: { taskId },
+export async function markProcessed(ids: string[]) {
+  // 直接使用Taro的请求，避开request封装
+  return new Promise((resolve, reject) => {
+    Taro.request({
+      url: API_BASE_URL + "/api/sampleValidation/processed",
+      method: "POST",
+      header: {
+        "content-type": "application/json", // 使用json格式
+        ...getRequestHeader(),
+      },
+      data: ids, // 直接传递数组，不包装在对象中
+      success: (res) => {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          resolve(res.data);
+        } else {
+          reject(res);
+        }
+      },
+      fail: reject,
+    });
   });
 }
 

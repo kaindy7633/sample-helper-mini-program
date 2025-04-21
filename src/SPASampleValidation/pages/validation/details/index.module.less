@@ -48,6 +48,7 @@
   -webkit-overflow-scrolling: touch;
 }
 
+/* 确保按钮容器固定在底部并居中 */
 .footer {
   position: fixed;
   left: 0;
@@ -63,19 +64,20 @@
   z-index: 100;
 }
 
-/* 按钮样式 */
+/* 确认按钮样式 - 宽度80%，最大圆角 */
 .confirmButton {
   width: 80% !important;
   height: 88px !important;
-  border-radius: 999px !important;
+  border-radius: 999px !important; /* 使用999px实现最大圆角 */
   font-size: 32px !important;
   font-weight: 500 !important;
 }
 
+/* 已读按钮样式 */
 .readedButton {
   width: 80% !important;
   height: 88px !important;
-  border-radius: 999px !important;
+  border-radius: 999px !important; /* 同样使用最大圆角 */
   font-size: 32px !important;
   font-weight: 500 !important;
   background-color: #f2f3f5 !important;
