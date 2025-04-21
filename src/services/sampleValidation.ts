@@ -368,6 +368,19 @@ export async function getValidationDetail(taskId: number) {
   });
 }
 
+/**
+ * 标记抽样单为已处理（已阅读）
+ * @param taskId 任务ID
+ * @returns 处理结果
+ */
+export async function markProcessed(taskId: string) {
+  return request({
+    url: "/api/sampleValidation/processed",
+    method: "POST",
+    data: { taskId },
+  });
+}
+
 // 导出API
 const sampleValidationApi = {
   getValidationList,
@@ -375,6 +388,7 @@ const sampleValidationApi = {
   uploadValidationFiles,
   uploadValidationFileByRequest,
   getValidationDetail,
+  markProcessed,
 };
 
 export default sampleValidationApi;

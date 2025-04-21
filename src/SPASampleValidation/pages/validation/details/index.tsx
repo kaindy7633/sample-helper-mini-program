@@ -1,15 +1,16 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { View, Text, Image } from "@tarojs/components";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Taro, { useRouter } from "@tarojs/taro";
-import { Button, Skeleton, Loading, Empty } from "@taroify/core";
+import { Button, Skeleton, Loading, Empty, Toast } from "@taroify/core";
 import "@taroify/core/loading/style";
 import "@taroify/core/empty/style";
 import "@taroify/core/button/style";
 import { sampleValidationApi } from "../../../../services";
 import readIcon from "../../../../assets/images/icon_isread.png";
 import "./index.less";
+import styles from "./index.module.less";
 
 // 验证状态枚举
 enum ValidationStatus {
@@ -109,7 +110,7 @@ interface ValidationDetailData {
  */
 const ValidationDetailPage = () => {
   const router = useRouter();
-  const taskId = router.params.id; // 获取路由参数中的ID
+  const taskId = useRef<number>();
 
   // 详情数据
   const [detailData, setDetailData] = useState<ValidationDetailData | null>(
@@ -119,6 +120,8 @@ const ValidationDetailPage = () => {
   // 加载状态
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
+  // 确认阅读状态
+  const [confirming, setConfirming] = useState<boolean>(false);
 
   // 当前选中的标签页索引
   const [activeTabIndex, setActiveTabIndex] = useState<number>(0);
@@ -132,11 +135,19 @@ const ValidationDetailPage = () => {
     { title: "抽检样品信息", badge: 0 },
   ];
 
+  // 初始化任务ID
+  useEffect(() => {
+    const id = router.params.id;
+    if (id) {
+      taskId.current = Number(id);
+    }
+  }, [router]);
+
   /**
    * 获取详情数据
    */
   const fetchDetailData = async () => {
-    if (!taskId) {
+    if (!taskId.current) {
       setError("缺少必要的任务ID参数");
       setLoading(false);
       return;
@@ -145,7 +156,7 @@ const ValidationDetailPage = () => {
     try {
       setLoading(true);
       const response = await sampleValidationApi.getValidationDetail(
-        Number(taskId)
+        Number(taskId.current)
       );
       setDetailData(response);
       setLoading(false);
@@ -153,6 +164,34 @@ const ValidationDetailPage = () => {
       console.error("获取详情失败:", err);
       setError("获取详情数据失败");
       setLoading(false);
+    }
+  };
+
+  /**
+   * 确认阅读
+   */
+  const confirmRead = async () => {
+    if (!taskId.current) return;
+
+    try {
+      setConfirming(true);
+      await sampleValidationApi.markProcessed(String(taskId.current));
+
+      // 更新本地状态
+      setDetailData((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          isRead: ReadStatus.READ,
+        };
+      });
+
+      Toast.success("确认阅读成功");
+    } catch (error) {
+      console.error("确认阅读失败", error);
+      Toast.fail("确认阅读失败");
+    } finally {
+      setConfirming(false);
     }
   };
 
@@ -391,13 +430,30 @@ const ValidationDetailPage = () => {
 
   // 渲染确认阅读按钮
   const renderConfirmButton = () => {
-    return (
-      <View className="confirm-button-wrapper">
-        <Button className="confirm-button" color="primary">
+    if (detailData) {
+      if (detailData.isRead === ReadStatus.READ) {
+        // 已阅读状态显示灰色背景的已阅按钮
+        return (
+          <Button className={styles.readedButton} disabled>
+            已阅
+          </Button>
+        );
+      }
+
+      // 未阅读状态显示确认阅读按钮
+      return (
+        <Button
+          className={styles.confirmButton}
+          color="primary"
+          loading={confirming}
+          disabled={confirming}
+          onClick={confirmRead}
+        >
           确认阅读
         </Button>
-      </View>
-    );
+      );
+    }
+    return null;
   };
 
   // 根据loading和error状态渲染不同内容
@@ -440,17 +496,15 @@ const ValidationDetailPage = () => {
   }
 
   return (
-    <View className="detail-container">
-      <View className="content">
-        {/* 标签页 */}
-        {renderTabs()}
+    <View className={styles.detailsPage}>
+      <View className={styles.tabs}>{renderTabs()}</View>
 
+      <View className={styles.content}>
         {/* 标签页内容 */}
         <View className="tab-content">{renderTabContent()}</View>
       </View>
 
-      {/* 确认阅读按钮 */}
-      {renderConfirmButton()}
+      <View className={styles.footer}>{renderConfirmButton()}</View>
     </View>
   );
 };

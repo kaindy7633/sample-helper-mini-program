@@ -1,0 +1,83 @@
+/* 详情页样式 */
+.detailsPage {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #f7f8fa;
+  overflow: hidden;
+  position: relative;
+}
+
+.header {
+  height: 88px;
+  padding: 0 32px;
+  background-color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.title {
+  font-size: 34px;
+  font-weight: 500;
+  color: #333;
+  text-align: center;
+}
+
+.tabs {
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 99;
+  background: #fff;
+  border-bottom: 1px solid #eee;
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  margin-bottom: 128px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.footer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 128px;
+  padding: 20px;
+  background-color: #fff;
+  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+/* 按钮样式 */
+.confirmButton {
+  width: 80% !important;
+  height: 88px !important;
+  border-radius: 999px !important;
+  font-size: 32px !important;
+  font-weight: 500 !important;
+}
+
+.readedButton {
+  width: 80% !important;
+  height: 88px !important;
+  border-radius: 999px !important;
+  font-size: 32px !important;
+  font-weight: 500 !important;
+  background-color: #f2f3f5 !important;
+  color: #909399 !important;
+}

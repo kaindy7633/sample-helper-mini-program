@@ -148,15 +148,19 @@
   color: #909399;
 }
 
+/* 标签页容器样式 */
+.tabs-container {
+  position: fixed;
+  top: 80px; /* 与header高度匹配 */
+  left: 0;
+  right: 0;
+  z-index: 10;
+}
+
 /* 标签页样式 */
 .tabs {
   display: flex;
   background-color: #fff;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 10;
   border-bottom: 1px solid #eee;
   overflow-x: auto;
   overflow-y: hidden; /* 禁止垂直滚动 */
@@ -168,6 +172,7 @@
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
   flex-direction: row; /* 确保水平排列 */
   align-items: center; /* 垂直居中 */
+  width: 100%;
 }
 
 /* 隐藏滚动条 */
